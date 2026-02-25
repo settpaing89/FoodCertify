@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FoodSafe — Business Model Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --green-dark: #1b5e20;
+    --green: #2e7d32;
+    --green-mid: #388e3c;
+    --green-light: #a5d6a7;
+    --green-surface: #e8f5e9;
+    --blue: #1565c0;
+    --blue-surface: #e3f2fd;
+    --purple: #6a1b9a;
+    --purple-surface: #f3e5f5;
+    --orange: #e65100;
+    --orange-surface: #fff3e0;
+    --teal: #00695c;
+    --teal-surface: #e0f2f1;
+    --ink: #1a2e1a;
+    --muted: #546e7a;
+    --soft: #90a4ae;
+    --bg: #f7fdf7;
+    --card: #ffffff;
+    --border: #e0e0e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--ink); }
+
+  /* ── HEADER ── */
+  .hero {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 45%, #43a047 100%);
+    padding: 64px 40px 56px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.06) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%);
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 999px; padding: 6px 18px; margin-bottom: 20px;
+    font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9); letter-spacing: 0.5px;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 900; color: #fff;
+    line-height: 1.05; margin-bottom: 16px;
+  }
+  .hero p {
+    font-size: 17px; color: rgba(255,255,255,0.82);
+    max-width: 580px; margin: 0 auto 32px; line-height: 1.7;
+  }
+  .hero-stats {
+    display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
+  }
+  .hero-stat {
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 14px; padding: 14px 22px; text-align: center;
+  }
+  .hero-stat-num { font-size: 26px; font-weight: 900; color: #fff; font-family: 'Fraunces', serif; }
+  .hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 600; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+  .section { padding: 56px 0 0; }
+  .section-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--green-surface); color: var(--green);
+    border-radius: 999px; padding: 5px 14px; font-size: 12px; font-weight: 800;
+    letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Fraunces', serif; font-size: clamp(24px, 3vw, 36px);
+    font-weight: 900; color: var(--ink); margin-bottom: 8px; line-height: 1.15;
+  }
+  .section-sub { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.6; margin-bottom: 36px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card); border-radius: 22px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 2px 16px rgba(0,0,0,0.055);
+    overflow: hidden;
+  }
+  .card-pad { padding: 28px; }
+
+  /* ── FEATURE MAP ── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px; margin-bottom: 0;
+  }
+  .feature-card {
+    background: var(--card); border-radius: 18px;
+    border: 1.5px solid var(--border);
+    padding: 20px 22px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.09); }
+  .feature-icon { font-size: 32px; margin-bottom: 10px; }
+  .feature-name { font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 4px; }
+  .feature-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+  .feature-tier {
+    display: inline-block; margin-top: 10px;
+    border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 800;
+  }
+
+  /* ── MODEL CARDS ── */
+  .models-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .models-grid { grid-template-columns: 1fr; } }
+
+  .model-card { border-radius: 24px; overflow: hidden; border: 1.5px solid var(--border); background: var(--card); box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+  .model-header { padding: 26px 28px 20px; position: relative; overflow: hidden; }
+  .model-header::after {
+    content: ''; position: absolute; right: -20px; top: -20px;
+    width: 120px; height: 120px; border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+  }
+  .model-tag {
+    display: inline-block; border-radius: 999px; padding: 3px 12px;
+    font-size: 10px; font-weight: 900; letter-spacing: 1.5px;
+    background: rgba(255,255,255,0.25); color: #fff; margin-bottom: 10px;
+  }
+  .model-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+  .model-desc { font-size: 13px; color: rgba(255,255,255,0.83); line-height: 1.6; }
+  .model-stats { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+  .model-stat {
+    background: rgba(255,255,255,0.18); border-radius: 10px; padding: 8px 14px;
+    font-size: 12px; color: #fff;
+  }
+  .model-stat-val { font-weight: 800; font-size: 13px; }
+  .model-stat-key { font-size: 10px; opacity: 0.75; margin-top: 1px; }
+
+  .model-body { padding: 22px 28px; }
+
+  .tier-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  .tier-box { border-radius: 14px; padding: 14px 16px; }
+  .tier-label { font-size: 10px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+  .tier-item { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 6px; font-size: 13px; line-height: 1.45; }
+  .tier-dot { font-size: 12px; margin-top: 1px; flex-shrink: 0; }
+
+  .revenue-title { font-size: 13px; font-weight: 800; color: var(--ink); margin-bottom: 10px; }
+  .revenue-bar { margin-bottom: 10px; }
+  .revenue-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .revenue-bar-track { height: 8px; background: #f0f0f0; border-radius: 999px; overflow: hidden; }
+  .revenue-bar-fill { height: 100%; border-radius: 999px; transition: width 1s ease; }
+
+  .proscons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .pros-box { background: var(--green-surface); border-radius: 12px; padding: 12px 14px; }
+  .cons-box { background: #fce4ec; border-radius: 12px; padding: 12px 14px; }
+  .pc-title { font-size: 10px; font-weight: 900; letter-spacing: 1px; margin-bottom: 8px; }
+  .pc-item { font-size: 12px; line-height: 1.5; margin-bottom: 4px; display: flex; gap: 6px; }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-table { width: 100%; border-collapse: collapse; }
+  .compare-table th {
+    padding: 12px 16px; font-size: 12px; font-weight: 800; letter-spacing: 0.5px;
+    text-align: center; border-bottom: 2px solid var(--green-surface);
+  }
+  .compare-table th:first-child { text-align: left; }
+  .compare-table td {
+    padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #f5f5f5;
+    text-align: center;
+  }
+  .compare-table td:first-child { text-align: left; font-weight: 700; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:hover td { background: #fafafa; }
+  .check { color: var(--green); font-weight: 800; }
+  .cross { color: #bdbdbd; }
+  .partial { color: var(--orange); font-weight: 700; font-size: 12px; }
+
+  /* ── ROADMAP ── */
+  .roadmap { position: relative; padding-left: 32px; }
+  .roadmap::before {
+    content: ''; position: absolute; left: 10px; top: 12px; bottom: 12px;
+    width: 2px; background: linear-gradient(to bottom, var(--green), var(--teal));
+    border-radius: 2px;
+  }
+  .roadmap-item { position: relative; margin-bottom: 28px; }
+  .roadmap-dot {
+    position: absolute; left: -28px; top: 12px;
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 3px solid var(--card);
+    box-shadow: 0 0 0 2px currentColor;
+  }
+  .roadmap-phase {
+    font-size: 11px; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .roadmap-title { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+  .roadmap-items { display: flex; flex-wrap: wrap; gap: 8px; }
+  .roadmap-chip {
+    background: var(--card); border: 1.5px solid var(--border);
+    border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 600; color: var(--muted);
+  }
+  .roadmap-revenue {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 10px; background: var(--green-surface); border-radius: 10px;
+    padding: 7px 14px; font-size: 13px; font-weight: 700; color: var(--green);
+  }
+
+  /* ── PRICING VISUAL ── */
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 600px) { .pricing-grid { grid-template-columns: 1fr; } }
+  .pricing-card { border-radius: 22px; overflow: hidden; border: 2px solid var(--border); background: var(--card); transition: transform 0.2s, box-shadow 0.2s; }
+  .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.11); }
+  .pricing-card.featured { border-color: var(--green); box-shadow: 0 0 0 4px rgba(46,125,50,0.1); }
+  .pricing-top { padding: 24px 22px; text-align: center; }
+  .pricing-name { font-size: 12px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .pricing-price { font-family: 'Fraunces', serif; font-size: 40px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+  .pricing-period { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .pricing-cta {
+    display: block; width: 100%; padding: 11px; border-radius: 12px;
+    font-size: 14px; font-weight: 800; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .pricing-features { padding: 20px 22px; border-top: 1px solid var(--border); }
+  .pricing-feature { display: flex; align-items: center; gap: 9px; margin-bottom: 9px; font-size: 13px; }
+
+  /* ── RECOMMENDED BADGE ── */
+  .rec-badge {
+    background: var(--green); color: #fff;
+    font-size: 10px; font-weight: 900; letter-spacing: 1px;
+    padding: 3px 10px; border-radius: 999px; text-transform: uppercase;
+    display: inline-block; margin-bottom: 8px;
+  }
+
+  /* ── FOOTER ── */
+  .footer { padding: 48px 0 60px; text-align: center; }
+  .footer p { font-size: 13px; color: var(--soft); line-height: 1.8; }
+  .footer strong { color: var(--green); }
+
+  /* ── ANIM ── */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-up { animation: fadeUp 0.5s ease forwards; }
+  .delay-1 { animation-delay: 0.1s; opacity: 0; }
+  .delay-2 { animation-delay: 0.2s; opacity: 0; }
+  .delay-3 { animation-delay: 0.3s; opacity: 0; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-badge">🌿 FoodSafe · Business Model Documentation</div>
+  <h1>How FoodSafe<br/>Makes Money</h1>
+  <p>A complete breakdown of 5 revenue strategies — from day-one freemium to enterprise data licensing. Built around real app features.</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">5</div>
+      <div class="hero-stat-label">Revenue Models</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">12</div>
+      <div class="hero-stat-label">App Features</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">3</div>
+      <div class="hero-stat-label">Pricing Tiers</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">$40K+</div>
+      <div class="hero-stat-label">Monthly Potential</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════════
+     APP FEATURES MAP
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">⚙️ App Features</div>
+  <h2 class="section-title">What FoodSafe Does</h2>
+  <p class="section-sub">Every feature mapped to a pricing tier — Free, Premium, or Enterprise.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card fade-up delay-1">
+      <div class="feature-icon">📷</div>
+      <div class="feature-name">Barcode Scanner</div>
+      <div class="feature-desc">Scan real product barcodes. Live camera with animated scan line, torch support, and instant lookup from 3M+ products via Open Food Facts.</div>
+      <span class="feature-tier" style="background:#e8f5e9;color:#2e7d32">Free · 10/mo &nbsp;|&nbsp; Premium · Unlimited</span>
+    </div>
+    <div class="feature-card fade-up delay-1">
+      <div class="feature-icon">🛡️</div>
+      <div class="feature-name">Safety Rating Engine</div>
+      <div class="feature-desc">Analyzes every ingredient against your conditions. Returns SAFE / CAUTION / AVOID verdict with full explanations for each flagged item.</div>
+      <span class="feature-tier" style="background:#e8f5e9;color:#2e7d32">All Tiers · Core Feature</span>
+    </div>
+    <div class="feature-card fade-up delay-2">
+      <div class="feature-icon">🩺</div>
+      <div class="feature-name">Health Conditions</div>
+      <div class="feature-desc">Diabetes, Gluten Allergy, Peanut Allergy, Vegan, Vegetarian. Checks 60+ flagged ingredients per condition with clinical-grade explanations.</div>
+      <span class="feature-tier" style="background:#fff3e0;color:#e65100">Free · 2 conditions &nbsp;|&nbsp; Premium · All 5</span>
+    </div>
+    <div class="feature-card fade-up delay-2">
+      <div class="feature-icon">🥗</div>
+      <div class="feature-name">Dietary Preferences</div>
+      <div class="feature-desc">Configure personal dietary preferences beyond conditions — low-sodium, low-carb, halal, kosher, lactose-free. Custom ingredient blacklists.</div>
+      <span class="feature-tier" style="background:#f3e5f5;color:#6a1b9a">Premium · Full Config</span>
+    </div>
+    <div class="feature-card fade-up delay-2">
+      <div class="feature-icon">🚨</div>
+      <div class="feature-name">Health Condition Alerts</div>
+      <div class="feature-desc">Real-time push notifications when a scanned product is dangerous. Weekly digest of risky products in your area. Emergency alert for severe allergens.</div>
+      <span class="feature-tier" style="background:#f3e5f5;color:#6a1b9a">Premium · Real-time Alerts</span>
+    </div>
+    <div class="feature-card fade-up delay-3">
+      <div class="feature-icon">💡</div>
+      <div class="feature-name">Smart Recommendations</div>
+      <div class="feature-desc">When a product is AVOID, suggest 3 safer alternatives from the same category that match your conditions. Powered by ingredient similarity engine.</div>
+      <span class="feature-tier" style="background:#f3e5f5;color:#6a1b9a">Premium · AI-Powered</span>
+    </div>
+    <div class="feature-card fade-up delay-3">
+      <div class="feature-icon">🕐</div>
+      <div class="feature-name">Scan History</div>
+      <div class="feature-desc">Persistent log of every product you've scanned, with rating, date, brand, and flagged ingredient count. Export as PDF for your dietitian.</div>
+      <span class="feature-tier" style="background:#fff3e0;color:#e65100">Free · Last 5 &nbsp;|&nbsp; Premium · Unlimited</span>
+    </div>
+    <div class="feature-card fade-up delay-3">
+      <div class="feature-icon">📝</div>
+      <div class="feature-name">Manual Ingredient Entry</div>
+      <div class="feature-desc">Paste any ingredient list for analysis — for products not in the database, homemade food, or restaurant menus. Works without a barcode.</div>
+      <span class="feature-tier" style="background:#e8f5e9;color:#2e7d32">All Tiers · Always Free</span>
+    </div>
+    <div class="feature-card fade-up delay-1">
+      <div class="feature-icon">📚</div>
+      <div class="feature-name">Ingredient Education</div>
+      <div class="feature-desc">Expandable articles explaining why each ingredient is flagged — glycemic index, hidden gluten sources, peanut cross-contamination, non-vegan additives.</div>
+      <span class="feature-tier" style="background:#fff3e0;color:#e65100">Free · Basic &nbsp;|&nbsp; Premium · Full Library</span>
+    </div>
+    <div class="feature-card fade-up delay-2">
+      <div class="feature-icon">👨‍👩‍👧</div>
+      <div class="feature-name">Family Profiles</div>
+      <div class="feature-desc">Create separate profiles for each family member with their own conditions and dietary preferences. Scan on behalf of any profile.</div>
+      <span class="feature-tier" style="background:#f3e5f5;color:#6a1b9a">Premium · Up to 5 Profiles</span>
+    </div>
+    <div class="feature-card fade-up delay-3">
+      <div class="feature-icon">📊</div>
+      <div class="feature-name">Nutrition Panel</div>
+      <div class="feature-desc">Full nutrition facts per 100g, Nutri-Score grade (A–E), NOVA processing group, allergen declarations, and serving size info from Open Food Facts.</div>
+      <span class="feature-tier" style="background:#e8f5e9;color:#2e7d32">All Tiers · Included</span>
+    </div>
+    <div class="feature-card fade-up delay-1">
+      <div class="feature-icon">🔍</div>
+      <div class="feature-name">Product Search</div>
+      <div class="feature-desc">Search 3M+ products by name or brand without scanning. Browse results and analyze any product directly from the search list.</div>
+      <span class="feature-tier" style="background:#e8f5e9;color:#2e7d32">All Tiers · Included</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PRICING TIERS
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">💳 Pricing</div>
+  <h2 class="section-title">Three Clear Tiers</h2>
+  <p class="section-sub">Designed so users naturally upgrade — the free tier is genuinely useful, but premium is noticeably better.</p>
+
+  <div class="pricing-grid">
+    <!-- Free -->
+    <div class="pricing-card">
+      <div class="pricing-top">
+        <div class="pricing-name" style="color:var(--muted)">Free</div>
+        <div class="pricing-price" style="color:var(--ink)">$0</div>
+        <div class="pricing-period">forever</div>
+        <button class="pricing-cta" style="background:#f5f5f5;color:var(--muted)">Get Started</button>
+      </div>
+      <div class="pricing-features">
+        <div class="pricing-feature"><span class="check">✓</span> 10 barcode scans/month</div>
+        <div class="pricing-feature"><span class="check">✓</span> 2 health conditions</div>
+        <div class="pricing-feature"><span class="check">✓</span> Basic safety rating</div>
+        <div class="pricing-feature"><span class="check">✓</span> Last 5 scan history</div>
+        <div class="pricing-feature"><span class="check">✓</span> Manual ingredient entry</div>
+        <div class="pricing-feature"><span class="check">✓</span> Basic nutrition panel</div>
+        <div class="pricing-feature"><span class="cross">✗</span> <span style="color:#bdbdbd">Dietary preference config</span></div>
+        <div class="pricing-feature"><span class="cross">✗</span> <span style="color:#bdbdbd">Health alerts</span></div>
+        <div class="pricing-feature"><span class="cross">✗</span> <span style="color:#bdbdbd">Recommendations</span></div>
+        <div class="pricing-feature"><span class="cross">✗</span> <span style="color:#bdbdbd">Family profiles</span></div>
+      </div>
+    </div>
+
+    <!-- Premium — Featured -->
+    <div class="pricing-card featured">
+      <div class="pricing-top" style="background:linear-gradient(135deg,#1b5e20,#388e3c);border-radius:0">
+        <div class="rec-badge">★ Most Popular</div>
+        <div class="pricing-name" style="color:rgba(255,255,255,0.75)">Premium</div>
+        <div class="pricing-price" style="color:#fff">$2.99</div>
+        <div class="pricing-period" style="color:rgba(255,255,255,0.7)">per month · $19.99/year</div>
+        <button class="pricing-cta" style="background:rgba(255,255,255,0.2);color:#fff;border:1.5px solid rgba(255,255,255,0.35)">Upgrade Now</button>
+      </div>
+      <div class="pricing-features">
+        <div class="pricing-feature"><span class="check">✓</span> <strong>Unlimited</strong> barcode scans</div>
+        <div class="pricing-feature"><span class="check">✓</span> <strong>All 5</strong> health conditions</div>
+        <div class="pricing-feature"><span class="check">✓</span> Dietary preference config</div>
+        <div class="pricing-feature"><span class="check">✓</span> Real-time health alerts</div>
+        <div class="pricing-feature"><span class="check">✓</span> Smart recommendations</div>
+        <div class="pricing-feature"><span class="check">✓</span> Unlimited scan history + export</div>
+        <div class="pricing-feature"><span class="check">✓</span> Family profiles (up to 5)</div>
+        <div class="pricing-feature"><span class="check">✓</span> Full education library</div>
+        <div class="pricing-feature"><span class="check">✓</span> Product search</div>
+        <div class="pricing-feature"><span class="check">✓</span> Priority support</div>
+      </div>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="pricing-card">
+      <div class="pricing-top">
+        <div class="pricing-name" style="color:var(--purple)">Enterprise</div>
+        <div class="pricing-price" style="color:var(--ink)">$99</div>
+        <div class="pricing-period">per month, per organization</div>
+        <button class="pricing-cta" style="background:var(--purple-surface);color:var(--purple)">Contact Sales</button>
+      </div>
+      <div class="pricing-features">
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> Everything in Premium</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> Custom branding / white-label</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> Admin dashboard</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> Unlimited user management</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> API access</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> Custom ingredient rules</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> Dedicated account manager</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> SLA uptime guarantee</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> Onboarding & training</div>
+        <div class="pricing-feature"><span style="color:var(--purple);font-weight:800">✓</span> Annual contract pricing</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     5 REVENUE MODELS
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">💰 Revenue Models</div>
+  <h2 class="section-title">5 Ways to Monetize</h2>
+  <p class="section-sub">Each model works independently — but the real power is stacking them in sequence as you grow.</p>
+
+  <div class="models-grid">
+
+    <!-- Model 1: Freemium -->
+    <div class="model-card">
+      <div class="model-header" style="background:linear-gradient(135deg,#1b5e20,#43a047)">
+        <div class="model-tag">★ RECOMMENDED · MODEL 1</div>
+        <div class="model-title">🌱 Freemium Subscription</div>
+        <div class="model-desc">Free users hit the 10-scan limit within a week of regular grocery shopping. Paid tier feels like a natural upgrade, not a paywall.</div>
+        <div class="model-stats">
+          <div class="model-stat"><div class="model-stat-val">$2.99/mo</div><div class="model-stat-key">Price Point</div></div>
+          <div class="model-stat"><div class="model-stat-val">$19.99/yr</div><div class="model-stat-key">Annual</div></div>
+          <div class="model-stat"><div class="model-stat-val">Easy</div><div class="model-stat-key">Difficulty</div></div>
+          <div class="model-stat"><div class="model-stat-val">Day 1</div><div class="model-stat-key">Timeline</div></div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div class="tier-row">
+          <div class="tier-box" style="background:#f5f5f5">
+            <div class="tier-label" style="color:var(--muted)">FREE</div>
+            <div class="tier-item"><span class="tier-dot" style="color:#90a4ae">○</span>10 scans/month</div>
+            <div class="tier-item"><span class="tier-dot" style="color:#90a4ae">○</span>2 health conditions</div>
+            <div class="tier-item"><span class="tier-dot" style="color:#90a4ae">○</span>Basic rating only</div>
+            <div class="tier-item"><span class="tier-dot" style="color:#90a4ae">○</span>5 scan history</div>
+          </div>
+          <div class="tier-box" style="background:var(--green-surface)">
+            <div class="tier-label" style="color:var(--green)">PREMIUM</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--green)">✓</span>Unlimited scans</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--green)">✓</span>All 5 conditions</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--green)">✓</span>Alerts + recommendations</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--green)">✓</span>Family profiles</div>
+          </div>
+        </div>
+        <div class="revenue-title">📈 Revenue Scenarios</div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>1,000 users · 5% convert</span><span style="color:var(--green);font-weight:700">$150/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:4%;background:#a5d6a7"></div></div>
+        </div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>10,000 users · 5% convert</span><span style="color:var(--green);font-weight:700">$1,500/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:22%;background:#66bb6a"></div></div>
+        </div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>100,000 users · 8% convert</span><span style="color:var(--green);font-weight:700">$24,000/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:78%;background:#2e7d32"></div></div>
+        </div>
+        <div class="proscons">
+          <div class="pros-box">
+            <div class="pc-title" style="color:var(--green)">✓ PROS</div>
+            <div class="pc-item"><span>+</span>Recurring revenue</div>
+            <div class="pc-item"><span>+</span>Easy to A/B test price</div>
+            <div class="pc-item"><span>+</span>Strong user retention</div>
+          </div>
+          <div class="cons-box">
+            <div class="pc-title" style="color:#c62828">− CONS</div>
+            <div class="pc-item"><span>−</span>Needs large user base</div>
+            <div class="pc-item"><span>−</span>Free users cost money</div>
+            <div class="pc-item"><span>−</span>Slow to ramp up</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model 2: One-Time -->
+    <div class="model-card">
+      <div class="model-header" style="background:linear-gradient(135deg,#0d47a1,#1976d2)">
+        <div class="model-tag">SIMPLE · MODEL 2</div>
+        <div class="model-title">💳 One-Time Purchase</div>
+        <div class="model-desc">Pay once, own forever. Higher conversion rate than subscriptions — users hate recurring fees. Best as a complementary option alongside subscriptions.</div>
+        <div class="model-stats">
+          <div class="model-stat"><div class="model-stat-val">$4.99</div><div class="model-stat-key">Price</div></div>
+          <div class="model-stat"><div class="model-stat-val">20–30%</div><div class="model-stat-key">Conversion</div></div>
+          <div class="model-stat"><div class="model-stat-val">Easy</div><div class="model-stat-key">Difficulty</div></div>
+          <div class="model-stat"><div class="model-stat-val">Day 1</div><div class="model-stat-key">Timeline</div></div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div class="tier-row">
+          <div class="tier-box" style="background:#f5f5f5">
+            <div class="tier-label" style="color:var(--muted)">FREE</div>
+            <div class="tier-item"><span class="tier-dot" style="color:#90a4ae">○</span>3 scans/day</div>
+            <div class="tier-item"><span class="tier-dot" style="color:#90a4ae">○</span>1 condition</div>
+            <div class="tier-item"><span class="tier-dot" style="color:#90a4ae">○</span>Basic rating</div>
+          </div>
+          <div class="tier-box" style="background:var(--blue-surface)">
+            <div class="tier-label" style="color:var(--blue)">LIFETIME $4.99</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--blue)">✓</span>Everything unlocked</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--blue)">✓</span>All future updates</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--blue)">✓</span>No recurring fee ever</div>
+          </div>
+        </div>
+        <div class="revenue-title">📈 Revenue Scenarios</div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>500 downloads · 20% buy</span><span style="color:var(--blue);font-weight:700">$499/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:8%;background:#90caf9"></div></div>
+        </div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>2,000 downloads · 20% buy</span><span style="color:var(--blue);font-weight:700">$2,000/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:28%;background:#42a5f5"></div></div>
+        </div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>10,000 downloads · 20% buy</span><span style="color:var(--blue);font-weight:700">$10,000/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:50%;background:#1565c0"></div></div>
+        </div>
+        <div class="proscons">
+          <div class="pros-box">
+            <div class="pc-title" style="color:var(--green)">✓ PROS</div>
+            <div class="pc-item"><span>+</span>Higher conversion rate</div>
+            <div class="pc-item"><span>+</span>Users strongly prefer it</div>
+            <div class="pc-item"><span>+</span>Simple to implement</div>
+          </div>
+          <div class="cons-box">
+            <div class="pc-title" style="color:#c62828">− CONS</div>
+            <div class="pc-item"><span>−</span>No recurring revenue</div>
+            <div class="pc-item"><span>−</span>Revenue spikes then drops</div>
+            <div class="pc-item"><span>−</span>Hard to raise price later</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model 3: B2B -->
+    <div class="model-card">
+      <div class="model-header" style="background:linear-gradient(135deg,#4a148c,#7b1fa2)">
+        <div class="model-tag">HIGH VALUE · MODEL 3</div>
+        <div class="model-title">🏥 B2B / White Label</div>
+        <div class="model-desc">Sell a branded version to gyms, hospitals, dietitian clinics and corporate wellness programs. One client = more than 1,000 individual users in revenue.</div>
+        <div class="model-stats">
+          <div class="model-stat"><div class="model-stat-val">$99–$499</div><div class="model-stat-key">Per Org/Month</div></div>
+          <div class="model-stat"><div class="model-stat-val">High</div><div class="model-stat-key">Revenue/Client</div></div>
+          <div class="model-stat"><div class="model-stat-val">Hard</div><div class="model-stat-key">Difficulty</div></div>
+          <div class="model-stat"><div class="model-stat-val">6–12 mo</div><div class="model-stat-key">Timeline</div></div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div class="tier-row">
+          <div class="tier-box" style="background:var(--purple-surface)">
+            <div class="tier-label" style="color:var(--purple)">WHO BUYS</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--purple)">→</span>Gyms & fitness centers</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--purple)">→</span>Dietitian practices</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--purple)">→</span>Hospital nutrition depts</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--purple)">→</span>Corporate wellness</div>
+          </div>
+          <div class="tier-box" style="background:var(--purple-surface)">
+            <div class="tier-label" style="color:var(--purple)">THEY GET</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--purple)">✓</span>Custom branded app</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--purple)">✓</span>Admin dashboard</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--purple)">✓</span>Patient management</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--purple)">✓</span>API integration</div>
+          </div>
+        </div>
+        <div class="revenue-title">📈 Revenue Scenarios</div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>10 gyms × $99/mo</span><span style="color:var(--purple);font-weight:700">$990/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:10%;background:#ce93d8"></div></div>
+        </div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>30 clinics × $199/mo</span><span style="color:var(--purple);font-weight:700">$5,970/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:45%;background:#ab47bc"></div></div>
+        </div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>20 hospitals × $499/mo</span><span style="color:var(--purple);font-weight:700">$9,980/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:75%;background:#7b1fa2"></div></div>
+        </div>
+        <div class="proscons">
+          <div class="pros-box">
+            <div class="pc-title" style="color:var(--green)">✓ PROS</div>
+            <div class="pc-item"><span>+</span>Highest revenue per client</div>
+            <div class="pc-item"><span>+</span>Long-term stable contracts</div>
+            <div class="pc-item"><span>+</span>Less marketing needed</div>
+          </div>
+          <div class="cons-box">
+            <div class="pc-title" style="color:#c62828">− CONS</div>
+            <div class="pc-item"><span>−</span>Long sales cycles</div>
+            <div class="pc-item"><span>−</span>High support burden</div>
+            <div class="pc-item"><span>−</span>Needs enterprise features</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model 4: Affiliate -->
+    <div class="model-card">
+      <div class="model-header" style="background:linear-gradient(135deg,#bf360c,#f4511e)">
+        <div class="model-tag">PASSIVE INCOME · MODEL 4</div>
+        <div class="model-title">🤝 Affiliate & Partnerships</div>
+        <div class="model-desc">When a product is AVOID, show 3 safer alternatives with a "Buy on Amazon" button. You earn commission. Transparent, opt-in, genuinely useful.</div>
+        <div class="model-stats">
+          <div class="model-stat"><div class="model-stat-val">3–8%</div><div class="model-stat-key">Commission</div></div>
+          <div class="model-stat"><div class="model-stat-val">Passive</div><div class="model-stat-key">Effort</div></div>
+          <div class="model-stat"><div class="model-stat-val">Medium</div><div class="model-stat-key">Difficulty</div></div>
+          <div class="model-stat"><div class="model-stat-val">3–6 mo</div><div class="model-stat-key">Timeline</div></div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div class="tier-row">
+          <div class="tier-box" style="background:#fbe9e7">
+            <div class="tier-label" style="color:var(--orange)">PARTNERS</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--orange)">→</span>Amazon (3–4%)</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--orange)">→</span>iHerb (up to 8%)</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--orange)">→</span>Thrive Market ($20/signup)</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--orange)">→</span>Sponsored brand slots</div>
+          </div>
+          <div class="tier-box" style="background:#fbe9e7">
+            <div class="tier-label" style="color:var(--orange)">PLACEMENT</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--orange)">→</span>After AVOID result</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--orange)">→</span>"Safe Alternative" card</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--orange)">→</span>Education articles</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--orange)">→</span>Weekly digest email</div>
+          </div>
+        </div>
+        <div class="revenue-title">📈 Revenue Scenarios</div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>10K users · 2% click · 10% buy</span><span style="color:var(--orange);font-weight:700">~$60/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:5%;background:#ffab91"></div></div>
+        </div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>100K users · 2% click · 10% buy</span><span style="color:var(--orange);font-weight:700">~$600/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:22%;background:#ff7043"></div></div>
+        </div>
+        <div class="revenue-bar">
+          <div class="revenue-bar-label"><span>500K users + sponsored slots</span><span style="color:var(--orange);font-weight:700">$3,000–$5,000/mo</span></div>
+          <div class="revenue-bar-track"><div class="revenue-bar-fill" style="width:55%;background:#e64a19"></div></div>
+        </div>
+        <div class="proscons">
+          <div class="pros-box">
+            <div class="pc-title" style="color:var(--green)">✓ PROS</div>
+            <div class="pc-item"><span>+</span>Zero cost to start</div>
+            <div class="pc-item"><span>+</span>100% passive income</div>
+            <div class="pc-item"><span>+</span>Adds value for users</div>
+          </div>
+          <div class="cons-box">
+            <div class="pc-title" style="color:#c62828">− CONS</div>
+            <div class="pc-item"><span>−</span>Very low early revenue</div>
+            <div class="pc-item"><span>−</span>Needs scale to matter</div>
+            <div class="pc-item"><span>−</span>Must disclose clearly</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Model 5: Data -->
+    <div class="model-card" style="grid-column: 1 / -1">
+      <div class="model-header" style="background:linear-gradient(135deg,#004d40,#00897b);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+        <div>
+          <div class="model-tag">FUTURE · MODEL 5</div>
+          <div class="model-title">📊 Anonymized Data Insights</div>
+          <div class="model-desc" style="max-width:500px">After reaching 100K+ users, aggregate scan data into market intelligence reports. Sell to food brands wanting to understand consumer health concerns at scale.</div>
+        </div>
+        <div class="model-stats" style="margin-top:0">
+          <div class="model-stat"><div class="model-stat-val">$500–$5K</div><div class="model-stat-key">Per Report</div></div>
+          <div class="model-stat"><div class="model-stat-val">Very Hard</div><div class="model-stat-key">Difficulty</div></div>
+          <div class="model-stat"><div class="model-stat-val">Year 2+</div><div class="model-stat-key">Timeline</div></div>
+          <div class="model-stat"><div class="model-stat-val">$50K+/mo</div><div class="model-stat-key">Peak Potential</div></div>
+        </div>
+      </div>
+      <div class="model-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:18px">
+          <div class="tier-box" style="background:var(--teal-surface)">
+            <div class="tier-label" style="color:var(--teal)">WHAT YOU SELL</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">→</span>Top avoided ingredients by region</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">→</span>Allergy trend analysis</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">→</span>Consumer sentiment on ingredients</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">→</span>Health condition demographics</div>
+          </div>
+          <div class="tier-box" style="background:var(--teal-surface)">
+            <div class="tier-label" style="color:var(--teal)">WHO BUYS IT</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">→</span>Food brands reformulating products</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">→</span>Market research firms</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">→</span>Academic researchers</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">→</span>Healthcare organizations</div>
+          </div>
+          <div class="tier-box" style="background:var(--teal-surface)">
+            <div class="tier-label" style="color:var(--teal)">LEGAL REQUIREMENTS</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">!</span>Fully anonymized & aggregated</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">!</span>GDPR & CCPA compliant</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">!</span>Disclosed in privacy policy</div>
+            <div class="tier-item"><span class="tier-dot" style="color:var(--teal)">!</span>User opt-out mechanism</div>
+          </div>
+        </div>
+        <div class="proscons">
+          <div class="pros-box">
+            <div class="pc-title" style="color:var(--green)">✓ PROS</div>
+            <div class="pc-item"><span>+</span>Extremely high margins — data costs nothing extra to produce</div>
+            <div class="pc-item"><span>+</span>Unique competitive moat nobody else can replicate</div>
+            <div class="pc-item"><span>+</span>Scales with zero additional work</div>
+          </div>
+          <div class="cons-box">
+            <div class="pc-title" style="color:#c62828">− CONS</div>
+            <div class="pc-item"><span>−</span>Needs 100K+ users before data is meaningful</div>
+            <div class="pc-item"><span>−</span>Complex privacy and legal requirements</div>
+            <div class="pc-item"><span>−</span>Trust-sensitive — must be fully transparent with users</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     COMPARISON TABLE
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">📋 Comparison</div>
+  <h2 class="section-title">All Models at a Glance</h2>
+  <p class="section-sub">Side-by-side comparison of every monetization strategy.</p>
+
+  <div class="card">
+    <div style="overflow-x:auto">
+      <table class="compare-table">
+        <thead>
+          <tr style="background:#f8fdf8">
+            <th style="color:var(--muted);padding-left:24px">Model</th>
+            <th style="color:var(--muted)">Price</th>
+            <th style="color:var(--muted)">Revenue Potential</th>
+            <th style="color:var(--muted)">Difficulty</th>
+            <th style="color:var(--muted)">Timeline</th>
+            <th style="color:var(--muted)">Recurring?</th>
+            <th style="color:var(--muted)">Needs Scale?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding-left:24px">🌱 Freemium</td>
+            <td>$2.99/mo</td>
+            <td><span style="background:var(--green-surface);color:var(--green);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">$8K–$40K/mo</span></td>
+            <td class="partial">Easy</td>
+            <td>Day 1</td>
+            <td class="check">✓ Yes</td>
+            <td class="partial">Medium</td>
+          </tr>
+          <tr>
+            <td style="padding-left:24px">💳 One-Time Purchase</td>
+            <td>$4.99</td>
+            <td><span style="background:var(--blue-surface);color:var(--blue);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">$3K–$15K/mo</span></td>
+            <td class="partial">Easy</td>
+            <td>Day 1</td>
+            <td class="cross">✗ No</td>
+            <td class="partial">Medium</td>
+          </tr>
+          <tr>
+            <td style="padding-left:24px">🏥 B2B / White Label</td>
+            <td>$99–$499/org</td>
+            <td><span style="background:var(--purple-surface);color:var(--purple);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">$10K–$100K/mo</span></td>
+            <td style="color:#c62828;font-weight:700">Hard</td>
+            <td>6–12 months</td>
+            <td class="check">✓ Yes</td>
+            <td class="cross">No</td>
+          </tr>
+          <tr>
+            <td style="padding-left:24px">🤝 Affiliate</td>
+            <td>3–8% commission</td>
+            <td><span style="background:#fbe9e7;color:var(--orange);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">$500–$5K/mo</span></td>
+            <td class="partial">Medium</td>
+            <td>3–6 months</td>
+            <td class="check">✓ Passive</td>
+            <td style="color:#c62828;font-weight:700">High</td>
+          </tr>
+          <tr>
+            <td style="padding-left:24px">📊 Data Insights</td>
+            <td>$500–$5K/report</td>
+            <td><span style="background:var(--teal-surface);color:var(--teal);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700">$5K–$50K/mo</span></td>
+            <td style="color:#c62828;font-weight:700">Very Hard</td>
+            <td>Year 2+</td>
+            <td class="partial">Varies</td>
+            <td style="color:#c62828;font-weight:700">Very High</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     GROWTH ROADMAP
+═══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">🚀 Roadmap</div>
+  <h2 class="section-title">Revenue Growth Timeline</h2>
+  <p class="section-sub">Stack models in sequence — each phase unlocks the next revenue stream.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start">
+    <div class="roadmap">
+      <div class="roadmap-item">
+        <div class="roadmap-dot" style="color:var(--green);background:var(--green)"></div>
+        <div class="roadmap-phase" style="color:var(--green)">Month 1–2</div>
+        <div class="roadmap-title">Launch Freemium + One-Time</div>
+        <div class="roadmap-items">
+          <span class="roadmap-chip">Integrate RevenueCat</span>
+          <span class="roadmap-chip">$2.99/mo subscription</span>
+          <span class="roadmap-chip">$4.99 lifetime option</span>
+          <span class="roadmap-chip">10 scan free limit</span>
+          <span class="roadmap-chip">Push notifications for alerts</span>
+        </div>
+        <div class="roadmap-revenue">💰 Target: $500–$1,500/mo</div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-dot" style="color:var(--orange);background:var(--orange)"></div>
+        <div class="roadmap-phase" style="color:var(--orange)">Month 3–6</div>
+        <div class="roadmap-title">Add Affiliate Income</div>
+        <div class="roadmap-items">
+          <span class="roadmap-chip">Amazon affiliate integration</span>
+          <span class="roadmap-chip">Safe alternatives on AVOID</span>
+          <span class="roadmap-chip">iHerb partnership</span>
+          <span class="roadmap-chip">Thrive Market referrals</span>
+        </div>
+        <div class="roadmap-revenue">💰 Target: $1,500–$4,000/mo</div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-dot" style="color:var(--purple);background:var(--purple)"></div>
+        <div class="roadmap-phase" style="color:var(--purple)">Month 7–12</div>
+        <div class="roadmap-title">B2B Pilot Program</div>
+        <div class="roadmap-items">
+          <span class="roadmap-chip">Approach 10 local gyms/clinics</span>
+          <span class="roadmap-chip">Build admin dashboard</span>
+          <span class="roadmap-chip">First enterprise contracts</span>
+          <span class="roadmap-chip">White-label pilot</span>
+        </div>
+        <div class="roadmap-revenue">💰 Target: $5,000–$15,000/mo</div>
+      </div>
+
+      <div class="roadmap-item">
+        <div class="roadmap-dot" style="color:var(--teal);background:var(--teal)"></div>
+        <div class="roadmap-phase" style="color:var(--teal)">Year 2+</div>
+        <div class="roadmap-title">Data Monetization</div>
+        <div class="roadmap-items">
+          <span class="roadmap-chip">100K+ users milestone</span>
+          <span class="roadmap-chip">First insights report</span>
+          <span class="roadmap-chip">API data tier</span>
+          <span class="roadmap-chip">Brand research partnerships</span>
+        </div>
+        <div class="roadmap-revenue">💰 Target: $20,000–$50,000/mo</div>
+      </div>
+    </div>
+
+    <!-- Revenue chart -->
+    <div>
+      <div class="card card-pad" style="margin-bottom:16px">
+        <div style="font-size:14px;font-weight:800;color:var(--ink);margin-bottom:18px">📈 Projected Monthly Revenue Stack</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:12px;font-weight:700;color:var(--muted);width:62px;flex-shrink:0">Month 2</span>
+            <div style="flex:1;height:24px;border-radius:999px;overflow:hidden;display:flex;background:#f5f5f5">
+              <div style="width:12%;background:#2e7d32;height:100%"></div>
+              <div style="width:8%;background:#1565c0;height:100%"></div>
+            </div>
+            <span style="font-size:12px;font-weight:800;color:var(--ink);width:72px;text-align:right">$1,200/mo</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:12px;font-weight:700;color:var(--muted);width:62px;flex-shrink:0">Month 4</span>
+            <div style="flex:1;height:24px;border-radius:999px;overflow:hidden;display:flex;background:#f5f5f5">
+              <div style="width:20%;background:#2e7d32;height:100%"></div>
+              <div style="width:12%;background:#1565c0;height:100%"></div>
+              <div style="width:5%;background:#e65100;height:100%"></div>
+            </div>
+            <span style="font-size:12px;font-weight:800;color:var(--ink);width:72px;text-align:right">$3,000/mo</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:12px;font-weight:700;color:var(--muted);width:62px;flex-shrink:0">Month 8</span>
+            <div style="flex:1;height:24px;border-radius:999px;overflow:hidden;display:flex;background:#f5f5f5">
+              <div style="width:30%;background:#2e7d32;height:100%"></div>
+              <div style="width:12%;background:#1565c0;height:100%"></div>
+              <div style="width:8%;background:#e65100;height:100%"></div>
+              <div style="width:18%;background:#6a1b9a;height:100%"></div>
+            </div>
+            <span style="font-size:12px;font-weight:800;color:var(--ink);width:72px;text-align:right">$8,500/mo</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:12px;font-weight:700;color:var(--muted);width:62px;flex-shrink:0">Month 12</span>
+            <div style="flex:1;height:24px;border-radius:999px;overflow:hidden;display:flex;background:#f5f5f5">
+              <div style="width:35%;background:#2e7d32;height:100%"></div>
+              <div style="width:12%;background:#1565c0;height:100%"></div>
+              <div style="width:10%;background:#e65100;height:100%"></div>
+              <div style="width:22%;background:#6a1b9a;height:100%"></div>
+            </div>
+            <span style="font-size:12px;font-weight:800;color:var(--ink);width:72px;text-align:right">$14,000/mo</span>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:12px;font-weight:700;color:var(--muted);width:62px;flex-shrink:0">Year 2+</span>
+            <div style="flex:1;height:24px;border-radius:999px;overflow:hidden;display:flex;background:#f5f5f5">
+              <div style="width:40%;background:#2e7d32;height:100%"></div>
+              <div style="width:10%;background:#1565c0;height:100%"></div>
+              <div style="width:10%;background:#e65100;height:100%"></div>
+              <div style="width:25%;background:#6a1b9a;height:100%"></div>
+              <div style="width:15%;background:#00695c;height:100%"></div>
+            </div>
+            <span style="font-size:12px;font-weight:800;color:var(--ink);width:72px;text-align:right">$40,000+/mo</span>
+          </div>
+
+        </div>
+        <div style="display:flex;gap:14px;margin-top:16px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#2e7d32;display:inline-block"></span>Freemium</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#1565c0;display:inline-block"></span>One-Time</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#e65100;display:inline-block"></span>Affiliate</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#6a1b9a;display:inline-block"></span>B2B</span>
+          <span style="font-size:11px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#00695c;display:inline-block"></span>Data</span>
+        </div>
+      </div>
+
+      <div class="card card-pad" style="background:var(--green-surface);border-color:var(--green-light)">
+        <div style="font-size:14px;font-weight:800;color:var(--green);margin-bottom:12px">💡 Key Insight</div>
+        <p style="font-size:13px;color:#37474f;line-height:1.7;margin-bottom:12px">
+          The freemium model alone can reach <strong>$24,000/month</strong> with 100,000 users at an 8% conversion rate. That's achievable within 12–18 months with consistent ASO and social content.
+        </p>
+        <p style="font-size:13px;color:#37474f;line-height:1.7">
+          B2B is the <strong>highest ROI per effort</strong> once you have a working product — one hospital contract at $499/month equals 167 individual subscribers.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div class="footer">
+  <div class="container">
+    <p style="font-size:20px;margin-bottom:8px">🌿</p>
+    <p><strong>FoodSafe</strong> · Business Model Documentation<br/>
+    Built with React Native + Expo · Data from Open Food Facts · Monetization via RevenueCat</p>
+  </div>
+</div>
+
+<script>
+  // Animate bars on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.style.opacity = '1';
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
