@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
 import { useConditions, useHistory } from '../hooks/useStorage';
 import { useAppContext } from '../navigation';
+import { usePremiumContext } from '../context/PremiumContext';
 
 // ─── Reusable row inside a settings section ───────────────────────────────────
 function SettingsRow({ icon, label, value, onPress, last }) {
@@ -42,6 +43,7 @@ export default function ProfileScreen({ navigation }) {
   const { conditions } = useConditions();
   const { history } = useHistory();
   const { resetOnboarding } = useAppContext();
+  const { isPremium, remaining, restorePurchases } = usePremiumContext();
 
   const activeConditionCount = conditions.length;
 
@@ -98,6 +100,41 @@ export default function ProfileScreen({ navigation }) {
       </View>
 
       <View style={styles.content}>
+
+        {/* ── Subscription Status Card ── */}
+        {isPremium ? (
+          <View style={styles.premiumCard}>
+            <View style={styles.premiumCardLeft}>
+              <Text style={styles.premiumCrown}>👑</Text>
+              <View>
+                <Text style={styles.premiumTitle}>Premium Member</Text>
+                <Text style={styles.premiumSub}>All features unlocked</Text>
+              </View>
+            </View>
+            <TouchableOpacity onPress={() => {}} activeOpacity={0.7}>
+              <Text style={styles.manageLink}>Manage</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.freeCard}>
+            <View style={styles.freeCardTop}>
+              <View>
+                <Text style={styles.freePlanTitle}>Free Plan</Text>
+                <Text style={styles.freePlanSub}>
+                  {remaining > 0 ? `${remaining} scans left this week` : 'Weekly scan limit reached'}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.upgradeBtn}
+                onPress={() => navigation.navigate('Paywall')}
+                activeOpacity={0.88}
+              >
+                <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         {/* ── Account Settings ── */}
         <Section label="ACCOUNT SETTINGS">
           <SettingsRow
@@ -146,6 +183,11 @@ export default function ProfileScreen({ navigation }) {
             icon="info"
             label="About FoodSafe"
             onPress={() => navigation.navigate('AboutFoodSafe')}
+          />
+          <SettingsRow
+            icon="refresh-cw"
+            label="Restore Purchase"
+            onPress={restorePurchases}
             last
           />
         </Section>
@@ -247,6 +289,43 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.sm,
     gap: Spacing.sm,
   },
+
+  // Premium card
+  premiumCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.primary,
+    borderRadius: Radius.lg,
+    padding: 16,
+    ...Shadow.md,
+  },
+  premiumCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  premiumCrown: { fontSize: 28 },
+  premiumTitle: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  premiumSub:   { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
+  manageLink:   { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.85)', textDecorationLine: 'underline' },
+
+  // Free card
+  freeCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.outline,
+    ...Shadow.md,
+  },
+  freeCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  freePlanTitle: { fontSize: 15, fontWeight: '700', color: Colors.onSurface },
+  freePlanSub:   { fontSize: 12, color: Colors.onSurfaceMuted, marginTop: 2 },
+  upgradeBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: Radius.full,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    flexShrink: 0,
+  },
+  upgradeBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
 
   // Section block
   sectionBlock: {

@@ -1,5 +1,6 @@
 // src/screens/DietaryPreferencesScreen.js
 // Health condition toggle cards — extracted from original ProfileScreen.
+import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,12 +8,24 @@ import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
 import { useConditions } from '../hooks/useStorage';
 import { CONDITIONS } from '../engine/analyzer';
+import { usePremiumContext } from '../context/PremiumContext';
+import { UpgradeModal } from '../components/UpgradeModal';
+
+const FREE_CONDITION_LIMIT = 2;
 
 export default function DietaryPreferencesScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { conditions, toggleCondition } = useConditions();
+  const { isPremium } = usePremiumContext();
+  const [upgradeVisible, setUpgradeVisible] = useState(false);
 
   const handleToggle = async (cid) => {
+    const isActive = conditions.includes(cid);
+    // Gate: free users can only have 2 conditions enabled
+    if (!isActive && !isPremium && conditions.length >= FREE_CONDITION_LIMIT) {
+      setUpgradeVisible(true);
+      return;
+    }
     await Haptics.selectionAsync();
     toggleCondition(cid);
   };
@@ -37,8 +50,18 @@ export default function DietaryPreferencesScreen({ navigation }) {
           FoodSafe checks every scanned product against your active conditions.
         </Text>
 
-        {CONDITIONS.map(cond => {
+        {!isPremium && (
+          <View style={styles.freeBanner}>
+            <Feather name="lock" size={14} color={Colors.cautionText} />
+            <Text style={styles.freeBannerText}>
+              Free plan: up to {FREE_CONDITION_LIMIT} conditions. Upgrade for all 5.
+            </Text>
+          </View>
+        )}
+
+        {CONDITIONS.map((cond, idx) => {
           const active = conditions.includes(cond.id);
+          const isLocked = !isPremium && !active && conditions.length >= FREE_CONDITION_LIMIT;
           return (
             <TouchableOpacity
               key={cond.id}
@@ -47,6 +70,7 @@ export default function DietaryPreferencesScreen({ navigation }) {
               style={[
                 styles.conditionCard,
                 active && { borderColor: cond.color, backgroundColor: cond.bg },
+                isLocked && styles.conditionCardLocked,
               ]}
             >
               <View style={styles.conditionLeft}>
@@ -61,16 +85,20 @@ export default function DietaryPreferencesScreen({ navigation }) {
                     {cond.label}
                   </Text>
                   <Text style={styles.conditionStatus}>
-                    {active ? 'Active — scanning for issues' : 'Tap to enable'}
+                    {isLocked ? '🔒 Premium only' : active ? 'Active — scanning for issues' : 'Tap to enable'}
                   </Text>
                 </View>
               </View>
-              <Switch
-                value={active}
-                onValueChange={() => handleToggle(cond.id)}
-                trackColor={{ false: Colors.outline, true: cond.color }}
-                thumbColor={active ? '#fff' : '#f4f3f4'}
-              />
+              {isLocked ? (
+                <Feather name="lock" size={18} color={Colors.onSurfaceMuted} />
+              ) : (
+                <Switch
+                  value={active}
+                  onValueChange={() => handleToggle(cond.id)}
+                  trackColor={{ false: Colors.outline, true: cond.color }}
+                  thumbColor={active ? '#fff' : '#f4f3f4'}
+                />
+              )}
             </TouchableOpacity>
           );
         })}
@@ -85,6 +113,13 @@ export default function DietaryPreferencesScreen({ navigation }) {
           </View>
         )}
       </ScrollView>
+
+      <UpgradeModal
+        feature="conditions"
+        visible={upgradeVisible}
+        onClose={() => setUpgradeVisible(false)}
+        onUpgrade={() => setUpgradeVisible(false)}
+      />
     </View>
   );
 }
@@ -120,6 +155,25 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
+  // Free banner
+  freeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.cautionBg,
+    borderRadius: Radius.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: Colors.cautionBorder,
+  },
+  freeBannerText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '500',
+    color: Colors.cautionText,
+    lineHeight: 18,
+  },
+
   // Condition card — preserved from original design
   conditionCard: {
     flexDirection: 'row',
@@ -131,6 +185,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: Colors.outline,
     ...Shadow.sm,
+  },
+  conditionCardLocked: {
+    opacity: 0.6,
   },
   conditionLeft: {
     flexDirection: 'row',

@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
 import { RatingBadge } from '../components';
 import { useConditions, useHistory } from '../hooks/useStorage';
+import { usePremiumContext } from '../context/PremiumContext';
 
 function formatRelativeTime(dateStr) {
   if (!dateStr) return '';
@@ -29,6 +30,7 @@ export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { conditions } = useConditions();
   const { history } = useHistory();
+  const { isPremium, remaining } = usePremiumContext();
 
   const safeCount    = history.filter(h => h.rating === 'SAFE').length;
   const safetyScore  = history.length > 0 ? Math.round((safeCount / history.length) * 100) : null;
@@ -74,7 +76,16 @@ export default function HomeScreen({ navigation }) {
           activeOpacity={0.88}
         >
           <Feather name="maximize" size={24} color="#fff" />
-          <Text style={styles.scanBtnText}>Scan Product</Text>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={styles.scanBtnText}>Scan Product</Text>
+            {!isPremium && (
+              <Text style={styles.scanBtnSub}>
+                {remaining > 0
+                  ? `${remaining} scan${remaining !== 1 ? 's' : ''} left this week`
+                  : 'Weekly limit reached — upgrade to scan'}
+              </Text>
+            )}
+          </View>
         </TouchableOpacity>
 
         {/* ── Stats Row ── */}
@@ -228,6 +239,12 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: '700',
     letterSpacing: 0.2,
+  },
+  scanBtnSub: {
+    color: 'rgba(255,255,255,0.72)',
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
   },
 
   // ── Stats ────────────────────────────────────────────────────────────────────

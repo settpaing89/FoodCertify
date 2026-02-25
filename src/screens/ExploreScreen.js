@@ -8,6 +8,8 @@ import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
 import { useDietaryPrefs } from '../hooks/useStorage';
+import { usePremiumContext } from '../context/PremiumContext';
+import { UpgradeModal } from '../components/UpgradeModal';
 
 // ─── Static config ────────────────────────────────────────────────────────────
 
@@ -162,12 +164,13 @@ const ARTICLES = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function PresetCard({ preset, isActive, onPress }) {
+function PresetCard({ preset, isActive, onPress, locked }) {
   return (
     <TouchableOpacity
       style={[
         styles.presetCard,
         isActive && { backgroundColor: preset.color, borderColor: preset.color },
+        locked && styles.lockedCard,
       ]}
       onPress={onPress}
       activeOpacity={0.8}
@@ -177,19 +180,27 @@ function PresetCard({ preset, isActive, onPress }) {
           <Feather name="check" size={11} color="#fff" />
         </View>
       )}
-      <Text style={styles.presetIcon}>{preset.icon}</Text>
-      <Text style={[styles.presetLabel, isActive && { color: '#fff' }]}>{preset.label}</Text>
-      <Text style={[styles.presetDesc, isActive && { color: 'rgba(255,255,255,0.75)' }]}>
+      {locked && (
+        <View style={styles.lockBadge}>
+          <Feather name="lock" size={11} color={Colors.primary} />
+        </View>
+      )}
+      <Text style={[styles.presetIcon, locked && { opacity: 0.5 }]}>{preset.icon}</Text>
+      <Text style={[styles.presetLabel, isActive && { color: '#fff' }, locked && styles.lockedText]}>
+        {preset.label}
+      </Text>
+      <Text style={[styles.presetDesc, isActive && { color: 'rgba(255,255,255,0.75)' }, locked && styles.lockedText]}>
         {preset.desc}
       </Text>
     </TouchableOpacity>
   );
 }
 
-function NutrientRow({ nutrient, value, onChange }) {
+function NutrientRow({ nutrient, value, onChange, locked, onLockedPress }) {
   const [expanded, setExpanded] = useState(false);
 
   const toggle = v => {
+    if (locked) { onLockedPress?.(); return; }
     onChange({ ...value, enabled: v });
     setExpanded(v);
   };
@@ -203,27 +214,31 @@ function NutrientRow({ nutrient, value, onChange }) {
     (nutrient.hasMin && value.min !== null ? `Min ${value.min} ${nutrient.unit}` : '');
 
   return (
-    <View>
+    <View style={locked && styles.lockedRow}>
       <TouchableOpacity
         style={styles.nutrientRow}
-        onPress={() => value.enabled && setExpanded(e => !e)}
-        activeOpacity={value.enabled ? 0.7 : 1}
+        onPress={locked ? onLockedPress : () => value.enabled && setExpanded(e => !e)}
+        activeOpacity={locked ? 0.6 : value.enabled ? 0.7 : 1}
       >
         <View style={styles.nutrientIconWrap}>
-          <Feather name={nutrient.icon} size={16} color={Colors.primary} />
+          <Feather name={nutrient.icon} size={16} color={locked ? Colors.onSurfaceMuted : Colors.primary} />
         </View>
         <View style={styles.nutrientMeta}>
-          <Text style={styles.nutrientLabel}>{nutrient.label}</Text>
+          <Text style={[styles.nutrientLabel, locked && styles.lockedText]}>{nutrient.label}</Text>
           {value.enabled && summary.length > 0 && (
             <Text style={styles.nutrientSummary}>{summary}</Text>
           )}
         </View>
-        <Switch
-          value={value.enabled}
-          onValueChange={toggle}
-          trackColor={{ false: Colors.outline, true: Colors.primaryLight }}
-          thumbColor={value.enabled ? Colors.primary : Colors.surface}
-        />
+        {locked ? (
+          <Feather name="lock" size={16} color={Colors.onSurfaceMuted} />
+        ) : (
+          <Switch
+            value={value.enabled}
+            onValueChange={toggle}
+            trackColor={{ false: Colors.outline, true: Colors.primaryLight }}
+            thumbColor={value.enabled ? Colors.primary : Colors.surface}
+          />
+        )}
       </TouchableOpacity>
 
       {value.enabled && expanded && (
@@ -305,16 +320,22 @@ function ArticleCard({ article }) {
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const { prefs, savePrefs } = useDietaryPrefs();
+  const { isPremium } = usePremiumContext();
   const [activeTab, setActiveTab] = useState('dietary');
   const [blacklistInput, setBlacklistInput] = useState('');
+  const [upgradeVisible, setUpgradeVisible] = useState(false);
 
   if (!prefs) return null;
 
-  const updatePrefs   = partial  => savePrefs({ ...prefs, ...partial });
+  const dietaryLocked = !isPremium;
+  const showUpgrade = () => setUpgradeVisible(true);
+
+  const updatePrefs    = partial  => savePrefs({ ...prefs, ...partial });
   const updateNutrient = (key, v) => savePrefs({ ...prefs, [key]: v });
   const applyPreset    = preset   => savePrefs(preset.apply({ ...prefs }));
 
   const addBlacklist = () => {
+    if (dietaryLocked) { showUpgrade(); return; }
     const item = blacklistInput.trim().toLowerCase();
     if (!item || prefs.blacklist.includes(item)) { setBlacklistInput(''); return; }
     savePrefs({ ...prefs, blacklist: [...prefs.blacklist, item] });
@@ -374,21 +395,42 @@ export default function ExploreScreen() {
         {activeTab === 'dietary' && (
           <View style={styles.tabContent}>
 
+            {/* Premium gate banner */}
+            {dietaryLocked && (
+              <TouchableOpacity style={styles.gateBanner} onPress={showUpgrade} activeOpacity={0.85}>
+                <Feather name="lock" size={15} color={Colors.primary} />
+                <Text style={styles.gateBannerText}>
+                  Dietary configuration is a Premium feature
+                </Text>
+                <Text style={styles.gateBannerCta}>Upgrade →</Text>
+              </TouchableOpacity>
+            )}
+
             {/* Master Toggle */}
-            <View style={styles.masterCard}>
+            <TouchableOpacity
+              style={styles.masterCard}
+              onPress={dietaryLocked ? showUpgrade : undefined}
+              activeOpacity={dietaryLocked ? 0.7 : 1}
+            >
               <View style={{ flex: 1, gap: 4 }}>
-                <Text style={styles.masterTitle}>Dietary Filtering</Text>
+                <Text style={[styles.masterTitle, dietaryLocked && styles.lockedText]}>
+                  Dietary Filtering
+                </Text>
                 <Text style={styles.masterSub}>
                   Flag products during scanning that don't match your goals
                 </Text>
               </View>
-              <Switch
-                value={prefs.enabled}
-                onValueChange={v => updatePrefs({ enabled: v })}
-                trackColor={{ false: Colors.outline, true: Colors.primaryLight }}
-                thumbColor={prefs.enabled ? Colors.primary : Colors.surface}
-              />
-            </View>
+              {dietaryLocked ? (
+                <Feather name="lock" size={20} color={Colors.onSurfaceMuted} />
+              ) : (
+                <Switch
+                  value={prefs.enabled}
+                  onValueChange={v => updatePrefs({ enabled: v })}
+                  trackColor={{ false: Colors.outline, true: Colors.primaryLight }}
+                  thumbColor={prefs.enabled ? Colors.primary : Colors.surface}
+                />
+              )}
+            </TouchableOpacity>
 
             {/* Presets */}
             <Text style={styles.sectionLabel}>GOAL PRESETS</Text>
@@ -401,8 +443,9 @@ export default function ExploreScreen() {
                 <PresetCard
                   key={p.key}
                   preset={p}
-                  isActive={prefs.preset === p.key}
-                  onPress={() => applyPreset(p)}
+                  isActive={!dietaryLocked && prefs.preset === p.key}
+                  locked={dietaryLocked}
+                  onPress={dietaryLocked ? showUpgrade : () => applyPreset(p)}
                 />
               ))}
             </ScrollView>
@@ -419,6 +462,8 @@ export default function ExploreScreen() {
                     nutrient={n}
                     value={prefs[n.key]}
                     onChange={v => updateNutrient(n.key, v)}
+                    locked={dietaryLocked}
+                    onLockedPress={showUpgrade}
                   />
                   {i < NUTRIENTS.length - 1 && <View style={styles.divider} />}
                 </Fragment>
@@ -427,43 +472,52 @@ export default function ExploreScreen() {
 
             {/* Blacklist */}
             <Text style={styles.sectionLabel}>AVOID INGREDIENTS</Text>
-            <View style={styles.card}>
-              <View style={styles.blacklistRow}>
+            <View style={[styles.card, dietaryLocked && styles.lockedCard]}>
+              <TouchableOpacity
+                style={styles.blacklistRow}
+                onPress={dietaryLocked ? showUpgrade : undefined}
+                activeOpacity={dietaryLocked ? 0.7 : 1}
+              >
                 <TextInput
-                  style={styles.blacklistInput}
+                  style={[styles.blacklistInput, dietaryLocked && { opacity: 0.5 }]}
                   value={blacklistInput}
-                  onChangeText={setBlacklistInput}
+                  onChangeText={dietaryLocked ? undefined : setBlacklistInput}
                   placeholder="e.g. palm oil, msg, carrageenan…"
                   placeholderTextColor={Colors.onSurfaceMuted}
                   returnKeyType="done"
                   onSubmitEditing={addBlacklist}
+                  editable={!dietaryLocked}
                 />
                 <TouchableOpacity
-                  style={styles.addBtn}
+                  style={[styles.addBtn, dietaryLocked && { opacity: 0.5 }]}
                   onPress={addBlacklist}
                   activeOpacity={0.8}
                 >
-                  <Feather name="plus" size={20} color="#fff" />
+                  <Feather name={dietaryLocked ? 'lock' : 'plus'} size={20} color="#fff" />
                 </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
 
               {prefs.blacklist.length > 0 ? (
                 <View style={styles.chips}>
                   {prefs.blacklist.map(item => (
                     <View key={item} style={styles.chip}>
                       <Text style={styles.chipText}>{item}</Text>
-                      <TouchableOpacity
-                        onPress={() => removeBlacklist(item)}
-                        hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
-                      >
-                        <Feather name="x" size={13} color={Colors.primary} />
-                      </TouchableOpacity>
+                      {!dietaryLocked && (
+                        <TouchableOpacity
+                          onPress={() => removeBlacklist(item)}
+                          hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                        >
+                          <Feather name="x" size={13} color={Colors.primary} />
+                        </TouchableOpacity>
+                      )}
                     </View>
                   ))}
                 </View>
               ) : (
                 <Text style={styles.emptyNote}>
-                  No ingredients added yet. Type one above and press return or +.
+                  {dietaryLocked
+                    ? 'Upgrade to Premium to configure dietary filters.'
+                    : 'No ingredients added yet. Type one above and press return or +.'}
                 </Text>
               )}
             </View>
@@ -480,6 +534,13 @@ export default function ExploreScreen() {
           </View>
         )}
       </ScrollView>
+
+      <UpgradeModal
+        feature="dietary"
+        visible={upgradeVisible}
+        onClose={() => setUpgradeVisible(false)}
+        onUpgrade={() => setUpgradeVisible(false)}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -771,6 +832,50 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     paddingTop: 4,
     lineHeight: 18,
+  },
+
+  // ── Lock / gate styles ───────────────────────────────────────────────────────
+  gateBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.primarySurface,
+    borderRadius: Radius.lg,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: Colors.primaryBorder,
+  },
+  gateBannerText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  gateBannerCta: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: Colors.primary,
+  },
+  lockedCard: {
+    opacity: 0.65,
+  },
+  lockedRow: {
+    opacity: 0.65,
+  },
+  lockedText: {
+    color: Colors.onSurfaceMuted,
+  },
+  lockBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: Colors.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // ── Article cards ────────────────────────────────────────────────────────────

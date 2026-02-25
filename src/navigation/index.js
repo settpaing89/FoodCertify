@@ -1,6 +1,7 @@
 // src/navigation/index.js
 import { createContext, useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { usePremiumContext } from '../context/PremiumContext';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -29,6 +30,7 @@ import UnitsScreen                 from '../screens/UnitsScreen';
 import PrivacySecurityScreen       from '../screens/PrivacySecurityScreen';
 import HelpCenterScreen            from '../screens/HelpCenterScreen';
 import AboutFoodSafeScreen         from '../screens/AboutFoodSafeScreen';
+import PaywallScreen               from '../screens/PaywallScreen';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -44,8 +46,9 @@ const TABS = [
 
 // ─── Custom Tab Bar ───────────────────────────────────────────────────────────
 function CustomTabBar({ state, navigation, insets }) {
-  // Map tab index to screen name (Scan is not a real tab screen)
   const tabNames = TABS.map(t => t.name).filter(n => n !== 'Scan');
+  const { isPremium, remaining } = usePremiumContext();
+  const showScanBadge = !isPremium && remaining <= 5 && remaining > 0;
 
   return (
     <View style={[styles.tabBar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
@@ -63,6 +66,8 @@ function CustomTabBar({ state, navigation, insets }) {
           }
         };
 
+        const hasBadge = tab.name === 'Scan' && showScanBadge;
+
         return (
           <TouchableOpacity
             key={tab.name}
@@ -70,11 +75,18 @@ function CustomTabBar({ state, navigation, insets }) {
             activeOpacity={0.75}
             style={styles.tabItem}
           >
-            <Feather
-              name={tab.icon}
-              size={22}
-              color={isFocused ? Colors.primary : Colors.onSurfaceMuted}
-            />
+            <View style={styles.tabIconWrap}>
+              <Feather
+                name={tab.icon}
+                size={22}
+                color={isFocused ? Colors.primary : Colors.onSurfaceMuted}
+              />
+              {hasBadge && (
+                <View style={styles.tabBadge}>
+                  <Text style={styles.tabBadgeText}>{remaining}</Text>
+                </View>
+              )}
+            </View>
             <Text style={[styles.tabLabel, isFocused && styles.tabLabelActive]}>
               {tab.label}
             </Text>
@@ -184,6 +196,11 @@ export default function RootNavigator() {
               component={AboutFoodSafeScreen}
               options={{ presentation: 'card' }}
             />
+            <Stack.Screen
+              name="Paywall"
+              component={PaywallScreen}
+              options={{ presentation: 'modal' }}
+            />
           </>
         )}
 
@@ -225,5 +242,27 @@ const styles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     backgroundColor: Colors.primary,
+  },
+  tabIconWrap: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -8,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: Colors.caution,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  tabBadgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '800',
   },
 });

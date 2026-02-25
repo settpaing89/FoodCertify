@@ -4,10 +4,15 @@ import {
   View, Text, SectionList, StyleSheet, TouchableOpacity,
   Image, Alert, TextInput,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Radius, Shadow, Typography, Spacing } from '../theme';
 import { useHistory } from '../hooks/useStorage';
+import { usePremiumContext } from '../context/PremiumContext';
+import { UpgradeModal } from '../components/UpgradeModal';
+
+const FREE_HISTORY_LIMIT = 15;
 
 // ─── Status badge with colored dot ───────────────────────────────────────────
 const STATUS_CFG = {
@@ -54,13 +59,19 @@ const RATING_MAP = { Safe: 'SAFE', Warning: 'CAUTION', Unsafe: 'AVOID' };
 
 export default function HistoryScreen({ navigation }) {
   const { history, clearHistory, removeItem } = useHistory();
+  const { isPremium } = usePremiumContext();
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [upgradeVisible, setUpgradeVisible] = useState(false);
 
-  // Filter + search
+  // Free users: cap at 15 items
+  const cappedHistory = isPremium ? history : history.slice(0, FREE_HISTORY_LIMIT);
+  const hasMore = !isPremium && history.length > FREE_HISTORY_LIMIT;
+
+  // Filter + search (on capped history)
   const filtered = useMemo(() => {
-    let result = [...history];
+    let result = [...cappedHistory];
     if (activeFilter !== 'All') {
       result = result.filter(h => h.rating === RATING_MAP[activeFilter]);
     }
@@ -211,6 +222,38 @@ export default function HistoryScreen({ navigation }) {
           </View>
         }
       />
+
+      {/* ── Free tier history blur overlay ── */}
+      {hasMore && (
+        <View style={styles.historyGate} pointerEvents="box-none">
+          <LinearGradient
+            colors={['transparent', Colors.background]}
+            style={styles.historyGradient}
+            pointerEvents="none"
+          />
+          <View style={styles.historyGateCard}>
+            <Text style={styles.historyGateIcon}>🕐</Text>
+            <Text style={styles.historyGateTitle}>
+              {history.length - FREE_HISTORY_LIMIT} more scans hidden
+            </Text>
+            <Text style={styles.historyGateSub}>Upgrade to access your full scan history</Text>
+            <TouchableOpacity
+              style={styles.historyGateBtn}
+              onPress={() => setUpgradeVisible(true)}
+              activeOpacity={0.88}
+            >
+              <Text style={styles.historyGateBtnText}>Unlock Full History</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      <UpgradeModal
+        feature="history"
+        visible={upgradeVisible}
+        onClose={() => setUpgradeVisible(false)}
+        onUpgrade={() => setUpgradeVisible(false)}
+      />
     </View>
   );
 }
@@ -354,6 +397,52 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.4,
+  },
+
+  // History gate overlay
+  historyGate: {
+    position: 'absolute',
+    bottom: 0, left: 0, right: 0,
+    height: 280,
+    justifyContent: 'flex-end',
+  },
+  historyGradient: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    height: 160,
+  },
+  historyGateCard: {
+    backgroundColor: Colors.surface,
+    margin: Spacing.md,
+    borderRadius: Radius.xl,
+    padding: 20,
+    alignItems: 'center',
+    gap: 8,
+    ...Shadow.lg,
+  },
+  historyGateIcon: { fontSize: 32 },
+  historyGateTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.onSurface,
+    textAlign: 'center',
+  },
+  historyGateSub: {
+    fontSize: 13,
+    color: Colors.onSurfaceMuted,
+    textAlign: 'center',
+  },
+  historyGateBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: Radius.full,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    marginTop: 4,
+  },
+  historyGateBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
   },
 
   // Empty

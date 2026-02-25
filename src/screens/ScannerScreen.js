@@ -12,6 +12,8 @@ import { Colors, Spacing, Radius, Typography } from '../theme';
 import { fetchProductByBarcode } from '../engine/api';
 import { analyzeIngredients } from '../engine/analyzer';
 import { useConditions } from '../hooks/useStorage';
+import { usePremiumContext } from '../context/PremiumContext';
+import { UpgradeModal } from '../components/UpgradeModal';
 
 const { width, height } = Dimensions.get('window');
 const SCAN_FRAME_SIZE = width * 0.7;
@@ -21,7 +23,9 @@ export default function ScannerScreen({ navigation }) {
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
   const [torch, setTorch] = useState(false);
+  const [upgradeVisible, setUpgradeVisible] = useState(false);
   const { conditions } = useConditions();
+  const { canScan, remaining, isPremium, incrementScanCount } = usePremiumContext();
   const insets = useSafeAreaInsets();
 
   // Animations
@@ -63,8 +67,15 @@ export default function ScannerScreen({ navigation }) {
   const handleBarCodeScanned = useCallback(async ({ type, data }) => {
     if (scanned || loading) return;
 
+    // ── Free tier gate ──────────────────────────────────────────────────────
+    if (!canScan) {
+      setUpgradeVisible(true);
+      return;
+    }
+
     setScanned(true);
     setLoading(true);
+    await incrementScanCount();
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     try {
@@ -178,6 +189,11 @@ export default function ScannerScreen({ navigation }) {
           <Text style={styles.scanHint}>
             {loading ? '🔍 Fetching product data…' : 'Point at a barcode to scan'}
           </Text>
+          {!isPremium && remaining <= 5 && remaining > 0 && (
+            <View style={styles.scanCountBanner}>
+              <Text style={styles.scanCountText}>⚡ {remaining} scan{remaining !== 1 ? 's' : ''} left this week</Text>
+            </View>
+          )}
           {conditions.length === 0 && (
             <View style={styles.warningBanner}>
               <Text style={styles.warningText}>
@@ -219,6 +235,13 @@ export default function ScannerScreen({ navigation }) {
         <Text style={styles.topBarTitle}>🌿 Scan Product</Text>
         <View style={{ width: 32 }} />
       </View>
+
+      <UpgradeModal
+        feature="scanner"
+        visible={upgradeVisible}
+        onClose={() => setUpgradeVisible(false)}
+        onUpgrade={() => setUpgradeVisible(false)}
+      />
     </View>
   );
 }
@@ -293,6 +316,12 @@ const styles = StyleSheet.create({
     margin: 16, borderRadius: 12, padding: 12,
   },
   warningText: { color: '#fff', textAlign: 'center', fontSize: 13, fontWeight: '600' },
+  scanCountBanner: {
+    backgroundColor: 'rgba(12,107,107,0.85)',
+    marginHorizontal: 16, marginTop: 8,
+    borderRadius: 12, paddingVertical: 8, paddingHorizontal: 16,
+  },
+  scanCountText: { color: '#fff', textAlign: 'center', fontSize: 13, fontWeight: '600' },
 
   scanActions: {
     flexDirection: 'row', justifyContent: 'center',

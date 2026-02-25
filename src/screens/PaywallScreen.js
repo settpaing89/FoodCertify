@@ -1,0 +1,214 @@
+// src/screens/PaywallScreen.js
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Colors, Spacing, Radius, Shadow } from '../theme';
+import { usePremiumContext } from '../context/PremiumContext';
+
+// ─── Feature comparison rows ──────────────────────────────────────────────────
+const ROWS = [
+  { label: 'Barcode scans',         free: '20 / week',  premium: 'Unlimited'  },
+  { label: 'Health conditions',     free: '2 max',      premium: 'All 5'      },
+  { label: 'Dietary configuration', free: false,        premium: true         },
+  { label: 'Scan history',          free: 'Last 15',    premium: 'Unlimited'  },
+  { label: 'PDF export',            free: false,        premium: true         },
+  { label: 'Education library',     free: true,         premium: true         },
+  { label: 'AI recommendations',    free: true,         premium: true         },
+  { label: 'Priority support',      free: false,        premium: true         },
+];
+
+function CellValue({ val, isPremiumCol }) {
+  if (typeof val === 'boolean') {
+    return (
+      <Feather
+        name={val ? 'check' : 'x'}
+        size={16}
+        color={val ? (isPremiumCol ? Colors.primary : Colors.safe) : Colors.onSurfaceMuted}
+      />
+    );
+  }
+  return (
+    <Text style={[styles.cellText, isPremiumCol && styles.cellTextPremium]}>{val}</Text>
+  );
+}
+
+export default function PaywallScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
+  const { purchasePremium, restorePurchases } = usePremiumContext();
+
+  const handlePurchase = async () => {
+    try {
+      const success = await purchasePremium();
+      if (success && navigation.canGoBack()) navigation.goBack();
+    } catch (e) {
+      Alert.alert('Purchase Failed', e.message);
+    }
+  };
+
+  return (
+    <View style={styles.root}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
+      >
+        {/* ── Gradient Header ── */}
+        <LinearGradient
+          colors={[Colors.primaryDark, Colors.primary]}
+          style={[styles.gradientHeader, { paddingTop: insets.top + 16 }]}
+        >
+          {navigation.canGoBack() && (
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={() => navigation.goBack()}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Feather name="x" size={22} color="rgba(255,255,255,0.7)" />
+            </TouchableOpacity>
+          )}
+          <Text style={styles.crown}>👑</Text>
+          <Text style={styles.headerTitle}>FoodSafe Premium</Text>
+          <Text style={styles.headerSub}>Everything you need to eat safe and smart</Text>
+        </LinearGradient>
+
+        <View style={styles.content}>
+
+          {/* ── Comparison Table ── */}
+          <View style={styles.table}>
+            {/* Column headers */}
+            <View style={styles.tableHeaderRow}>
+              <View style={{ flex: 1 }} />
+              <View style={styles.colFree}>
+                <Text style={styles.colLabelFree}>FREE</Text>
+              </View>
+              <View style={styles.colPremium}>
+                <Text style={styles.colLabelPremium}>PREMIUM</Text>
+              </View>
+            </View>
+
+            {ROWS.map((row, i) => (
+              <View key={i} style={[styles.tableRow, i % 2 === 1 && styles.tableRowAlt]}>
+                <Text style={styles.rowLabel}>{row.label}</Text>
+                <View style={styles.colFree}>
+                  <CellValue val={row.free} isPremiumCol={false} />
+                </View>
+                <View style={styles.colPremium}>
+                  <CellValue val={row.premium} isPremiumCol />
+                </View>
+              </View>
+            ))}
+          </View>
+
+          {/* ── Pricing ── */}
+          <View style={styles.pricingRow}>
+            <Text style={styles.price}>$3.49</Text>
+            <Text style={styles.pricePer}> / month</Text>
+          </View>
+          <Text style={styles.priceNote}>Cancel anytime. No commitment.</Text>
+
+          {/* ── CTA ── */}
+          <TouchableOpacity style={styles.ctaBtn} onPress={handlePurchase} activeOpacity={0.88}>
+            <Text style={styles.ctaBtnText}>Start Premium</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.restoreBtn} onPress={restorePurchases} activeOpacity={0.7}>
+            <Text style={styles.restoreText}>Restore Purchase</Text>
+          </TouchableOpacity>
+
+          {/* ── Legal ── */}
+          <Text style={styles.legal}>
+            Payment will be charged to your{' '}
+            {Platform.OS === 'ios' ? 'Apple ID' : 'Google Play'} account.
+            Subscription renews automatically unless cancelled at least 24 hours
+            before the end of the current period.
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: Colors.background },
+
+  // Header
+  gradientHeader: {
+    alignItems: 'center',
+    paddingBottom: 40,
+    paddingHorizontal: Spacing.lg,
+  },
+  closeBtn: { position: 'absolute', top: 52, right: 20, padding: 8 },
+  crown: { fontSize: 54, marginBottom: 14 },
+  headerTitle: {
+    fontSize: 28, fontWeight: '800', color: '#fff',
+    letterSpacing: -0.5, marginBottom: 8,
+  },
+  headerSub: {
+    fontSize: 15, color: 'rgba(255,255,255,0.8)',
+    textAlign: 'center', lineHeight: 21,
+  },
+
+  content: { paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, gap: Spacing.md },
+
+  // Table
+  table: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.xl,
+    overflow: 'hidden',
+    ...Shadow.md,
+  },
+  tableHeaderRow: {
+    flexDirection: 'row',
+    paddingVertical: 14,
+    paddingHorizontal: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.outlineVariant,
+  },
+  colFree: { width: 72, alignItems: 'center', justifyContent: 'center' },
+  colPremium: { width: 80, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primarySurface },
+  colLabelFree: { fontSize: 11, fontWeight: '800', color: Colors.onSurfaceMuted, letterSpacing: 0.8 },
+  colLabelPremium: { fontSize: 11, fontWeight: '800', color: Colors.primary, letterSpacing: 0.8 },
+  tableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 13,
+    paddingHorizontal: Spacing.md,
+  },
+  tableRowAlt: { backgroundColor: Colors.outlineVariant },
+  rowLabel: { flex: 1, fontSize: 14, fontWeight: '500', color: Colors.onSurface },
+  cellText: { fontSize: 12, fontWeight: '600', color: Colors.onSurfaceMuted, textAlign: 'center' },
+  cellTextPremium: { color: Colors.primary, fontWeight: '700' },
+
+  // Pricing
+  pricingRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    marginTop: Spacing.sm,
+  },
+  price: { fontSize: 44, fontWeight: '800', color: Colors.onSurface, letterSpacing: -1 },
+  pricePer: { fontSize: 18, fontWeight: '600', color: Colors.onSurfaceMuted },
+  priceNote: {
+    textAlign: 'center', fontSize: 13,
+    color: Colors.onSurfaceMuted, marginTop: -6,
+  },
+
+  // Buttons
+  ctaBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: Radius.xl,
+    paddingVertical: 20,
+    alignItems: 'center',
+    ...Shadow.md,
+  },
+  ctaBtnText: { color: '#fff', fontSize: 18, fontWeight: '800', letterSpacing: 0.2 },
+  restoreBtn: { alignItems: 'center', paddingVertical: 4 },
+  restoreText: { fontSize: 14, color: Colors.onSurfaceMuted, fontWeight: '500' },
+
+  // Legal
+  legal: {
+    fontSize: 11, color: Colors.onSurfaceMuted,
+    textAlign: 'center', lineHeight: 16,
+    paddingHorizontal: Spacing.sm, marginTop: 4,
+  },
+});
