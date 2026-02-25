@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "FoodSafe",
+    "slug": "foodsafe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1b5e20"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.yourname.foodsafe",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "FoodSafe uses your camera to scan product barcodes and analyze ingredient safety.",
+        "NSPhotoLibraryUsageDescription": "FoodSafe can scan barcodes from photos in your library."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1b5e20"
+      },
+      "package": "com.yourname.foodsafe",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "FoodSafe uses your camera to scan product barcodes."
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "YOUR_EAS_PROJECT_ID"
+      }
+    }
+  }
+}
