@@ -120,7 +120,9 @@ export default function ScannerScreen({ navigation }) {
     return (
       <View style={styles.permissionContainer}>
         <LinearGradient colors={[Colors.primaryDark, Colors.primary]} style={StyleSheet.absoluteFill} />
-        <Text style={styles.permissionIcon}>📷</Text>
+        <View style={styles.permissionIconWrap}>
+          <Feather name="camera" size={40} color="rgba(255,255,255,0.9)" />
+        </View>
         <Text style={styles.permissionTitle}>Camera Access Needed</Text>
         <Text style={styles.permissionBody}>
           FoodSafe needs your camera to scan product barcodes. Your camera is only used for scanning — no photos are saved.
@@ -191,7 +193,7 @@ export default function ScannerScreen({ navigation }) {
           </Text>
           {!isPremium && remaining <= 5 && remaining > 0 && (
             <View style={styles.scanCountBanner}>
-              <Text style={styles.scanCountText}>⚡ {remaining} scan{remaining !== 1 ? 's' : ''} left this week</Text>
+              <Text style={styles.scanCountText}>{remaining} scan{remaining !== 1 ? 's' : ''} left this week</Text>
             </View>
           )}
           {conditions.length === 0 && (
@@ -341,7 +343,15 @@ const styles = StyleSheet.create({
 
   // Permissions
   permissionContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
-  permissionIcon: { fontSize: 72, marginBottom: 20 },
+  permissionIconWrap: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
   permissionTitle: { fontSize: 24, fontWeight: '800', color: '#fff', marginBottom: 16, textAlign: 'center' },
   permissionBody: { fontSize: 15, color: 'rgba(255,255,255,0.8)', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
   permissionButton: {

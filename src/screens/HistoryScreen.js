@@ -201,7 +201,9 @@ export default function HistoryScreen({ navigation }) {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>📦</Text>
+            <View style={styles.emptyIconWrap}>
+              <Feather name="package" size={32} color={Colors.onSurfaceMuted} />
+            </View>
             <Text style={styles.emptyTitle}>
               {search || activeFilter !== 'All' ? 'No results found' : 'No scans yet'}
             </Text>
@@ -232,7 +234,9 @@ export default function HistoryScreen({ navigation }) {
             pointerEvents="none"
           />
           <View style={styles.historyGateCard}>
-            <Text style={styles.historyGateIcon}>🕐</Text>
+            <View style={styles.historyGateIconWrap}>
+              <Feather name="clock" size={24} color={Colors.primary} />
+            </View>
             <Text style={styles.historyGateTitle}>
               {history.length - FREE_HISTORY_LIMIT} more scans hidden
             </Text>
@@ -420,7 +424,14 @@ const styles = StyleSheet.create({
     gap: 8,
     ...Shadow.lg,
   },
-  historyGateIcon: { fontSize: 32 },
+  historyGateIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: Colors.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   historyGateTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -453,7 +464,14 @@ const styles = StyleSheet.create({
     paddingTop: 80,
     gap: Spacing.sm,
   },
-  emptyIcon: { fontSize: 56 },
+  emptyIconWrap: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: Colors.outline,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyTitle: { ...Typography.h2, textAlign: 'center' },
   emptyBody: { ...Typography.body, textAlign: 'center', maxWidth: 260 },
   scanNowBtn: {

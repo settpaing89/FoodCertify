@@ -1,6 +1,5 @@
 // src/screens/PaywallScreen.js
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Shadow } from '../theme';
@@ -14,7 +13,6 @@ const ROWS = [
   { label: 'Scan history',          free: 'Last 15',    premium: 'Unlimited'  },
   { label: 'PDF export',            free: false,        premium: true         },
   { label: 'Education library',     free: true,         premium: true         },
-  { label: 'AI recommendations',    free: true,         premium: true         },
   { label: 'Priority support',      free: false,        premium: true         },
 ];
 
@@ -47,35 +45,33 @@ export default function PaywallScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      {/* ── Compact Header ── */}
+      <View style={styles.header}>
+        {navigation.canGoBack() && (
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Feather name="x" size={22} color={Colors.onSurfaceMuted} />
+          </TouchableOpacity>
+        )}
+        <View style={styles.headerIcon}>
+          <Feather name="award" size={28} color={Colors.primary} />
+        </View>
+        <Text style={styles.headerTitle}>FoodSafe Premium</Text>
+        <Text style={styles.headerSub}>Everything you need to eat safe and smart</Text>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 40 }}
       >
-        {/* ── Gradient Header ── */}
-        <LinearGradient
-          colors={[Colors.primaryDark, Colors.primary]}
-          style={[styles.gradientHeader, { paddingTop: insets.top + 16 }]}
-        >
-          {navigation.canGoBack() && (
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => navigation.goBack()}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Feather name="x" size={22} color="rgba(255,255,255,0.7)" />
-            </TouchableOpacity>
-          )}
-          <Text style={styles.crown}>👑</Text>
-          <Text style={styles.headerTitle}>FoodSafe Premium</Text>
-          <Text style={styles.headerSub}>Everything you need to eat safe and smart</Text>
-        </LinearGradient>
-
         <View style={styles.content}>
 
           {/* ── Comparison Table ── */}
           <View style={styles.table}>
-            {/* Column headers */}
             <View style={styles.tableHeaderRow}>
               <View style={{ flex: 1 }} />
               <View style={styles.colFree}>
@@ -99,16 +95,21 @@ export default function PaywallScreen({ navigation }) {
             ))}
           </View>
 
-          {/* ── Pricing ── */}
+          {/* ── Trial + Pricing ── */}
+          <View style={styles.trialBadge}>
+            <Feather name="gift" size={14} color={Colors.primary} />
+            <Text style={styles.trialBadgeText}>7-day free trial included</Text>
+          </View>
+
           <View style={styles.pricingRow}>
             <Text style={styles.price}>$3.49</Text>
             <Text style={styles.pricePer}> / month</Text>
           </View>
-          <Text style={styles.priceNote}>Cancel anytime. No commitment.</Text>
+          <Text style={styles.priceNote}>After trial ends. Cancel anytime.</Text>
 
           {/* ── CTA ── */}
           <TouchableOpacity style={styles.ctaBtn} onPress={handlePurchase} activeOpacity={0.88}>
-            <Text style={styles.ctaBtnText}>Start Premium</Text>
+            <Text style={styles.ctaBtnText}>Start Free 7-Day Trial</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.restoreBtn} onPress={restorePurchases} activeOpacity={0.7}>
@@ -117,10 +118,10 @@ export default function PaywallScreen({ navigation }) {
 
           {/* ── Legal ── */}
           <Text style={styles.legal}>
-            Payment will be charged to your{' '}
-            {Platform.OS === 'ios' ? 'Apple ID' : 'Google Play'} account.
-            Subscription renews automatically unless cancelled at least 24 hours
-            before the end of the current period.
+            Your free trial lasts 7 days. After the trial, payment of $3.49/month will be
+            charged to your {Platform.OS === 'ios' ? 'Apple ID' : 'Google Play'} account.
+            Subscription renews automatically unless cancelled at least 24 hours before the
+            end of the current period.
           </Text>
         </View>
       </ScrollView>
@@ -132,23 +133,43 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
 
   // Header
-  gradientHeader: {
+  header: {
     alignItems: 'center',
-    paddingBottom: 40,
     paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.lg,
+    position: 'relative',
   },
-  closeBtn: { position: 'absolute', top: 52, right: 20, padding: 8 },
-  crown: { fontSize: 54, marginBottom: 14 },
+  closeBtn: {
+    position: 'absolute',
+    top: Spacing.md,
+    right: Spacing.md,
+    padding: 6,
+  },
+  headerIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
   headerTitle: {
-    fontSize: 28, fontWeight: '800', color: '#fff',
-    letterSpacing: -0.5, marginBottom: 8,
+    fontSize: 22,
+    fontWeight: '800',
+    color: Colors.onSurface,
+    letterSpacing: -0.4,
+    marginBottom: 6,
   },
   headerSub: {
-    fontSize: 15, color: 'rgba(255,255,255,0.8)',
-    textAlign: 'center', lineHeight: 21,
+    fontSize: 14,
+    color: Colors.onSurfaceMuted,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 
-  content: { paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, gap: Spacing.md },
+  content: { paddingHorizontal: Spacing.md, gap: Spacing.md },
 
   // Table
   table: {
@@ -164,9 +185,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: Colors.outlineVariant,
   },
-  colFree: { width: 72, alignItems: 'center', justifyContent: 'center' },
+  colFree:    { width: 72, alignItems: 'center', justifyContent: 'center' },
   colPremium: { width: 80, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primarySurface },
-  colLabelFree: { fontSize: 11, fontWeight: '800', color: Colors.onSurfaceMuted, letterSpacing: 0.8 },
+  colLabelFree:    { fontSize: 11, fontWeight: '800', color: Colors.onSurfaceMuted, letterSpacing: 0.8 },
   colLabelPremium: { fontSize: 11, fontWeight: '800', color: Colors.primary, letterSpacing: 0.8 },
   tableRow: {
     flexDirection: 'row',
@@ -174,24 +195,41 @@ const styles = StyleSheet.create({
     paddingVertical: 13,
     paddingHorizontal: Spacing.md,
   },
-  tableRowAlt: { backgroundColor: Colors.outlineVariant },
-  rowLabel: { flex: 1, fontSize: 14, fontWeight: '500', color: Colors.onSurface },
-  cellText: { fontSize: 12, fontWeight: '600', color: Colors.onSurfaceMuted, textAlign: 'center' },
-  cellTextPremium: { color: Colors.primary, fontWeight: '700' },
+  tableRowAlt:      { backgroundColor: Colors.outlineVariant },
+  rowLabel:         { flex: 1, fontSize: 14, fontWeight: '500', color: Colors.onSurface },
+  cellText:         { fontSize: 12, fontWeight: '600', color: Colors.onSurfaceMuted, textAlign: 'center' },
+  cellTextPremium:  { color: Colors.primary, fontWeight: '700' },
+
+  // Trial badge
+  trialBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: Colors.primarySurface,
+    borderRadius: Radius.full,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: Colors.primaryBorder,
+  },
+  trialBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
 
   // Pricing
   pricingRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
-    marginTop: Spacing.sm,
+    marginTop: -4,
   },
-  price: { fontSize: 44, fontWeight: '800', color: Colors.onSurface, letterSpacing: -1 },
-  pricePer: { fontSize: 18, fontWeight: '600', color: Colors.onSurfaceMuted },
-  priceNote: {
-    textAlign: 'center', fontSize: 13,
-    color: Colors.onSurfaceMuted, marginTop: -6,
-  },
+  price:     { fontSize: 44, fontWeight: '800', color: Colors.onSurface, letterSpacing: -1 },
+  pricePer:  { fontSize: 18, fontWeight: '600', color: Colors.onSurfaceMuted },
+  priceNote: { textAlign: 'center', fontSize: 13, color: Colors.onSurfaceMuted, marginTop: -8 },
 
   // Buttons
   ctaBtn: {
@@ -207,8 +245,11 @@ const styles = StyleSheet.create({
 
   // Legal
   legal: {
-    fontSize: 11, color: Colors.onSurfaceMuted,
-    textAlign: 'center', lineHeight: 16,
-    paddingHorizontal: Spacing.sm, marginTop: 4,
+    fontSize: 11,
+    color: Colors.onSurfaceMuted,
+    textAlign: 'center',
+    lineHeight: 16,
+    paddingHorizontal: Spacing.sm,
+    marginTop: 4,
   },
 });

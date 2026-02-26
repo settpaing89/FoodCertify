@@ -99,12 +99,12 @@ export default function OnboardingScreen({ completeOnboarding }) {
         {/* Hero image */}
         <LinearGradient colors={['#1C2B1C', '#2A3D2A', '#1a301a']} style={styles.hero}>
           <View style={styles.heroContent}>
-            <Text style={styles.heroEmoji1}>🥦</Text>
-            <Text style={styles.heroEmoji2}>🍅</Text>
-            <Text style={styles.heroEmoji3}>🥑</Text>
-            <Text style={styles.heroEmoji4}>🌽</Text>
-            <Text style={styles.heroEmoji5}>🥕</Text>
-            <Text style={styles.heroEmoji6}>🥗</Text>
+            <View style={[styles.heroIcon, styles.heroEmoji1]}><Feather name="leaf"       size={32} color="rgba(255,255,255,0.35)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji2]}><Feather name="heart"      size={28} color="rgba(255,255,255,0.25)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji3]}><Feather name="shield"     size={30} color="rgba(255,255,255,0.30)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji4]}><Feather name="activity"   size={26} color="rgba(255,255,255,0.25)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji5]}><Feather name="bar-chart-2" size={29} color="rgba(255,255,255,0.20)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji6]}><Feather name="check-circle" size={32} color="rgba(255,255,255,0.30)" /></View>
           </View>
           <LinearGradient
             colors={['transparent', Colors.background]}
@@ -346,12 +346,13 @@ const styles = StyleSheet.create({
     flex: 1,
     position: 'relative',
   },
-  heroEmoji1: { position: 'absolute', fontSize: 64, top: 20,  left: 20  },
-  heroEmoji2: { position: 'absolute', fontSize: 56, top: 60,  right: 30 },
-  heroEmoji3: { position: 'absolute', fontSize: 60, top: 120, left: 80  },
-  heroEmoji4: { position: 'absolute', fontSize: 52, bottom: 60, left: 30  },
-  heroEmoji5: { position: 'absolute', fontSize: 58, top: 30,  right: 100 },
-  heroEmoji6: { position: 'absolute', fontSize: 64, bottom: 40, right: 40 },
+  heroIcon:   { position: 'absolute' },
+  heroEmoji1: { top: 20,  left: 20  },
+  heroEmoji2: { top: 60,  right: 30 },
+  heroEmoji3: { top: 120, left: 80  },
+  heroEmoji4: { bottom: 60, left: 30  },
+  heroEmoji5: { top: 30,  right: 100 },
+  heroEmoji6: { bottom: 40, right: 40 },
   heroFade: {
     position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
   },

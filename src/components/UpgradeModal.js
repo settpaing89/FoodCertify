@@ -10,11 +10,11 @@ import { usePremiumContext } from '../context/PremiumContext';
 
 // ─── Per-feature config ───────────────────────────────────────────────────────
 const FEATURE_CONFIG = {
-  scanner:    { icon: '📷', headline: 'Unlock Unlimited Scans',          subtext: 'Scan unlimited products and never hit your weekly limit again.'          },
-  conditions: { icon: '🩺', headline: 'Unlock All Health Conditions',    subtext: 'Track all 5 health conditions for complete protection on every scan.' },
-  dietary:    { icon: '🥗', headline: 'Unlock Dietary Configuration',    subtext: 'Set personal nutrient limits and build your perfect diet profile.'      },
-  history:    { icon: '🕐', headline: 'Unlock Full Scan History',        subtext: 'Access your complete scan archive and export it as a PDF report.'       },
-  export:     { icon: '📄', headline: 'Unlock PDF Export',               subtext: 'Download your complete scan history as a formatted PDF report.'          },
+  scanner:    { icon: 'camera',    headline: 'Unlock Unlimited Scans',       subtext: 'Scan unlimited products and never hit your weekly limit again.'        },
+  conditions: { icon: 'heart',     headline: 'Unlock All Health Conditions', subtext: 'Track all 5 health conditions for complete protection on every scan.' },
+  dietary:    { icon: 'sliders',   headline: 'Unlock Dietary Configuration', subtext: 'Set personal nutrient limits and build your perfect diet profile.'     },
+  history:    { icon: 'clock',     headline: 'Unlock Full Scan History',     subtext: 'Access your complete scan archive and export it as a PDF report.'      },
+  export:     { icon: 'file-text', headline: 'Unlock PDF Export',            subtext: 'Download your complete scan history as a formatted PDF report.'        },
 };
 
 const BENEFITS = [
@@ -58,7 +58,9 @@ export function UpgradeModal({ feature = 'scanner', visible, onClose, onUpgrade 
         <View style={styles.handle} />
 
         {/* Icon + copy */}
-        <Text style={styles.featureIcon}>{cfg.icon}</Text>
+        <View style={styles.featureIconWrap}>
+          <Feather name={cfg.icon} size={28} color={Colors.primary} />
+        </View>
         <Text style={styles.headline}>{cfg.headline}</Text>
         <Text style={styles.subtext}>{cfg.subtext}</Text>
 
@@ -74,12 +76,17 @@ export function UpgradeModal({ feature = 'scanner', visible, onClose, onUpgrade 
           ))}
         </View>
 
+        {/* Trial note */}
+        <View style={styles.trialNote}>
+          <Feather name="gift" size={13} color={Colors.primary} />
+          <Text style={styles.trialNoteText}>7-day free trial, then $3.49/month</Text>
+        </View>
+
         {/* CTA */}
         <TouchableOpacity style={styles.ctaBtn} onPress={handleUpgrade} activeOpacity={0.88}>
-          <Text style={styles.ctaBtnText}>Upgrade for $3.49/month</Text>
+          <Text style={styles.ctaBtnText}>Start Free 7-Day Trial</Text>
         </TouchableOpacity>
 
-        {/* Restore */}
         <TouchableOpacity style={styles.restoreBtn} onPress={restorePurchases} activeOpacity={0.7}>
           <Text style={styles.restoreText}>Restore Purchase</Text>
         </TouchableOpacity>
@@ -110,7 +117,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.outline,
     marginBottom: 24,
   },
-  featureIcon: { fontSize: 52, marginBottom: 14 },
+  featureIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
   headline: {
     fontSize: 22, fontWeight: '800',
     color: Colors.onSurface,
@@ -123,7 +138,7 @@ const styles = StyleSheet.create({
     textAlign: 'center', lineHeight: 20,
     marginBottom: 24,
   },
-  benefits: { width: '100%', gap: 14, marginBottom: 28 },
+  benefits: { width: '100%', gap: 14, marginBottom: 20 },
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   benefitCheck: {
     width: 26, height: 26, borderRadius: 13,
@@ -132,6 +147,17 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   benefitText: { fontSize: 15, fontWeight: '500', color: Colors.onSurface, flex: 1 },
+  trialNote: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 16,
+  },
+  trialNoteText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
   ctaBtn: {
     width: '100%',
     backgroundColor: Colors.primary,

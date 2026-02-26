@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Feather } from '@expo/vector-icons';
 import { RatingBadge, Card, NutriscoreBadge, Chip } from '../components';
 import { calculateNutriScore } from '../engine/analyzer';
 import { useHistory } from '../hooks/useStorage';
@@ -230,7 +231,7 @@ export default function ResultScreen({ route, navigation }) {
 
         {/* Full ingredient list */}
         <Card style={styles.ingredientsCard}>
-          <Text style={styles.ingredientsTitle}>📋 Full Ingredient List</Text>
+          <Text style={styles.ingredientsTitle}>Full Ingredient List</Text>
           <Text style={styles.ingredientsText}>
             {product?.ingredients || 'No ingredient information available.'}
           </Text>
@@ -239,7 +240,7 @@ export default function ResultScreen({ route, navigation }) {
         {/* Allergens */}
         {product?.allergens?.length > 0 && (
           <Card style={styles.allergenCard}>
-            <Text style={styles.ingredientsTitle}>🚨 Declared Allergens</Text>
+            <Text style={styles.ingredientsTitle}>Declared Allergens</Text>
             <View style={styles.allergenChips}>
               {product.allergens.map((a, i) => (
                 <Chip
@@ -276,7 +277,8 @@ export default function ResultScreen({ route, navigation }) {
           onPress={() => navigation.goBack()}
         >
           <LinearGradient colors={Colors.safeGradient} style={styles.scanAgainGradient}>
-            <Text style={styles.scanAgainText}>📷 Scan Another Product</Text>
+            <Feather name="camera" size={16} color="#fff" style={{ marginRight: 8 }} />
+            <Text style={styles.scanAgainText}>Scan Another Product</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -303,7 +305,7 @@ function NutritionPanel({ nutriments, servingSize }) {
 
   return (
     <Card style={styles.nutritionCard}>
-      <Text style={styles.ingredientsTitle}>📊 Nutrition (per 100g{servingSize ? ` · Serving: ${servingSize}` : ''})</Text>
+      <Text style={styles.ingredientsTitle}>Nutrition (per 100g{servingSize ? ` · Serving: ${servingSize}` : ''})</Text>
       {displayed.map((item, i) => (
         <View key={i} style={[styles.nutritionRow, i % 2 === 0 && styles.nutritionRowAlt]}>
           <Text style={styles.nutritionLabel}>{item.label}</Text>
@@ -429,7 +431,8 @@ const styles = StyleSheet.create({
   },
   scanAgainBtn: { borderRadius: Radius.xl, overflow: 'hidden' },
   scanAgainGradient: {
-    paddingVertical: 15, alignItems: 'center',
+    paddingVertical: 15, flexDirection: 'row',
+    alignItems: 'center', justifyContent: 'center',
   },
   scanAgainText: { color: '#fff', fontSize: 16, fontWeight: '800' },
 });

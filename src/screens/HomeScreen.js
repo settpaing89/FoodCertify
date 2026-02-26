@@ -147,7 +147,9 @@ export default function HomeScreen({ navigation }) {
           ))
         ) : (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyIcon}>🥗</Text>
+            <View style={styles.emptyIconWrap}>
+              <Feather name="package" size={36} color={Colors.onSurfaceMuted} />
+            </View>
             <Text style={styles.emptyTitle}>Ready to scan!</Text>
             <Text style={styles.emptyBody}>
               Scan a product barcode to check if it's safe for your health conditions.
@@ -350,7 +352,14 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     ...Shadow.md,
   },
-  emptyIcon: { fontSize: 52, textAlign: 'center' },
+  emptyIconWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: Colors.outline,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   emptyTitle: { ...Typography.h2, textAlign: 'center' },
   emptyBody: { ...Typography.body, textAlign: 'center' },
   setupBanner: {

@@ -78,14 +78,18 @@ export default function DietaryPreferencesScreen({ navigation }) {
                   styles.conditionIconBg,
                   { backgroundColor: active ? cond.color : Colors.outlineVariant },
                 ]}>
-                  <Text style={styles.conditionIcon}>{cond.icon}</Text>
+                  <Feather
+                    name={cond.icon}
+                    size={18}
+                    color={active ? '#fff' : Colors.onSurfaceMuted}
+                  />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.conditionName, active && { color: cond.color }]}>
                     {cond.label}
                   </Text>
                   <Text style={styles.conditionStatus}>
-                    {isLocked ? '🔒 Premium only' : active ? 'Active — scanning for issues' : 'Tap to enable'}
+                    {isLocked ? 'Premium only' : active ? 'Active — scanning for issues' : 'Tap to enable'}
                   </Text>
                 </View>
               </View>
@@ -202,7 +206,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  conditionIcon: { fontSize: 22 },
+  // conditionIcon no longer used (replaced by Feather in conditionIconBg)
   conditionName: {
     fontSize: 16,
     fontWeight: '700',

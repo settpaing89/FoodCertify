@@ -43,7 +43,7 @@ export default function ProfileScreen({ navigation }) {
   const { conditions } = useConditions();
   const { history } = useHistory();
   const { resetOnboarding } = useAppContext();
-  const { isPremium, remaining, restorePurchases } = usePremiumContext();
+  const { isPremium, hasBeenPremium, remaining, restorePurchases } = usePremiumContext();
 
   const activeConditionCount = conditions.length;
 
@@ -105,7 +105,9 @@ export default function ProfileScreen({ navigation }) {
         {isPremium ? (
           <View style={styles.premiumCard}>
             <View style={styles.premiumCardLeft}>
-              <Text style={styles.premiumCrown}>👑</Text>
+              <View style={styles.premiumIconWrap}>
+                <Feather name="award" size={22} color="#fff" />
+              </View>
               <View>
                 <Text style={styles.premiumTitle}>Premium Member</Text>
                 <Text style={styles.premiumSub}>All features unlocked</Text>
@@ -183,13 +185,16 @@ export default function ProfileScreen({ navigation }) {
             icon="info"
             label="About FoodSafe"
             onPress={() => navigation.navigate('AboutFoodSafe')}
+            last={!(hasBeenPremium && !isPremium)}
           />
-          <SettingsRow
-            icon="refresh-cw"
-            label="Restore Purchase"
-            onPress={restorePurchases}
-            last
-          />
+          {hasBeenPremium && !isPremium && (
+            <SettingsRow
+              icon="refresh-cw"
+              label="Renew Membership"
+              onPress={restorePurchases}
+              last
+            />
+          )}
         </Section>
 
         {/* ── Sign Out ── */}
@@ -301,7 +306,14 @@ const styles = StyleSheet.create({
     ...Shadow.md,
   },
   premiumCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  premiumCrown: { fontSize: 28 },
+  premiumIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   premiumTitle: { fontSize: 16, fontWeight: '700', color: '#fff' },
   premiumSub:   { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
   manageLink:   { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.85)', textDecorationLine: 'underline' },

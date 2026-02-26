@@ -27,6 +27,7 @@ function getWeekKey() {
 // ─── Context ──────────────────────────────────────────────────────────────────
 export const PremiumContext = createContext({
   isPremium:          false,
+  hasBeenPremium:     false,
   isLoading:          true,
   scanCount:          0,
   remaining:          FREE_SCAN_LIMIT,
@@ -40,25 +41,40 @@ export const usePremiumContext = () => useContext(PremiumContext);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export function PremiumProvider({ children }) {
-  const [isPremium, setIsPremium]   = useState(false);
-  const [isLoading, setIsLoading]   = useState(true);
-  const [scanCount, setScanCount]   = useState(0);
-  const [weekKey,   setWeekKey]     = useState('');
+  const [isPremium,      setIsPremium]      = useState(false);
+  const [hasBeenPremium, setHasBeenPremium] = useState(false);
+  const [isLoading,      setIsLoading]      = useState(true);
+  const [scanCount,      setScanCount]      = useState(0);
+  const [weekKey,        setWeekKey]        = useState('');
 
   useEffect(() => {
     let removeListener = null;
 
     const init = async () => {
       // ── RevenueCat ──────────────────────────────────────────────────────────
+      // Load hasBeenPremium flag from storage
+      const storedHBP = await AsyncStorage.getItem('@foodsafe:has_been_premium');
+      if (storedHBP === 'true') setHasBeenPremium(true);
+
       if (Purchases) {
         try {
           Purchases.configure({
             apiKey: Platform.OS === 'ios' ? RC_API_KEY_IOS : RC_API_KEY_ANDROID,
           });
           const info = await Purchases.getCustomerInfo();
-          setIsPremium(!!info.entitlements.active[ENTITLEMENT_ID]);
-          removeListener = Purchases.addCustomerInfoUpdateListener(i => {
-            setIsPremium(!!i.entitlements.active[ENTITLEMENT_ID]);
+          const active = !!info.entitlements.active[ENTITLEMENT_ID];
+          setIsPremium(active);
+          if (active) {
+            setHasBeenPremium(true);
+            await AsyncStorage.setItem('@foodsafe:has_been_premium', 'true');
+          }
+          removeListener = Purchases.addCustomerInfoUpdateListener(async i => {
+            const a = !!i.entitlements.active[ENTITLEMENT_ID];
+            setIsPremium(a);
+            if (a) {
+              setHasBeenPremium(true);
+              await AsyncStorage.setItem('@foodsafe:has_been_premium', 'true');
+            }
           });
         } catch (e) {
           console.warn('[RevenueCat]', e.message);
@@ -98,6 +114,10 @@ export function PremiumProvider({ children }) {
       const { customerInfo } = await Purchases.purchaseProduct(PRODUCT_ID);
       const active = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
       setIsPremium(active);
+      if (active) {
+        setHasBeenPremium(true);
+        await AsyncStorage.setItem('@foodsafe:has_been_premium', 'true');
+      }
       return active;
     } catch (e) {
       if (e.userCancelled) return false;
@@ -115,6 +135,10 @@ export function PremiumProvider({ children }) {
       const info = await Purchases.restorePurchases();
       const active = !!info.entitlements.active[ENTITLEMENT_ID];
       setIsPremium(active);
+      if (active) {
+        setHasBeenPremium(true);
+        await AsyncStorage.setItem('@foodsafe:has_been_premium', 'true');
+      }
       Alert.alert(
         active ? 'Purchase Restored!' : 'No Active Subscription',
         active
@@ -147,6 +171,7 @@ export function PremiumProvider({ children }) {
   return (
     <PremiumContext.Provider value={{
       isPremium,
+      hasBeenPremium,
       isLoading,
       scanCount,
       remaining,

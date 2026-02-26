@@ -17,7 +17,7 @@ const PRESETS = [
   {
     key: 'keto',
     label: 'Keto',
-    icon: '🥑',
+    icon: 'leaf',
     desc: 'Low carb, high fat',
     color: '#0C6B6B',
     apply: p => ({
@@ -30,7 +30,7 @@ const PRESETS = [
   {
     key: 'cutting',
     label: 'Cutting',
-    icon: '🔥',
+    icon: 'zap',
     desc: 'Low calorie',
     color: '#E8784A',
     apply: p => ({
@@ -41,7 +41,7 @@ const PRESETS = [
   {
     key: 'bulking',
     label: 'Bulking',
-    icon: '💪',
+    icon: 'trending-up',
     desc: 'High protein',
     color: '#15BAA8',
     apply: p => ({
@@ -53,7 +53,7 @@ const PRESETS = [
   {
     key: 'low_sodium',
     label: 'Low Sodium',
-    icon: '🫀',
+    icon: 'heart',
     desc: 'Heart health',
     color: '#E05252',
     apply: p => ({
@@ -64,7 +64,7 @@ const PRESETS = [
   {
     key: 'clean',
     label: 'Clean Eating',
-    icon: '🥗',
+    icon: 'sun',
     desc: 'Minimal sugar',
     color: '#2E9494',
     apply: p => ({
@@ -75,7 +75,7 @@ const PRESETS = [
   {
     key: 'custom',
     label: 'Custom',
-    icon: '⚙️',
+    icon: 'sliders',
     desc: 'Set manually',
     color: '#7AACAC',
     apply: p => ({ ...p, preset: 'custom' }),
@@ -94,7 +94,7 @@ const NUTRIENTS = [
 
 const ARTICLES = [
   {
-    id: '1', icon: '📋', category: 'BASICS',
+    id: '1', icon: 'clipboard', category: 'BASICS',
     title: 'Reading Nutrition Labels',
     subtitle: 'What every number on the label actually means',
     content: [
@@ -106,7 +106,7 @@ const ARTICLES = [
     ],
   },
   {
-    id: '2', icon: '🧂', category: 'SODIUM',
+    id: '2', icon: 'filter', category: 'SODIUM',
     title: 'Why Sodium Matters',
     subtitle: 'How salt affects your heart and kidneys',
     content: [
@@ -117,7 +117,7 @@ const ARTICLES = [
     ],
   },
   {
-    id: '3', icon: '🩸', category: 'SUGAR',
+    id: '3', icon: 'droplet', category: 'SUGAR',
     title: 'Added Sugar vs Natural Sugar',
     subtitle: 'Not all sugar is created equal',
     content: [
@@ -128,7 +128,7 @@ const ARTICLES = [
     ],
   },
   {
-    id: '4', icon: '💪', category: 'PROTEIN',
+    id: '4', icon: 'bar-chart-2', category: 'PROTEIN',
     title: 'Getting Enough Protein',
     subtitle: 'Daily targets and the best food sources',
     content: [
@@ -139,7 +139,7 @@ const ARTICLES = [
     ],
   },
   {
-    id: '5', icon: '🥑', category: 'FATS',
+    id: '5', icon: 'circle', category: 'FATS',
     title: 'Good Fats vs Bad Fats',
     subtitle: 'Understanding dietary fat types',
     content: [
@@ -150,7 +150,7 @@ const ARTICLES = [
     ],
   },
   {
-    id: '6', icon: '🔬', category: 'ADDITIVES',
+    id: '6', icon: 'search', category: 'ADDITIVES',
     title: 'Common Food Additives Explained',
     subtitle: 'What E-numbers and chemical names mean',
     content: [
@@ -185,7 +185,9 @@ function PresetCard({ preset, isActive, onPress, locked }) {
           <Feather name="lock" size={11} color={Colors.primary} />
         </View>
       )}
-      <Text style={[styles.presetIcon, locked && { opacity: 0.5 }]}>{preset.icon}</Text>
+      <View style={[styles.presetIconWrap, isActive && styles.presetIconWrapActive, locked && { opacity: 0.5 }]}>
+        <Feather name={preset.icon} size={20} color={isActive ? '#fff' : preset.color} />
+      </View>
       <Text style={[styles.presetLabel, isActive && { color: '#fff' }, locked && styles.lockedText]}>
         {preset.label}
       </Text>
@@ -288,7 +290,7 @@ function ArticleCard({ article }) {
     >
       <View style={styles.articleHeader}>
         <View style={styles.articleIconWrap}>
-          <Text style={styles.articleIcon}>{article.icon}</Text>
+          <Feather name={article.icon} size={22} color={Colors.primary} />
         </View>
         <View style={{ flex: 1, gap: 3 }}>
           <Text style={styles.articleCategory}>{article.category}</Text>
@@ -682,9 +684,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  presetIcon: {
-    fontSize: 26,
-    marginBottom: 4,
+  presetIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.primarySurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  presetIconWrapActive: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
   presetLabel: {
     fontSize: 14,
@@ -892,16 +902,13 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   articleIconWrap: {
-    width: 52,
-    height: 52,
-    borderRadius: Radius.lg,
+    width: 44,
+    height: 44,
+    borderRadius: Radius.md,
     backgroundColor: Colors.primarySurface,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
-  },
-  articleIcon: {
-    fontSize: 26,
   },
   articleCategory: {
     fontSize: 11,
