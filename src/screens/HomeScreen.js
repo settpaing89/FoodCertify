@@ -127,6 +127,7 @@ export default function HomeScreen({ navigation }) {
                 product: { name: item.productName, brand: item.brand },
                 analysis: { rating: item.rating },
                 barcode: item.barcode,
+                fromHistory: true,
               })}
             >
               {item.imageUrl ? (

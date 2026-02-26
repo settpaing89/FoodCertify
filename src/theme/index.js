@@ -9,22 +9,25 @@ export const Colors = {
   primaryBorder: '#A8E0DE',
 
   // Safe – Teal Green
-  safe:       '#15BAA8',
-  safeBg:     '#E0F8F5',
-  safeBorder: '#8EDED8',
-  safeText:   '#0A8C82',
+  safe:         '#15BAA8',
+  safeBg:       '#E0F8F5',
+  safeBorder:   '#8EDED8',
+  safeText:     '#0A8C82',
+  safeGradient: ['#22D4BF', '#0C8A7A'],
 
   // Caution – Salmon Orange
-  caution:       '#E8784A',
-  cautionBg:     '#FFF3EF',
-  cautionBorder: '#F5C4B0',
-  cautionText:   '#C45A2E',
+  caution:          '#E8784A',
+  cautionBg:        '#FFF3EF',
+  cautionBorder:    '#F5C4B0',
+  cautionText:      '#C45A2E',
+  cautionGradient:  ['#F5936A', '#D45A30'],
 
   // Danger / Avoid – Red
-  avoid:       '#E05252',
-  avoidBg:     '#FFF0F0',
-  avoidBorder: '#F5B8B8',
-  avoidText:   '#B83030',
+  avoid:         '#E05252',
+  avoidBg:       '#FFF0F0',
+  avoidBorder:   '#F5B8B8',
+  avoidText:     '#B83030',
+  avoidGradient: ['#F07070', '#C82828'],
 
   // Neutral
   background:     '#E2EFEE',

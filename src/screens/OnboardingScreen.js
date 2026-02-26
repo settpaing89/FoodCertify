@@ -5,6 +5,7 @@ import {
   TextInput, Dimensions, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
@@ -99,12 +100,12 @@ export default function OnboardingScreen({ completeOnboarding }) {
         {/* Hero image */}
         <LinearGradient colors={['#1C2B1C', '#2A3D2A', '#1a301a']} style={styles.hero}>
           <View style={styles.heroContent}>
-            <View style={[styles.heroIcon, styles.heroEmoji1]}><Feather name="leaf"       size={32} color="rgba(255,255,255,0.35)" /></View>
-            <View style={[styles.heroIcon, styles.heroEmoji2]}><Feather name="heart"      size={28} color="rgba(255,255,255,0.25)" /></View>
-            <View style={[styles.heroIcon, styles.heroEmoji3]}><Feather name="shield"     size={30} color="rgba(255,255,255,0.30)" /></View>
-            <View style={[styles.heroIcon, styles.heroEmoji4]}><Feather name="activity"   size={26} color="rgba(255,255,255,0.25)" /></View>
-            <View style={[styles.heroIcon, styles.heroEmoji5]}><Feather name="bar-chart-2" size={29} color="rgba(255,255,255,0.20)" /></View>
-            <View style={[styles.heroIcon, styles.heroEmoji6]}><Feather name="check-circle" size={32} color="rgba(255,255,255,0.30)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji1]}><MaterialCommunityIcons name="food-apple"    size={42} color="rgba(255,255,255,0.55)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji2]}><MaterialCommunityIcons name="leaf"          size={34} color="rgba(255,255,255,0.45)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji3]}><MaterialCommunityIcons name="shield-check"  size={38} color="rgba(255,255,255,0.50)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji4]}><MaterialCommunityIcons name="heart-pulse"   size={32} color="rgba(255,255,255,0.45)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji5]}><MaterialCommunityIcons name="barcode-scan"  size={36} color="rgba(255,255,255,0.40)" /></View>
+            <View style={[styles.heroIcon, styles.heroEmoji6]}><MaterialCommunityIcons name="check-circle"  size={38} color="rgba(255,255,255,0.50)" /></View>
           </View>
           <LinearGradient
             colors={['transparent', Colors.background]}
@@ -184,7 +185,11 @@ export default function OnboardingScreen({ completeOnboarding }) {
                     </View>
                   )}
                   <View style={[styles.condIconBg, active && styles.condIconBgActive]}>
-                    <Text style={styles.condIcon}>{cond.icon}</Text>
+                    <MaterialCommunityIcons
+                      name={cond.icon}
+                      size={26}
+                      color={active ? Colors.primary : Colors.onSurfaceMuted}
+                    />
                   </View>
                   <Text style={[styles.condLabel, active && styles.condLabelActive]}>
                     {cond.label}
@@ -293,7 +298,7 @@ export default function OnboardingScreen({ completeOnboarding }) {
 
         {/* Social */}
         <TouchableOpacity style={styles.socialBtnGoogle} onPress={finish} activeOpacity={0.85}>
-          <Text style={styles.socialIcon}>🌐</Text>
+          <Feather name="globe" size={18} color="#555" />
           <Text style={styles.socialBtnTextDark}>Continue with Google</Text>
         </TouchableOpacity>
 
@@ -420,7 +425,6 @@ const styles = StyleSheet.create({
   condIconBgActive: {
     backgroundColor: Colors.primarySurface,
   },
-  condIcon: { fontSize: 26 },
   condLabel: {
     fontSize: 13, fontWeight: '700', color: Colors.onSurface, textAlign: 'center',
   },
@@ -482,7 +486,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.outline,
     ...Shadow.sm,
   },
-  socialIcon: { fontSize: 18 },
   socialBtnTextDark: { fontSize: 15, fontWeight: '700', color: Colors.onSurface },
 
   socialBtnApple: {

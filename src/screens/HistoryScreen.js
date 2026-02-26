@@ -176,6 +176,12 @@ export default function HistoryScreen({ navigation }) {
           <TouchableOpacity
             style={styles.card}
             activeOpacity={0.85}
+            onPress={() => navigation.navigate('Result', {
+              product: { name: item.productName, brand: item.brand },
+              analysis: { rating: item.rating },
+              barcode: item.barcode,
+              fromHistory: true,
+            })}
             onLongPress={() => handleLongPress(item)}
           >
             {/* Image */}
@@ -183,7 +189,7 @@ export default function HistoryScreen({ navigation }) {
               <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
             ) : (
               <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
-                <Text style={{ fontSize: 24 }}>🥫</Text>
+                <Feather name="package" size={22} color={Colors.onSurfaceMuted} />
               </View>
             )}
 

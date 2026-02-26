@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
@@ -78,9 +79,9 @@ export default function DietaryPreferencesScreen({ navigation }) {
                   styles.conditionIconBg,
                   { backgroundColor: active ? cond.color : Colors.outlineVariant },
                 ]}>
-                  <Feather
+                  <MaterialCommunityIcons
                     name={cond.icon}
-                    size={18}
+                    size={20}
                     color={active ? '#fff' : Colors.onSurfaceMuted}
                   />
                 </View>

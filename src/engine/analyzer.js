@@ -5,11 +5,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const CONDITIONS = [
-  { id: 'diabetes',    label: 'Diabetes',       icon: 'activity',  color: '#e53935', bg: '#fce4ec' },
-  { id: 'gluten',      label: 'Gluten Allergy', icon: 'alert-circle', color: '#f57c00', bg: '#fff3e0' },
-  { id: 'peanut',      label: 'Peanut Allergy', icon: 'shield',    color: '#6d4c41', bg: '#efebe9' },
-  { id: 'vegan',       label: 'Vegan',          icon: 'leaf',      color: '#2e7d32', bg: '#e8f5e9' },
-  { id: 'vegetarian',  label: 'Vegetarian',     icon: 'sun',       color: '#558b2f', bg: '#f1f8e9' },
+  { id: 'diabetes',    label: 'Diabetes',       icon: 'diabetes',   color: '#e53935', bg: '#fce4ec' },
+  { id: 'gluten',      label: 'Gluten Allergy', icon: 'wheat-off',  color: '#f57c00', bg: '#fff3e0' },
+  { id: 'peanut',      label: 'Peanut Allergy', icon: 'peanut',     color: '#6d4c41', bg: '#efebe9' },
+  { id: 'vegan',       label: 'Vegan',          icon: 'leaf',       color: '#2e7d32', bg: '#e8f5e9' },
+  { id: 'vegetarian',  label: 'Vegetarian',     icon: 'sprout',     color: '#558b2f', bg: '#f1f8e9' },
 ];
 
 // ─── Ingredient Database ──────────────────────────────────────────────────────
