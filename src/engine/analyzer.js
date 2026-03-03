@@ -436,7 +436,7 @@ const INGREDIENT_DB = {
 };
 
 // ─── Main Analysis Function ───────────────────────────────────────────────────
-export function analyzeIngredients(ingredientText, selectedConditions) {
+export function analyzeIngredients(ingredientText, selectedConditions, dietaryPrefs = null, nutriments = null) {
   if (!ingredientText?.trim() || !selectedConditions?.length) {
     return null;
   }
@@ -465,6 +465,32 @@ export function analyzeIngredients(ingredientText, selectedConditions) {
         conditions: relevantConditions,
       });
     }
+  }
+
+  // ── Personal blacklist ───────────────────────────────────────────────────────
+  if (dietaryPrefs?.enabled && dietaryPrefs.blacklist?.length > 0) {
+    for (const term of dietaryPrefs.blacklist) {
+      const normalized = term.toLowerCase().trim();
+      if (!normalized) continue;
+      const key = `blacklist:${normalized}`;
+      if (seen.has(key)) continue;
+      if (lower.includes(normalized)) {
+        seen.add(key);
+        found.push({
+          ingredient: term,
+          severity: 'avoid',
+          reason: 'This ingredient is on your personal avoid list.',
+          category: 'Personal Blacklist',
+          conditions: ['dietary'],
+        });
+      }
+    }
+  }
+
+  // ── Nutrient limits ──────────────────────────────────────────────────────────
+  if (dietaryPrefs?.enabled && nutriments) {
+    const nutrientIssues = checkNutrientLimits(nutriments, dietaryPrefs);
+    found.push(...nutrientIssues);
   }
 
   // Determine overall rating
@@ -533,6 +559,52 @@ function buildTips(issues, conditions) {
     tips.push('Look for products with Vegan Society certification or "100% Plant-Based" labels.');
   }
   return tips;
+}
+
+// ─── Nutrient Limit Checker ───────────────────────────────────────────────────
+function checkNutrientLimits(nutriments, prefs) {
+  const issues = [];
+
+  const checks = [
+    { key: 'calories',     label: 'Calories',       nKey: 'energy-kcal_100g',    unit: 'kcal', scale: 1 },
+    { key: 'carbs',        label: 'Carbohydrates',  nKey: 'carbohydrates_100g',  unit: 'g',    scale: 1 },
+    { key: 'sugar',        label: 'Sugar',           nKey: 'sugars_100g',         unit: 'g',    scale: 1 },
+    { key: 'protein',      label: 'Protein',         nKey: 'proteins_100g',       unit: 'g',    scale: 1, checkMin: true },
+    { key: 'fat',          label: 'Fat',             nKey: 'fat_100g',            unit: 'g',    scale: 1 },
+    { key: 'saturatedFat', label: 'Saturated Fat',  nKey: 'saturated-fat_100g',  unit: 'g',    scale: 1 },
+    { key: 'sodium',       label: 'Sodium',          nKey: 'sodium_100g',         unit: 'mg',   scale: 1000 },
+  ];
+
+  for (const { key, label, nKey, unit, scale, checkMin } of checks) {
+    const pref = prefs[key];
+    if (!pref?.enabled) continue;
+
+    const rawValue = nutriments[nKey];
+    if (rawValue == null) continue;
+    const value = rawValue * scale;
+
+    if (pref.max != null && value > pref.max) {
+      issues.push({
+        ingredient: label,
+        severity: 'caution',
+        reason: `${label} is ${value.toFixed(1)}${unit}/100g, which exceeds your limit of ${pref.max}${unit}.`,
+        category: 'Nutrient Limit',
+        conditions: ['dietary'],
+      });
+    }
+
+    if (checkMin && pref.min != null && value < pref.min) {
+      issues.push({
+        ingredient: label,
+        severity: 'caution',
+        reason: `${label} is ${value.toFixed(1)}${unit}/100g, which is below your minimum of ${pref.min}${unit}.`,
+        category: 'Nutrient Limit',
+        conditions: ['dietary'],
+      });
+    }
+  }
+
+  return issues;
 }
 
 // ─── Nutrient Score (from Open Food Facts data) ───────────────────────────────

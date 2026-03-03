@@ -4,14 +4,17 @@ import {
   View, Text, StyleSheet, TouchableOpacity, Alert,
   Animated, Dimensions, Platform, StatusBar,
 } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT } from '../utils/tokens';
 import { fetchProductByBarcode } from '../engine/api';
 import { analyzeIngredients } from '../engine/analyzer';
-import { useConditions } from '../hooks/useStorage';
+import { useConditions, useDietaryPrefs } from '../hooks/useStorage';
 import { usePremiumContext } from '../context/PremiumContext';
 import { UpgradeModal } from '../components/UpgradeModal';
 
@@ -25,6 +28,7 @@ export default function ScannerScreen({ navigation }) {
   const [torch, setTorch] = useState(false);
   const [upgradeVisible, setUpgradeVisible] = useState(false);
   const { conditions } = useConditions();
+  const { prefs: dietaryPrefs } = useDietaryPrefs();
   const { canScan, remaining, isPremium, incrementScanCount } = usePremiumContext();
   const insets = useSafeAreaInsets();
 
@@ -64,6 +68,15 @@ export default function ScannerScreen({ navigation }) {
     return () => loop.stop();
   }, []);
 
+  // Reset scanner state every time this screen comes into focus
+  // (navigate('Scanner') does not remount the component, so scanned stays true without this)
+  useFocusEffect(
+    useCallback(() => {
+      setScanned(false);
+      setLoading(false);
+    }, [])
+  );
+
   const handleBarCodeScanned = useCallback(async ({ type, data }) => {
     if (scanned || loading) return;
 
@@ -75,8 +88,8 @@ export default function ScannerScreen({ navigation }) {
 
     setScanned(true);
     setLoading(true);
-    await incrementScanCount();
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    incrementScanCount();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     try {
       const result = await fetchProductByBarcode(data);
@@ -94,7 +107,7 @@ export default function ScannerScreen({ navigation }) {
         return;
       }
 
-      const analysis = analyzeIngredients(result.product.ingredients, conditions);
+      const analysis = analyzeIngredients(result.product.ingredients, conditions, dietaryPrefs, result.product.nutriments);
 
       navigation.navigate('Result', {
         product: result.product,
@@ -189,7 +202,7 @@ export default function ScannerScreen({ navigation }) {
         {/* Bottom overlay */}
         <View style={[styles.overlaySection, { flex: 1 }]}>
           <Text style={styles.scanHint}>
-            {loading ? '🔍 Fetching product data…' : 'Point at a barcode to scan'}
+            {loading ? 'Fetching product data…' : 'Point at a barcode to scan'}
           </Text>
           {!isPremium && remaining <= 5 && remaining > 0 && (
             <View style={styles.scanCountBanner}>
@@ -199,7 +212,7 @@ export default function ScannerScreen({ navigation }) {
           {conditions.length === 0 && (
             <View style={styles.warningBanner}>
               <Text style={styles.warningText}>
-                ⚠️ No health conditions selected — go to Profile
+                No health conditions selected — go to Profile
               </Text>
             </View>
           )}
@@ -208,21 +221,21 @@ export default function ScannerScreen({ navigation }) {
               style={styles.actionBtn}
               onPress={() => setTorch(!torch)}
             >
-              <Text style={styles.actionBtnIcon}>{torch ? '🔦' : '💡'}</Text>
+              <Feather name={torch ? 'zap' : 'zap-off'} size={28} color="rgba(255,255,255,0.9)" />
               <Text style={styles.actionBtnLabel}>{torch ? 'Flash On' : 'Flash Off'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={() => navigation.navigate('ManualEntry')}
             >
-              <Text style={styles.actionBtnIcon}>📝</Text>
+              <Feather name="edit" size={28} color="rgba(255,255,255,0.9)" />
               <Text style={styles.actionBtnLabel}>Manual</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.actionBtn}
               onPress={() => navigation.navigate('Search')}
             >
-              <Text style={styles.actionBtnIcon}>🔍</Text>
+              <Feather name="search" size={28} color="rgba(255,255,255,0.9)" />
               <Text style={styles.actionBtnLabel}>Search</Text>
             </TouchableOpacity>
           </View>
@@ -231,10 +244,10 @@ export default function ScannerScreen({ navigation }) {
 
       {/* Top bar */}
       <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.topBarClose}>✕</Text>
+        <TouchableOpacity style={styles.topBarClose} onPress={() => navigation.goBack()}>
+          <Feather name="x" size={22} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.topBarTitle}>🌿 Scan Product</Text>
+        <Text style={styles.topBarTitle}>Scan Product</Text>
         <View style={{ width: 32 }} />
       </View>
 
@@ -307,39 +320,39 @@ const styles = StyleSheet.create({
     borderWidth: 3, borderColor: Colors.primaryLight,
     opacity: 0.8,
   },
-  scanLoadingText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  scanLoadingText: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold },
 
   scanHint: {
     color: 'rgba(255,255,255,0.85)', textAlign: 'center',
-    fontSize: 16, fontWeight: '600', marginTop: 24,
+    fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.semibold, marginTop: 24,
   },
   warningBanner: {
     backgroundColor: 'rgba(255,152,0,0.85)',
     margin: 16, borderRadius: 12, padding: 12,
   },
-  warningText: { color: '#fff', textAlign: 'center', fontSize: 13, fontWeight: '600' },
+  warningText: { color: '#fff', textAlign: 'center', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold },
   scanCountBanner: {
     backgroundColor: 'rgba(12,107,107,0.85)',
     marginHorizontal: 16, marginTop: 8,
     borderRadius: 12, paddingVertical: 8, paddingHorizontal: 16,
   },
-  scanCountText: { color: '#fff', textAlign: 'center', fontSize: 13, fontWeight: '600' },
+  scanCountText: { color: '#fff', textAlign: 'center', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold },
 
   scanActions: {
     flexDirection: 'row', justifyContent: 'center',
     gap: 32, marginTop: 32,
   },
   actionBtn: { alignItems: 'center', gap: 6 },
-  actionBtnIcon: { fontSize: 28 },
-  actionBtnLabel: { color: 'rgba(255,255,255,0.8)', fontSize: 12, fontWeight: '600' },
+  actionBtnIcon: { fontSize: FONT_SIZE.xxl },
+  actionBtnLabel: { color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold },
 
   topBar: {
     position: 'absolute', top: 0, left: 0, right: 0,
     flexDirection: 'row', alignItems: 'center',
     justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12,
   },
-  topBarClose: { color: '#fff', fontSize: 20, fontWeight: '700', padding: 4 },
-  topBarTitle: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  topBarClose: { padding: 4, width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  topBarTitle: { color: '#fff', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold },
 
   // Permissions
   permissionContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
@@ -352,11 +365,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
-  permissionTitle: { fontSize: 24, fontWeight: '800', color: '#fff', marginBottom: 16, textAlign: 'center' },
-  permissionBody: { fontSize: 15, color: 'rgba(255,255,255,0.8)', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
+  permissionTitle: { fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold, color: '#fff', marginBottom: 16, textAlign: 'center' },
+  permissionBody: { fontSize: FONT_SIZE.md, color: 'rgba(255,255,255,0.8)', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
   permissionButton: {
     backgroundColor: '#fff', borderRadius: Radius.xl,
-    paddingHorizontal: 32, paddingVertical: 16,
+    paddingHorizontal: 32, paddingVertical: 14,
   },
-  permissionButtonText: { color: Colors.primaryDark, fontSize: 16, fontWeight: '800' },
+  permissionButtonText: { color: Colors.primaryDark, fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold },
 });

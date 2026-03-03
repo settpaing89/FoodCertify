@@ -8,7 +8,8 @@ import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { useConditions } from '../hooks/useStorage';
 import { CONDITIONS } from '../engine/analyzer';
 
@@ -35,8 +36,8 @@ function ProgressTrack({ step }) {
 
 const pb = StyleSheet.create({
   row:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  label: { fontSize: 12, fontWeight: '600', color: Colors.onSurfaceVariant },
-  count: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+  label: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurfaceVariant },
+  count: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
   track: { height: 6, backgroundColor: Colors.outline, borderRadius: 3, overflow: 'hidden', marginBottom: Spacing.lg },
   fill:  { height: '100%', backgroundColor: Colors.primary, borderRadius: 3 },
 });
@@ -336,9 +337,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: 16, fontWeight: '700', color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
   topBarSkip: { paddingHorizontal: 4, paddingVertical: 8 },
-  skipText: { fontSize: 14, fontWeight: '600', color: Colors.onSurfaceMuted },
+  skipText: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurfaceMuted },
 
   // ── Slide 0 ──
   hero: {
@@ -366,11 +367,11 @@ const styles = StyleSheet.create({
     flex: 1, paddingHorizontal: Spacing.lg, paddingTop: Spacing.md,
   },
   welcomeTitle: {
-    fontSize: 28, fontWeight: '800', color: Colors.onSurface,
+    fontSize: FONT_SIZE.xxl, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface,
     letterSpacing: -0.5, marginBottom: 12,
   },
   welcomeSubtitle: {
-    fontSize: 14, color: Colors.onSurfaceVariant, lineHeight: 22, marginBottom: Spacing.lg,
+    fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant, lineHeight: 22, marginBottom: Spacing.lg,
   },
   dots: {
     flexDirection: 'row', gap: 8, marginBottom: Spacing.lg,
@@ -388,11 +389,11 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
   },
   slideTitle: {
-    fontSize: 26, fontWeight: '800', color: Colors.onSurface,
+    fontSize: FONT_SIZE.xxl, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface,
     letterSpacing: -0.3, marginBottom: 8,
   },
   slideSubtitle: {
-    fontSize: 14, color: Colors.onSurfaceVariant, lineHeight: 20, marginBottom: Spacing.lg,
+    fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant, lineHeight: 20, marginBottom: Spacing.lg,
   },
 
   conditionsGrid: {
@@ -407,7 +408,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     alignItems: 'center',
     gap: 10,
-    ...Shadow.sm,
+    ...SHADOW.sm,
     position: 'relative',
   },
   condCardActive: {
@@ -426,13 +427,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primarySurface,
   },
   condLabel: {
-    fontSize: 13, fontWeight: '700', color: Colors.onSurface, textAlign: 'center',
+    fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, textAlign: 'center',
   },
   condLabelActive: { color: Colors.primary },
 
   updateNote: {
-    textAlign: 'center', fontSize: 12, color: Colors.onSurfaceMuted,
-    fontWeight: '500', marginTop: Spacing.lg,
+    textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted,
+    fontWeight: FONT_WEIGHT.medium, marginTop: Spacing.lg,
   },
 
   bottomFixed: {
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
 
   formBlock: { gap: 12 },
   fieldLabel: {
-    fontSize: 13, fontWeight: '700', color: Colors.onSurface, marginBottom: 4,
+    fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, marginBottom: 4,
   },
   inputWrapper: {
     flexDirection: 'row', alignItems: 'center',
@@ -465,7 +466,7 @@ const styles = StyleSheet.create({
   },
   inputIcon: {},
   input: {
-    flex: 1, fontSize: 15, color: Colors.onSurface, padding: 0,
+    flex: 1, fontSize: FONT_SIZE.md, color: Colors.onSurface, padding: 0,
   },
   eyeBtn: { padding: 2 },
 
@@ -474,7 +475,7 @@ const styles = StyleSheet.create({
   },
   dividerLine: { flex: 1, height: 1, backgroundColor: Colors.outline },
   dividerText: {
-    fontSize: 11, fontWeight: '700', color: Colors.onSurfaceMuted, letterSpacing: 0.5,
+    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurfaceMuted, letterSpacing: 0.5,
   },
 
   socialBtnGoogle: {
@@ -484,9 +485,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderWidth: 1.5,
     borderColor: Colors.outline,
-    ...Shadow.sm,
+    ...SHADOW.sm,
   },
-  socialBtnTextDark: { fontSize: 15, fontWeight: '700', color: Colors.onSurface },
+  socialBtnTextDark: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
 
   socialBtnApple: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
@@ -494,27 +495,27 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     paddingVertical: 15,
   },
-  socialBtnTextLight: { fontSize: 15, fontWeight: '700', color: '#fff' },
+  socialBtnTextLight: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: '#fff' },
 
   termsText: {
-    textAlign: 'center', fontSize: 12, color: Colors.onSurfaceMuted, lineHeight: 18,
+    textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, lineHeight: 18,
   },
-  termsLink: { color: Colors.primary, fontWeight: '600' },
+  termsLink: { color: Colors.primary, fontWeight: FONT_WEIGHT.semibold },
 
   // Shared
   primaryBtn: {
     backgroundColor: Colors.primary,
-    borderRadius: Radius.lg,
-    paddingVertical: 17,
+    borderRadius: Radius.xl,
+    paddingVertical: 14,
     alignItems: 'center',
-    ...Shadow.md,
+    ...SHADOW.md,
   },
-  primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '800', letterSpacing: 0.2 },
+  primaryBtnText: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, letterSpacing: 0.2 },
 
   signInRow: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
     marginTop: Spacing.md,
   },
-  signInLabel: { fontSize: 14, color: Colors.onSurfaceVariant },
-  signInLink: { fontSize: 14, fontWeight: '700', color: Colors.primary },
+  signInLabel: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant },
+  signInLink: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
 });

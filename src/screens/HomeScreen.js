@@ -5,7 +5,8 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { RatingBadge } from '../components';
 import { useConditions, useHistory } from '../hooks/useStorage';
 import { usePremiumContext } from '../context/PremiumContext';
@@ -75,7 +76,7 @@ export default function HomeScreen({ navigation }) {
           onPress={() => navigation.navigate('Scanner')}
           activeOpacity={0.88}
         >
-          <Feather name="maximize" size={24} color="#fff" />
+          <Feather name="maximize-2" size={24} color="#fff" />
           <View style={{ alignItems: 'center' }}>
             <Text style={styles.scanBtnText}>Scan Product</Text>
             {!isPremium && (
@@ -134,7 +135,7 @@ export default function HomeScreen({ navigation }) {
                 <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
               ) : (
                 <View style={styles.productImagePlaceholder}>
-                  <Text style={{ fontSize: 26 }}>🥫</Text>
+                  <Feather name="shopping-bag" size={26} color={Colors.primary} />
                 </View>
               )}
 
@@ -160,7 +161,7 @@ export default function HomeScreen({ navigation }) {
                 style={styles.setupBanner}
                 onPress={() => navigation.navigate('Profile')}
               >
-                <Text style={styles.setupBannerText}>⚠️ Set up your health conditions first</Text>
+                <Text style={styles.setupBannerText}>Set up your health conditions first</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -199,7 +200,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadow.md,
+    ...SHADOW.md,
   },
 
   content: {
@@ -213,14 +214,14 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   statusLabel: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 1.4,
     color: Colors.primary,
   },
   statusHeading: {
-    fontSize: 38,
-    fontWeight: '800',
+    fontSize: FONT_SIZE.display,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: -1,
     color: Colors.onSurface,
     lineHeight: 46,
@@ -235,18 +236,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 14,
-    ...Shadow.md,
+    ...SHADOW.md,
   },
   scanBtnText: {
     color: '#fff',
-    fontSize: 19,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 0.2,
   },
   scanBtnSub: {
     color: 'rgba(255,255,255,0.72)',
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.medium,
     marginTop: 2,
   },
 
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xl,
     padding: 20,
     gap: 8,
-    ...Shadow.md,
+    ...SHADOW.md,
   },
   statIconWrap: {
     width: 42,
@@ -273,14 +274,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   statValue: {
-    fontSize: 34,
-    fontWeight: '800',
+    fontSize: FONT_SIZE.display,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
     letterSpacing: -1,
   },
   statLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.onSurfaceMuted,
   },
 
@@ -291,14 +292,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 1.2,
     color: Colors.onSurfaceMuted,
   },
   sectionLink: {
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 0.8,
     color: Colors.primary,
     textDecorationLine: 'underline',
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xl,
     padding: 18,
     gap: Spacing.md,
-    ...Shadow.md,
+    ...SHADOW.md,
   },
   productImage: {
     width: 68,
@@ -333,15 +334,15 @@ const styles = StyleSheet.create({
     gap: 5,
   },
   productName: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
     lineHeight: 22,
   },
   productTime: {
-    fontSize: 13,
+    fontSize: FONT_SIZE.sm,
     color: Colors.onSurfaceMuted,
-    fontWeight: '500',
+    fontWeight: FONT_WEIGHT.medium,
   },
 
   // ── Empty State ───────────────────────────────────────────────────────────────
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     alignItems: 'center',
     gap: Spacing.sm,
-    ...Shadow.md,
+    ...SHADOW.md,
   },
   emptyIconWrap: {
     width: 68,
@@ -374,8 +375,8 @@ const styles = StyleSheet.create({
   },
   setupBannerText: {
     color: Colors.cautionText,
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
     textAlign: 'center',
   },
 });

@@ -6,7 +6,8 @@ import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { useConditions } from '../hooks/useStorage';
 import { CONDITIONS } from '../engine/analyzer';
 import { usePremiumContext } from '../context/PremiumContext';
@@ -150,8 +151,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   topBarTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
   },
 
@@ -173,8 +174,8 @@ const styles = StyleSheet.create({
   },
   freeBannerText: {
     flex: 1,
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.medium,
     color: Colors.cautionText,
     lineHeight: 18,
   },
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1.5,
     borderColor: Colors.outline,
-    ...Shadow.sm,
+    ...SHADOW.sm,
   },
   conditionCardLocked: {
     opacity: 0.6,
@@ -209,12 +210,12 @@ const styles = StyleSheet.create({
   },
   // conditionIcon no longer used (replaced by Feather in conditionIconBg)
   conditionName: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
   },
   conditionStatus: {
-    fontSize: 12,
+    fontSize: FONT_SIZE.sm,
     color: Colors.onSurfaceMuted,
     marginTop: 2,
   },
@@ -231,8 +232,8 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     flex: 1,
-    fontSize: 13,
-    fontWeight: '500',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.medium,
     color: Colors.safeText,
     lineHeight: 19,
   },

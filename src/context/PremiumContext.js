@@ -11,6 +11,8 @@ const ENTITLEMENT_ID     = 'premium';
 const PRODUCT_ID         = 'foodsafe_premium_monthly';
 const FREE_SCAN_LIMIT    = 20;
 
+const DEBUG_FORCE_PREMIUM = true; // ⚠️ TESTING ONLY — set to false before shipping
+
 // Lazy-require so the app doesn't crash if the package isn't linked yet
 let Purchases = null;
 try { Purchases = require('react-native-purchases').default; } catch { /* Expo Go / not yet installed */ }
@@ -168,14 +170,18 @@ export function PremiumProvider({ children }) {
   const remaining = Math.max(0, FREE_SCAN_LIMIT - scanCount);
   const canScan   = isPremium || scanCount < FREE_SCAN_LIMIT;
 
+  const _isPremium  = DEBUG_FORCE_PREMIUM || isPremium;
+  const _canScan    = DEBUG_FORCE_PREMIUM || canScan;
+  const _remaining  = DEBUG_FORCE_PREMIUM ? FREE_SCAN_LIMIT : remaining;
+
   return (
     <PremiumContext.Provider value={{
-      isPremium,
+      isPremium:  _isPremium,
       hasBeenPremium,
       isLoading,
       scanCount,
-      remaining,
-      canScan,
+      remaining:  _remaining,
+      canScan:    _canScan,
       purchasePremium,
       restorePurchases,
       incrementScanCount,

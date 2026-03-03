@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 
 function RadioGroup({ label, options, selected, onSelect }) {
   return (
@@ -42,7 +43,6 @@ export default function UnitsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [measurement, setMeasurement] = useState('metric');
   const [energy,      setEnergy]      = useState('kcal');
-  const [language,    setLanguage]    = useState('en');
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -52,7 +52,7 @@ export default function UnitsScreen({ navigation }) {
         <TouchableOpacity style={styles.topBarBtn} onPress={() => navigation.goBack()}>
           <Feather name="chevron-left" size={22} color={Colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.topBarTitle}>Units & Language</Text>
+        <Text style={styles.topBarTitle}>Units</Text>
         <View style={styles.topBarBtn} />
       </View>
 
@@ -60,37 +60,30 @@ export default function UnitsScreen({ navigation }) {
         contentContainerStyle={{ padding: Spacing.md, paddingBottom: insets.bottom + 40, gap: Spacing.md }}
         showsVerticalScrollIndicator={false}
       >
-        <RadioGroup
-          label="MEASUREMENT SYSTEM"
-          selected={measurement}
-          onSelect={setMeasurement}
-          options={[
-            { value: 'metric',   icon: 'thermometer', label: 'Metric',   subtitle: 'kg, g, ml, cm — used globally'       },
-            { value: 'imperial', icon: 'box',          label: 'Imperial', subtitle: 'lb, oz, fl oz, in — US & UK'         },
-          ]}
-        />
+        {/* ── Units section ── */}
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionLabel}>UNITS</Text>
+          <RadioGroup
+            label="MEASUREMENT SYSTEM"
+            selected={measurement}
+            onSelect={setMeasurement}
+            options={[
+              { value: 'metric',   icon: 'thermometer', label: 'Metric',   subtitle: 'kg, g, ml, cm — used globally' },
+              { value: 'imperial', icon: 'box',          label: 'Imperial', subtitle: 'lb, oz, fl oz, in — US & UK'  },
+            ]}
+          />
+          <RadioGroup
+            label="ENERGY DISPLAY"
+            selected={energy}
+            onSelect={setEnergy}
+            options={[
+              { value: 'kcal', icon: 'zap',     label: 'Kilocalories (kcal)', subtitle: 'Standard food energy unit' },
+              { value: 'kj',   icon: 'activity', label: 'Kilojoules (kJ)',     subtitle: 'Scientific energy unit'   },
+            ]}
+          />
+        </View>
 
-        <RadioGroup
-          label="ENERGY DISPLAY"
-          selected={energy}
-          onSelect={setEnergy}
-          options={[
-            { value: 'kcal', icon: 'zap',     label: 'Kilocalories (kcal)', subtitle: 'Standard food energy unit'       },
-            { value: 'kj',   icon: 'activity', label: 'Kilojoules (kJ)',     subtitle: 'Scientific energy unit'          },
-          ]}
-        />
 
-        <RadioGroup
-          label="LANGUAGE"
-          selected={language}
-          onSelect={setLanguage}
-          options={[
-            { value: 'en', icon: 'globe', label: 'English',  subtitle: 'en-US'  },
-            { value: 'es', icon: 'globe', label: 'Español',  subtitle: 'es-ES'  },
-            { value: 'fr', icon: 'globe', label: 'Français', subtitle: 'fr-FR'  },
-            { value: 'de', icon: 'globe', label: 'Deutsch',  subtitle: 'de-DE'  },
-          ]}
-        />
       </ScrollView>
     </View>
   );
@@ -104,15 +97,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: 17, fontWeight: '700', color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
 
   sectionBlock: { gap: 8 },
   sectionLabel: {
-    fontSize: 11, fontWeight: '800', letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4,
   },
   sectionCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...Shadow.md, overflow: 'hidden',
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...SHADOW.md, overflow: 'hidden',
   },
 
   radioRow: {
@@ -124,8 +117,8 @@ const styles = StyleSheet.create({
     width: 32, height: 32, borderRadius: Radius.sm,
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
-  radioTitle: { fontSize: 14, fontWeight: '600', color: Colors.onSurface },
-  radioSubtitle: { fontSize: 12, color: Colors.onSurfaceMuted, marginTop: 2 },
+  radioTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
+  radioSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
 
   radio: {
     width: 20, height: 20, borderRadius: 10,

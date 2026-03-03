@@ -2,12 +2,14 @@
 import { useState, Fragment } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, Switch,
-  TouchableOpacity, TextInput, KeyboardAvoidingView, Platform,
+  TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { useDietaryPrefs } from '../hooks/useStorage';
+import { useDietLists } from '../hooks/useDietLists';
 import { usePremiumContext } from '../context/PremiumContext';
 import { UpgradeModal } from '../components/UpgradeModal';
 
@@ -92,75 +94,11 @@ const NUTRIENTS = [
   { key: 'sodium',       label: 'Sodium',          unit: 'mg',   icon: 'activity',     hasMin: false, hasMax: true  },
 ];
 
-const ARTICLES = [
-  {
-    id: '1', icon: 'clipboard', category: 'BASICS',
-    title: 'Reading Nutrition Labels',
-    subtitle: 'What every number on the label actually means',
-    content: [
-      'Nutrition labels can be confusing, but once you understand the structure they become powerful tools.',
-      'Serving Size — All values on the label are based on this amount. If a bag says "2 servings" and you eat the whole bag, double every number.',
-      'Calories — Energy you get from the product. General guidance: 100 kcal or less per serving is low, 400+ is high.',
-      '% Daily Value (%DV) — Shows how much a nutrient contributes to a daily 2,000 kcal diet. 5% or less = low, 20% or more = high.',
-      'Ingredients list — Listed by weight, heaviest first. The first 3 ingredients make up the bulk of the product.',
-    ],
-  },
-  {
-    id: '2', icon: 'filter', category: 'SODIUM',
-    title: 'Why Sodium Matters',
-    subtitle: 'How salt affects your heart and kidneys',
-    content: [
-      'Most adults should consume less than 2,300 mg of sodium per day — about 1 teaspoon of salt. Yet the average person consumes nearly double that.',
-      'High sodium raises blood pressure by causing the body to retain water. Long-term high intake damages arteries and strains the heart.',
-      'Hidden sodium sources: bread and rolls, canned soups, processed meats, and most fast food.',
-      'Smart swap: Look for "No Added Salt" or "Low Sodium" labels. Cooking from scratch gives you full control.',
-    ],
-  },
-  {
-    id: '3', icon: 'droplet', category: 'SUGAR',
-    title: 'Added Sugar vs Natural Sugar',
-    subtitle: 'Not all sugar is created equal',
-    content: [
-      'Natural sugars — found in whole fruits, vegetables, and dairy. They come packaged with fiber and slow down absorption.',
-      'Added sugars — sucrose, HFCS, maltose, and dozens of other names. These spike blood sugar and provide zero nutrition.',
-      'Daily limit: The WHO recommends added sugars below 10% of total energy — about 50 g for a 2,000 kcal diet.',
-      'How to spot added sugar: look for ingredients ending in "-ose", anything with "syrup", malt, molasses, or cane juice.',
-    ],
-  },
-  {
-    id: '4', icon: 'bar-chart-2', category: 'PROTEIN',
-    title: 'Getting Enough Protein',
-    subtitle: 'Daily targets and the best food sources',
-    content: [
-      'Sedentary adults need 0.8 g per kg of body weight. Active individuals need 1.2–1.7 g/kg. Athletes or those building muscle need 1.6–2.2 g/kg.',
-      'Complete proteins (meat, fish, eggs, dairy, soy, quinoa) contain all essential amino acids.',
-      'Incomplete proteins (most plants) are missing one or more — but combining them (rice + beans) creates a complete profile.',
-      'Benchmarks per 100 g: chicken breast ≈ 31 g, eggs ≈ 13 g, Greek yogurt ≈ 10 g, lentils ≈ 9 g.',
-    ],
-  },
-  {
-    id: '5', icon: 'circle', category: 'FATS',
-    title: 'Good Fats vs Bad Fats',
-    subtitle: 'Understanding dietary fat types',
-    content: [
-      'Unsaturated fats (healthy): monounsaturated (olive oil, avocados) and polyunsaturated (fatty fish, walnuts) reduce inflammation.',
-      'Saturated fats (moderate): found in meat and dairy. Raises LDL cholesterol — limit to < 10% of total calories.',
-      'Trans fats (avoid): found in partially hydrogenated oils. Raises LDL and lowers HDL simultaneously — the worst fat for heart health.',
-      'Check ingredients for "partially hydrogenated oil" even if the nutrition panel shows 0 g trans fat (rounding rules apply).',
-    ],
-  },
-  {
-    id: '6', icon: 'search', category: 'ADDITIVES',
-    title: 'Common Food Additives Explained',
-    subtitle: 'What E-numbers and chemical names mean',
-    content: [
-      'Generally safe: Ascorbic acid (Vitamin C/E300), Lecithin (E322), Pectin (E440) — these are derived from natural sources.',
-      'Worth limiting: Sodium nitrite (E250) in processed meats, Carrageenan (linked to gut inflammation in some studies), and artificial colors (Red 40, Yellow 5/6).',
-      'MSG (E621): despite its reputation, extensive research shows MSG is safe for the vast majority of people.',
-      'Rule of thumb: shorter ingredient lists with names you recognize are generally a safer choice.',
-    ],
-  },
-];
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatListDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -280,57 +218,39 @@ function NutrientRow({ nutrient, value, onChange, locked, onLockedPress }) {
   );
 }
 
-function ArticleCard({ article }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <TouchableOpacity
-      style={styles.articleCard}
-      onPress={() => setOpen(o => !o)}
-      activeOpacity={0.85}
-    >
-      <View style={styles.articleHeader}>
-        <View style={styles.articleIconWrap}>
-          <Feather name={article.icon} size={22} color={Colors.primary} />
-        </View>
-        <View style={{ flex: 1, gap: 3 }}>
-          <Text style={styles.articleCategory}>{article.category}</Text>
-          <Text style={styles.articleTitle}>{article.title}</Text>
-          <Text style={styles.articleSubtitle} numberOfLines={open ? undefined : 1}>
-            {article.subtitle}
-          </Text>
-        </View>
-        <Feather
-          name={open ? 'chevron-up' : 'chevron-down'}
-          size={18}
-          color={Colors.onSurfaceMuted}
-        />
-      </View>
-
-      {open && (
-        <View style={styles.articleBody}>
-          {article.content.map((para, i) => (
-            <Text key={i} style={styles.articlePara}>{para}</Text>
-          ))}
-        </View>
-      )}
-    </TouchableOpacity>
-  );
-}
-
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
-export default function ExploreScreen() {
+export default function ExploreScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { prefs, savePrefs } = useDietaryPrefs();
   const { isPremium } = usePremiumContext();
+  const { lists, addList, deleteList } = useDietLists();
   const [activeTab, setActiveTab] = useState('dietary');
   const [blacklistInput, setBlacklistInput] = useState('');
+  const [newListInput, setNewListInput] = useState('');
+  const [showNewListInput, setShowNewListInput] = useState(false);
   const [upgradeVisible, setUpgradeVisible] = useState(false);
 
   if (!prefs) return null;
 
   const dietaryLocked = !isPremium;
-  const showUpgrade = () => setUpgradeVisible(true);
+  const listLocked    = !isPremium;
+  const showUpgrade   = () => setUpgradeVisible(true);
+
+  const handleAddList = () => {
+    const name = newListInput.trim();
+    if (!name) return;
+    addList(name);
+    setNewListInput('');
+    setShowNewListInput(false);
+  };
+
+  const handleDeleteList = (id) => {
+    Alert.alert('Delete List', 'Delete this list and all its products?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deleteList(id) },
+    ]);
+  };
 
   const updatePrefs    = partial  => savePrefs({ ...prefs, ...partial });
   const updateNutrient = (key, v) => savePrefs({ ...prefs, [key]: v });
@@ -368,8 +288,8 @@ export default function ExploreScreen() {
         <View style={styles.tabToggleWrap}>
           <View style={styles.tabToggle}>
             {[
-              { key: 'dietary', icon: 'sliders',   label: 'Dietary' },
-              { key: 'learn',   icon: 'book-open',  label: 'Learn'   },
+              { key: 'dietary',  icon: 'sliders', label: 'Dietary'   },
+              { key: 'dietlist', icon: 'list',    label: 'Diet List' },
             ].map(t => (
               <TouchableOpacity
                 key={t.key}
@@ -526,13 +446,105 @@ export default function ExploreScreen() {
           </View>
         )}
 
-        {/* ══ LEARN TAB ════════════════════════════════════════════════════════ */}
-        {activeTab === 'learn' && (
+        {/* ══ DIET LIST TAB ════════════════════════════════════════════════════ */}
+        {activeTab === 'dietlist' && (
           <View style={styles.tabContent}>
-            <Text style={styles.sectionLabel}>NUTRITION GUIDES</Text>
-            {ARTICLES.map(a => (
-              <ArticleCard key={a.id} article={a} />
+
+            {/* Premium gate banner */}
+            {listLocked && (
+              <TouchableOpacity style={styles.gateBanner} onPress={showUpgrade} activeOpacity={0.85}>
+                <Feather name="lock" size={15} color={Colors.primary} />
+                <Text style={styles.gateBannerText}>
+                  Diet List is a Premium feature
+                </Text>
+                <Text style={styles.gateBannerCta}>Upgrade →</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* New list input row */}
+            {!listLocked && showNewListInput && (
+              <View style={styles.newListInputRow}>
+                <TextInput
+                  style={styles.newListInput}
+                  value={newListInput}
+                  onChangeText={setNewListInput}
+                  placeholder="List name..."
+                  placeholderTextColor={Colors.onSurfaceMuted}
+                  autoFocus
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddList}
+                />
+                <TouchableOpacity style={styles.addBtn} onPress={handleAddList} activeOpacity={0.8}>
+                  <Feather name="check" size={20} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.addBtn, styles.cancelBtn]}
+                  onPress={() => { setShowNewListInput(false); setNewListInput(''); }}
+                  activeOpacity={0.8}
+                >
+                  <Feather name="x" size={20} color={Colors.onSurfaceMuted} />
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Add new list button */}
+            {!listLocked && !showNewListInput && (
+              <TouchableOpacity
+                style={styles.addListBtn}
+                onPress={() => setShowNewListInput(true)}
+                activeOpacity={0.85}
+              >
+                <Feather name="plus" size={18} color={Colors.primary} />
+                <Text style={styles.addListBtnText}>New List</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Lists */}
+            <Text style={styles.sectionLabel}>YOUR LISTS</Text>
+            {lists && lists.map(list => (
+              <TouchableOpacity
+                key={list.id}
+                style={[styles.listCard, listLocked && styles.lockedCard]}
+                onPress={() => listLocked
+                  ? showUpgrade()
+                  : navigation.navigate('DietListDetail', { listId: list.id })
+                }
+                onLongPress={!list.isDefault && !listLocked
+                  ? () => handleDeleteList(list.id)
+                  : undefined
+                }
+                activeOpacity={0.85}
+              >
+                <View style={styles.listIconWrap}>
+                  <Feather
+                    name={list.isDefault ? 'star' : 'list'}
+                    size={20}
+                    color={listLocked ? Colors.onSurfaceMuted : Colors.primary}
+                  />
+                </View>
+                <View style={styles.listMeta}>
+                  <Text style={[styles.listName, listLocked && styles.lockedText]}>
+                    {list.name}
+                  </Text>
+                  <Text style={styles.listCount}>
+                    {list.products.length} {list.products.length === 1 ? 'product' : 'products'}
+                    {list.products.length > 0 ? ` · ${formatListDate(list.updatedAt)}` : ''}
+                  </Text>
+                </View>
+                <Feather
+                  name={listLocked ? 'lock' : 'chevron-right'}
+                  size={16}
+                  color={Colors.onSurfaceMuted}
+                />
+              </TouchableOpacity>
             ))}
+
+            {/* Empty hint */}
+            {!listLocked && lists?.length <= 1 && lists?.[0]?.products.length === 0 && (
+              <Text style={styles.emptyNote}>
+                Scan a product and tap "Add to Diet List" to build your personal food lists.
+              </Text>
+            )}
           </View>
         )}
       </ScrollView>
@@ -562,14 +574,14 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   pageTitle: {
-    fontSize: 32,
-    fontWeight: '800',
+    fontSize: FONT_SIZE.display,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: -0.8,
     color: Colors.onSurface,
   },
   pageSub: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.medium,
     color: Colors.onSurfaceMuted,
   },
 
@@ -584,7 +596,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
     padding: 4,
     gap: 4,
-    ...Shadow.sm,
+    ...SHADOW.sm,
   },
   tabPill: {
     flex: 1,
@@ -599,8 +611,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
   },
   tabPillText: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurfaceMuted,
   },
   tabPillTextActive: {
@@ -616,8 +628,8 @@ const styles = StyleSheet.create({
 
   // ── Section labels ───────────────────────────────────────────────────────────
   sectionLabel: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 1.2,
     color: Colors.onSurfaceMuted,
     marginTop: 4,
@@ -629,8 +641,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   sectionMeta: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.medium,
     color: Colors.onSurfaceMuted,
     opacity: 0.7,
   },
@@ -643,16 +655,16 @@ const styles = StyleSheet.create({
     borderRadius: Radius.xl,
     padding: 20,
     gap: Spacing.md,
-    ...Shadow.md,
+    ...SHADOW.md,
   },
   masterTitle: {
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
   },
   masterSub: {
-    fontSize: 13,
-    fontWeight: '400',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.regular,
     color: Colors.onSurfaceMuted,
     lineHeight: 18,
   },
@@ -670,7 +682,7 @@ const styles = StyleSheet.create({
     gap: 4,
     borderWidth: 1.5,
     borderColor: Colors.outline,
-    ...Shadow.sm,
+    ...SHADOW.sm,
     position: 'relative',
   },
   presetCheck: {
@@ -697,13 +709,13 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
   },
   presetLabel: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
   },
   presetDesc: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.medium,
     color: Colors.onSurfaceMuted,
     lineHeight: 16,
   },
@@ -713,7 +725,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: Radius.xl,
     overflow: 'hidden',
-    ...Shadow.md,
+    ...SHADOW.md,
   },
 
   // ── Nutrient rows ────────────────────────────────────────────────────────────
@@ -737,13 +749,13 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   nutrientLabel: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.onSurface,
   },
   nutrientSummary: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.medium,
     color: Colors.primary,
   },
   nutrientInputs: {
@@ -760,8 +772,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   inputLabel: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.onSurfaceMuted,
     letterSpacing: 0.3,
   },
@@ -770,8 +782,8 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.onSurface,
     borderWidth: 1,
     borderColor: Colors.outline,
@@ -799,7 +811,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 15,
+    fontSize: FONT_SIZE.md,
     color: Colors.onSurface,
     borderWidth: 1,
     borderColor: Colors.outline,
@@ -831,12 +843,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.primaryBorder,
   },
   chipText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.primary,
   },
   emptyNote: {
-    fontSize: 13,
+    fontSize: FONT_SIZE.sm,
     color: Colors.onSurfaceMuted,
     paddingHorizontal: 14,
     paddingBottom: 16,
@@ -858,13 +870,13 @@ const styles = StyleSheet.create({
   },
   gateBannerText: {
     flex: 1,
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.primary,
   },
   gateBannerCta: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.primary,
   },
   lockedCard: {
@@ -888,20 +900,52 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // ── Article cards ────────────────────────────────────────────────────────────
-  articleCard: {
+  // ── Diet List tab ─────────────────────────────────────────────────────────────
+  newListInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  newListInput: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.md,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: FONT_SIZE.md,
+    color: Colors.onSurface,
+    borderWidth: 1,
+    borderColor: Colors.outline,
+  },
+  cancelBtn: {
+    backgroundColor: Colors.outline,
+  },
+  addListBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.primarySurface,
+    borderRadius: Radius.xl,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: Colors.primaryBorder,
+  },
+  addListBtnText: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: Colors.primary,
+  },
+  listCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: Colors.surface,
     borderRadius: Radius.xl,
-    overflow: 'hidden',
-    ...Shadow.md,
-  },
-  articleHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    padding: 18,
+    padding: 16,
     gap: 14,
+    ...SHADOW.md,
   },
-  articleIconWrap: {
+  listIconWrap: {
     width: 44,
     height: 44,
     borderRadius: Radius.md,
@@ -910,33 +954,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  articleCategory: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 1,
-    color: Colors.primary,
+  listMeta: {
+    flex: 1,
+    gap: 4,
   },
-  articleTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+  listName: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
-    lineHeight: 21,
   },
-  articleSubtitle: {
-    fontSize: 13,
-    fontWeight: '400',
+  listCount: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.medium,
     color: Colors.onSurfaceMuted,
-    lineHeight: 18,
-  },
-  articleBody: {
-    paddingHorizontal: 18,
-    paddingBottom: 18,
-    gap: 10,
-  },
-  articlePara: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: Colors.onSurfaceVariant,
-    lineHeight: 21,
   },
 });

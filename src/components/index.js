@@ -4,7 +4,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { Colors, Spacing, Radius, Typography } from '../theme';
 
 // ─── Rating Badge ─────────────────────────────────────────────────────────────
 // Flat pill style. AVOID is displayed as "UNSAFE" per design spec.
@@ -114,7 +115,7 @@ export function PrimaryButton({ label, onPress, disabled, icon, loading }) {
           <ActivityIndicator color="#fff" size="small" />
         ) : (
           <>
-            {icon && <Text style={styles.primaryBtnIcon}>{icon}</Text>}
+            {icon || null}
             <Text style={[styles.primaryBtnLabel, disabled && { color: Colors.onSurfaceMuted }]}>
               {label}
             </Text>
@@ -153,12 +154,12 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   badgeText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 0.8,
   },
   badgeTextLg: {
-    fontSize: 16,
+    fontSize: FONT_SIZE.lg,
     letterSpacing: 1.2,
   },
 
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.md,
-    ...Shadow.md,
+    ...SHADOW.md,
   },
 
   sectionHeader: {
@@ -186,13 +187,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     gap: 4,
   },
-  chipIcon: { fontSize: 14 },
-  chipLabel: { fontSize: 12, fontWeight: '700' },
+  chipIcon: { fontSize: FONT_SIZE.md },
+  chipLabel: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold },
 
   loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
 
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40, gap: 12 },
-  emptyIcon: { fontSize: 64 },
+  emptyIcon: { fontSize: FONT_SIZE.display },
   emptyTitle: { ...Typography.h2, textAlign: 'center' },
   emptySubtitle: { ...Typography.body, textAlign: 'center' },
 
@@ -202,12 +203,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 14,
     paddingHorizontal: 24,
     gap: 8,
   },
-  primaryBtnIcon: { fontSize: 18 },
-  primaryBtnLabel: { color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 0.2 },
+  primaryBtnIcon: { fontSize: FONT_SIZE.xl },
+  primaryBtnLabel: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, letterSpacing: 0.2 },
 
   nutriBadge: {
     borderRadius: Radius.md,
@@ -215,6 +216,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: 'center',
   },
-  nutriLabel: { color: '#fff', fontSize: 9, fontWeight: '600', letterSpacing: 0.5 },
-  nutriGrade: { color: '#fff', fontSize: 28, fontWeight: '900' },
+  nutriLabel: { color: '#fff', fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.semibold, letterSpacing: 0.5 },
+  nutriGrade: { color: '#fff', fontSize: FONT_SIZE.xxl, fontWeight: FONT_WEIGHT.bold },
 });

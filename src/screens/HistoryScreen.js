@@ -7,10 +7,12 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Radius, Shadow, Typography, Spacing } from '../theme';
+import { Colors, Radius, Typography, Spacing } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { useHistory } from '../hooks/useStorage';
 import { usePremiumContext } from '../context/PremiumContext';
 import { UpgradeModal } from '../components/UpgradeModal';
+import { DietListPickerModal } from '../components/DietListPickerModal';
 
 const FREE_HISTORY_LIMIT = 15;
 
@@ -64,6 +66,9 @@ export default function HistoryScreen({ navigation }) {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [upgradeVisible, setUpgradeVisible] = useState(false);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [dietListUpgradeVisible, setDietListUpgradeVisible] = useState(false);
 
   // Free users: cap at 15 items
   const cappedHistory = isPremium ? history : history.slice(0, FREE_HISTORY_LIMIT);
@@ -120,7 +125,7 @@ export default function HistoryScreen({ navigation }) {
         </TouchableOpacity>
         <Text style={styles.topBarTitle}>Scan History</Text>
         <TouchableOpacity style={styles.topBarBtn} onPress={handleClear}>
-          <Feather name="sliders" size={20} color={Colors.onSurface} />
+          <Feather name="trash-2" size={20} color={Colors.onSurface} />
         </TouchableOpacity>
       </View>
 
@@ -189,7 +194,7 @@ export default function HistoryScreen({ navigation }) {
               <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
             ) : (
               <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
-                <Feather name="package" size={22} color={Colors.onSurfaceMuted} />
+                <Feather name="shopping-bag" size={22} color={Colors.onSurfaceMuted} />
               </View>
             )}
 
@@ -201,8 +206,30 @@ export default function HistoryScreen({ navigation }) {
               <StatusBadge rating={item.rating} />
             </View>
 
-            {/* Time */}
-            <Text style={styles.cardTime}>{formatItemTime(item.scannedAt)}</Text>
+            {/* Time + add to list */}
+            <View style={styles.cardRight}>
+              <Text style={styles.cardTime}>{formatItemTime(item.scannedAt)}</Text>
+              <TouchableOpacity
+                style={styles.cardAddBtn}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                onPress={() => {
+                  if (!isPremium) {
+                    setDietListUpgradeVisible(true);
+                    return;
+                  }
+                  setSelectedProduct({
+                    barcode: item.barcode,
+                    productName: item.productName,
+                    brand: item.brand,
+                    rating: item.rating,
+                    imageUrl: item.imageUrl,
+                  });
+                  setPickerVisible(true);
+                }}
+              >
+                <Feather name="bookmark" size={16} color={Colors.primary} />
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
         )}
         ListEmptyComponent={
@@ -264,6 +291,18 @@ export default function HistoryScreen({ navigation }) {
         onClose={() => setUpgradeVisible(false)}
         onUpgrade={() => setUpgradeVisible(false)}
       />
+
+      <DietListPickerModal
+        visible={pickerVisible}
+        onClose={() => { setPickerVisible(false); setSelectedProduct(null); }}
+        product={selectedProduct}
+      />
+      <UpgradeModal
+        feature="dietlist"
+        visible={dietListUpgradeVisible}
+        onClose={() => setDietListUpgradeVisible(false)}
+        onUpgrade={() => setDietListUpgradeVisible(false)}
+      />
     </View>
   );
 }
@@ -290,8 +329,8 @@ const styles = StyleSheet.create({
   },
   topBarTitle: {
     ...Typography.h2,
-    fontSize: 17,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
   },
 
   // Search
@@ -305,11 +344,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: 12,
     gap: 10,
-    ...Shadow.sm,
+    ...SHADOW.sm,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: FONT_SIZE.md,
     color: Colors.onSurface,
     padding: 0,
   },
@@ -334,8 +373,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
   },
   filterPillText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.onSurfaceVariant,
   },
   filterPillTextActive: {
@@ -344,8 +383,8 @@ const styles = StyleSheet.create({
 
   // Section label
   sectionLabel: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 1,
     color: Colors.onSurfaceMuted,
     marginTop: Spacing.md,
@@ -360,7 +399,7 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     padding: Spacing.md,
     gap: Spacing.md,
-    ...Shadow.md,
+    ...SHADOW.md,
   },
   cardImage: {
     width: 64,
@@ -377,15 +416,21 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   cardName: {
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
   },
+  cardRight: {
+    alignItems: 'center',
+    gap: 8,
+  },
   cardTime: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.onSurfaceMuted,
-    alignSelf: 'flex-start',
+  },
+  cardAddBtn: {
+    padding: 2,
   },
 
   // Status badge (dot + label)
@@ -404,8 +449,8 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   statusText: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 0.4,
   },
 
@@ -428,7 +473,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
     gap: 8,
-    ...Shadow.lg,
+    ...SHADOW.lg,
   },
   historyGateIconWrap: {
     width: 52,
@@ -439,27 +484,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   historyGateTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
     textAlign: 'center',
   },
   historyGateSub: {
-    fontSize: 13,
+    fontSize: FONT_SIZE.sm,
     color: Colors.onSurfaceMuted,
     textAlign: 'center',
   },
   historyGateBtn: {
     backgroundColor: Colors.primary,
-    borderRadius: Radius.full,
-    paddingVertical: 12,
+    borderRadius: Radius.xl,
+    paddingVertical: 14,
     paddingHorizontal: 24,
     marginTop: 4,
   },
   historyGateBtnText: {
     color: '#fff',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
   },
 
   // Empty
@@ -485,14 +530,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     backgroundColor: Colors.primary,
-    borderRadius: Radius.lg,
+    borderRadius: Radius.xl,
     paddingHorizontal: Spacing.lg,
-    paddingVertical: 12,
+    paddingVertical: 14,
     marginTop: Spacing.sm,
   },
   scanNowText: {
     color: '#fff',
-    fontWeight: '700',
-    fontSize: 14,
+    fontWeight: FONT_WEIGHT.semibold,
+    fontSize: FONT_SIZE.md,
   },
 });

@@ -7,7 +7,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { Colors, Shadow, Spacing } from '../theme';
+import { Colors, Spacing } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { useOnboarding } from '../hooks/useStorage';
 
 export const AppContext = createContext({});
@@ -27,10 +28,12 @@ import DietaryPreferencesScreen    from '../screens/DietaryPreferencesScreen';
 import PersonalInformationScreen   from '../screens/PersonalInformationScreen';
 import NotificationsScreen         from '../screens/NotificationsScreen';
 import UnitsScreen                 from '../screens/UnitsScreen';
+import LanguageScreen              from '../screens/LanguageScreen';
 import PrivacySecurityScreen       from '../screens/PrivacySecurityScreen';
 import HelpCenterScreen            from '../screens/HelpCenterScreen';
 import AboutFoodSafeScreen         from '../screens/AboutFoodSafeScreen';
 import PaywallScreen               from '../screens/PaywallScreen';
+import DietListDetailScreen        from '../screens/DietListDetailScreen';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -182,6 +185,11 @@ export default function RootNavigator() {
               options={{ presentation: 'card' }}
             />
             <Stack.Screen
+              name="Language"
+              component={LanguageScreen}
+              options={{ presentation: 'card' }}
+            />
+            <Stack.Screen
               name="PrivacySecurity"
               component={PrivacySecurityScreen}
               options={{ presentation: 'card' }}
@@ -201,6 +209,11 @@ export default function RootNavigator() {
               component={PaywallScreen}
               options={{ presentation: 'modal' }}
             />
+            <Stack.Screen
+              name="DietListDetail"
+              component={DietListDetailScreen}
+              options={{ presentation: 'card' }}
+            />
           </>
         )}
 
@@ -217,7 +230,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F0F4F8',
     paddingTop: Spacing.sm,
-    ...Shadow.lg,
+    ...SHADOW.lg,
   },
   tabItem: {
     flex: 1,
@@ -227,13 +240,13 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   tabLabel: {
-    fontSize: 10,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.onSurfaceMuted,
   },
   tabLabelActive: {
     color: Colors.primary,
-    fontWeight: '700',
+    fontWeight: FONT_WEIGHT.bold,
   },
   tabActiveDot: {
     position: 'absolute',
@@ -263,6 +276,6 @@ const styles = StyleSheet.create({
   tabBadgeText: {
     color: '#fff',
     fontSize: 9,
-    fontWeight: '800',
+    fontWeight: FONT_WEIGHT.bold,
   },
 });

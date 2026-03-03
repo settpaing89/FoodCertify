@@ -1,8 +1,10 @@
 // src/screens/AboutFoodSafeScreen.js
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 
 function LinkRow({ icon, label, subtitle, onPress, last }) {
   return (
@@ -56,7 +58,7 @@ export default function AboutFoodSafeScreen({ navigation }) {
         {/* App identity */}
         <View style={styles.identityCard}>
           <View style={styles.appIcon}>
-            <Text style={{ fontSize: 38 }}>🌿</Text>
+            <MaterialCommunityIcons name="leaf" size={38} color={Colors.primary} />
           </View>
           <Text style={styles.appName}>FoodSafe</Text>
           <Text style={styles.appTagline}>Know what you eat. Stay safe.</Text>
@@ -129,7 +131,11 @@ export default function AboutFoodSafeScreen({ navigation }) {
           </Text>
         </View>
 
-        <Text style={styles.footer}>Made with 🌿 · FoodSafe © 2026</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <Text style={styles.footer}>Made with</Text>
+          <MaterialCommunityIcons name="leaf" size={12} color={Colors.onSurfaceMuted} />
+          <Text style={styles.footer}>FoodSafe © 2026</Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -143,12 +149,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: 17, fontWeight: '700', color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
 
   // Identity
   identityCard: {
     backgroundColor: Colors.surface, borderRadius: Radius.lg,
-    alignItems: 'center', padding: Spacing.xl, gap: 8, ...Shadow.md,
+    alignItems: 'center', padding: Spacing.xl, gap: 8, ...SHADOW.md,
   },
   appIcon: {
     width: 72, height: 72, borderRadius: 20,
@@ -156,27 +162,27 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: 4,
   },
   appName: { ...Typography.h1, color: Colors.primary },
-  appTagline: { fontSize: 14, color: Colors.onSurfaceVariant, fontWeight: '500' },
+  appTagline: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant, fontWeight: FONT_WEIGHT.medium },
   versionPill: {
     backgroundColor: Colors.primarySurface, borderRadius: Radius.full,
     paddingHorizontal: 14, paddingVertical: 5, marginTop: 4,
   },
-  versionPillText: { fontSize: 12, fontWeight: '700', color: Colors.primary },
+  versionPillText: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
 
   sectionLabel: {
-    fontSize: 11, fontWeight: '800', letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4, marginBottom: 8,
   },
   sectionCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...Shadow.md, overflow: 'hidden',
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...SHADOW.md, overflow: 'hidden',
   },
 
   infoRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: Spacing.md, paddingVertical: 14,
   },
-  infoLabel: { fontSize: 14, fontWeight: '500', color: Colors.onSurfaceVariant },
-  infoValue: { fontSize: 14, fontWeight: '600', color: Colors.onSurface },
+  infoLabel: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.medium, color: Colors.onSurfaceVariant },
+  infoValue: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
 
   row: {
     flexDirection: 'row', alignItems: 'center',
@@ -187,15 +193,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
   rowBody: { flex: 1 },
-  rowLabel: { fontSize: 14, fontWeight: '600', color: Colors.onSurface },
-  rowSubtitle: { fontSize: 12, color: Colors.onSurfaceMuted, marginTop: 2 },
+  rowLabel: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
+  rowSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
   divider: { height: 1, backgroundColor: Colors.outlineVariant, marginLeft: 60 },
 
   // Powered by
   poweredCard: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 14,
     backgroundColor: Colors.surface, borderRadius: Radius.lg,
-    padding: Spacing.md, ...Shadow.md,
+    padding: Spacing.md, ...SHADOW.md,
   },
   poweredIcon: {
     width: 48, height: 48, borderRadius: Radius.md,
@@ -203,19 +209,19 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   poweredBody: { flex: 1 },
-  poweredTitle: { fontSize: 15, fontWeight: '700', color: Colors.onSurface, marginBottom: 6 },
-  poweredDesc: { fontSize: 13, color: Colors.onSurfaceVariant, lineHeight: 19 },
+  poweredTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, marginBottom: 6 },
+  poweredDesc: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceVariant, lineHeight: 19 },
 
   // Mission
   missionCard: {
     backgroundColor: Colors.primarySurface, borderRadius: Radius.lg,
     padding: Spacing.md, gap: 8, borderWidth: 1, borderColor: Colors.primaryBorder,
   },
-  missionTitle: { fontSize: 15, fontWeight: '700', color: Colors.primary },
-  missionText: { fontSize: 13, color: Colors.primary, lineHeight: 20, opacity: 0.85 },
+  missionTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
+  missionText: { fontSize: FONT_SIZE.sm, color: Colors.primary, lineHeight: 20, opacity: 0.85 },
 
   footer: {
-    textAlign: 'center', fontSize: 12, color: Colors.onSurfaceMuted,
-    fontWeight: '500', paddingVertical: 4,
+    textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted,
+    fontWeight: FONT_WEIGHT.medium, paddingVertical: 4,
   },
 });

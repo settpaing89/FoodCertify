@@ -4,7 +4,8 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Linking } from 'r
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
-import { Colors, Radius, Shadow, Typography } from '../theme';
+import { Colors, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 
 const ARTICLES = [
   {
@@ -116,14 +117,14 @@ export default function EducationScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { paddingHorizontal: 20, paddingBottom: 20 },
-  headerTitle: { color: '#fff', fontSize: 24, fontWeight: '800' },
-  headerSub: { color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 4 },
+  headerTitle: { color: '#fff', fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold },
+  headerSub: { color: 'rgba(255,255,255,0.7)', fontSize: FONT_SIZE.sm, marginTop: 4 },
 
   content: { padding: 16, gap: 14 },
 
   articleCard: {
     backgroundColor: Colors.surface, borderRadius: Radius.xl,
-    overflow: 'hidden', ...Shadow.md,
+    overflow: 'hidden', ...SHADOW.md,
   },
   articleHeader: { padding: 16 },
   articleHeaderLeft: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
@@ -137,21 +138,21 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   tag: { borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start', marginBottom: 6 },
-  tagText: { color: '#fff', fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  articleTitle: { fontSize: 17, fontWeight: '800', color: Colors.onSurface, lineHeight: 22 },
+  tagText: { color: '#fff', fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 0.5 },
+  articleTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, lineHeight: 22 },
 
   articleBody: { padding: 16, gap: 12 },
-  articleSummary: { ...Typography.body, fontSize: 14 },
+  articleSummary: { ...Typography.body, fontSize: FONT_SIZE.md },
 
   articleContent: { gap: 10 },
   contentDivider: { height: 1, backgroundColor: Colors.outlineVariant },
-  contentText: { ...Typography.body, fontSize: 13, lineHeight: 21, whiteSpace: 'pre-wrap' },
+  contentText: { ...Typography.body, fontSize: FONT_SIZE.sm, lineHeight: 21, whiteSpace: 'pre-wrap' },
 
   readBtn: {
     borderWidth: 1.5, borderRadius: Radius.full,
     paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start',
   },
-  readBtnText: { fontSize: 13, fontWeight: '700' },
+  readBtnText: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold },
 
   attribution: {
     backgroundColor: Colors.surfaceVariant, borderRadius: Radius.lg, padding: 14,

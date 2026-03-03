@@ -5,7 +5,8 @@ import {
   Animated, TouchableWithoutFeedback, Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { Colors, Radius, Spacing, Shadow } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { Colors, Radius, Spacing } from '../theme';
 import { usePremiumContext } from '../context/PremiumContext';
 
 // ─── Per-feature config ───────────────────────────────────────────────────────
@@ -15,6 +16,7 @@ const FEATURE_CONFIG = {
   dietary:    { icon: 'sliders',   headline: 'Unlock Dietary Configuration', subtext: 'Set personal nutrient limits and build your perfect diet profile.'     },
   history:    { icon: 'clock',     headline: 'Unlock Full Scan History',     subtext: 'Access your complete scan archive and export it as a PDF report.'      },
   export:     { icon: 'file-text', headline: 'Unlock PDF Export',            subtext: 'Download your complete scan history as a formatted PDF report.'        },
+  dietlist:   { icon: 'bookmark',  headline: 'Unlock Diet Lists',            subtext: 'Save products to personal diet lists and track what you eat regularly.' },
 };
 
 const BENEFITS = [
@@ -109,7 +111,7 @@ const styles = StyleSheet.create({
     padding: 28,
     paddingBottom: 44,
     alignItems: 'center',
-    ...Shadow.lg,
+    ...SHADOW.lg,
   },
   handle: {
     width: 40, height: 4,
@@ -127,14 +129,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   headline: {
-    fontSize: 22, fontWeight: '800',
+    fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface,
     textAlign: 'center',
     letterSpacing: -0.3,
     marginBottom: 8,
   },
   subtext: {
-    fontSize: 14, color: Colors.onSurfaceMuted,
+    fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted,
     textAlign: 'center', lineHeight: 20,
     marginBottom: 24,
   },
@@ -146,7 +148,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  benefitText: { fontSize: 15, fontWeight: '500', color: Colors.onSurface, flex: 1 },
+  benefitText: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.medium, color: Colors.onSurface, flex: 1 },
   trialNote: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -154,19 +156,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   trialNoteText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
     color: Colors.primary,
   },
   ctaBtn: {
     width: '100%',
     backgroundColor: Colors.primary,
     borderRadius: Radius.xl,
-    paddingVertical: 18,
+    paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 12,
   },
-  ctaBtnText: { color: '#fff', fontSize: 17, fontWeight: '800' },
-  restoreBtn: { paddingVertical: 8 },
-  restoreText: { fontSize: 14, color: Colors.onSurfaceMuted, fontWeight: '500' },
+  ctaBtnText: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold },
+  restoreBtn: { paddingVertical: 14 },
+  restoreText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, fontWeight: FONT_WEIGHT.semibold },
 });

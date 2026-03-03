@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 
 const NOTIFICATION_GROUPS = [
   {
@@ -124,27 +125,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: 17, fontWeight: '700', color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
 
   masterCard: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     backgroundColor: Colors.surface, borderRadius: Radius.lg,
-    padding: Spacing.md, ...Shadow.md,
+    padding: Spacing.md, ...SHADOW.md,
   },
   masterLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   masterIconBg: {
     width: 44, height: 44, borderRadius: Radius.md,
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
-  masterTitle: { fontSize: 15, fontWeight: '700', color: Colors.onSurface },
-  masterSubtitle: { fontSize: 12, color: Colors.onSurfaceMuted, marginTop: 2 },
+  masterTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  masterSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
 
   sectionLabel: {
-    fontSize: 11, fontWeight: '800', letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4, marginBottom: 8,
   },
   sectionCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...Shadow.md, overflow: 'hidden',
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...SHADOW.md, overflow: 'hidden',
   },
   disabledCard: { opacity: 0.55 },
 
@@ -157,8 +158,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
   rowBody: { flex: 1 },
-  rowTitle: { fontSize: 14, fontWeight: '600', color: Colors.onSurface },
-  rowSubtitle: { fontSize: 12, color: Colors.onSurfaceMuted, marginTop: 2 },
+  rowTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
+  rowSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
   disabledText: { color: Colors.onSurfaceMuted },
 
   divider: { height: 1, backgroundColor: Colors.outlineVariant, marginLeft: 60 },

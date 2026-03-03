@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Linking } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 
 const FAQS = [
   {
@@ -136,48 +137,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: 17, fontWeight: '700', color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
 
   searchBar: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: Colors.surface, borderRadius: Radius.full,
     marginHorizontal: Spacing.md, marginBottom: 4,
     paddingHorizontal: Spacing.md, paddingVertical: 12,
-    gap: 10, ...Shadow.sm,
+    gap: 10, ...SHADOW.sm,
   },
-  searchInput: { flex: 1, fontSize: 14, color: Colors.onSurface, padding: 0 },
+  searchInput: { flex: 1, fontSize: FONT_SIZE.md, color: Colors.onSurface, padding: 0 },
 
   sectionLabel: {
-    fontSize: 11, fontWeight: '800', letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4,
   },
 
   faqCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...Shadow.md, overflow: 'hidden',
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...SHADOW.md, overflow: 'hidden',
   },
   faqItem: { paddingHorizontal: Spacing.md, paddingVertical: 14 },
   faqHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  faqQuestion: { flex: 1, fontSize: 14, fontWeight: '600', color: Colors.onSurface },
+  faqQuestion: { flex: 1, fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
   faqAnswer: {
-    marginTop: 10, fontSize: 13, color: Colors.onSurfaceVariant,
+    marginTop: 10, fontSize: FONT_SIZE.sm, color: Colors.onSurfaceVariant,
     lineHeight: 20, paddingRight: 28,
   },
 
   divider: { height: 1, backgroundColor: Colors.outlineVariant },
 
   noResults: { padding: Spacing.lg, alignItems: 'center' },
-  noResultsText: { fontSize: 14, color: Colors.onSurfaceMuted, fontWeight: '500' },
+  noResultsText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, fontWeight: FONT_WEIGHT.medium },
 
   contactCard: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
     backgroundColor: Colors.surface, borderRadius: Radius.lg,
-    padding: Spacing.md, ...Shadow.md,
+    padding: Spacing.md, ...SHADOW.md,
   },
   contactIcon: {
     width: 48, height: 48, borderRadius: Radius.md,
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
   contactBody: { flex: 1 },
-  contactTitle: { fontSize: 15, fontWeight: '700', color: Colors.onSurface },
-  contactSubtitle: { fontSize: 12, color: Colors.onSurfaceMuted, marginTop: 2 },
+  contactTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  contactSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
 });

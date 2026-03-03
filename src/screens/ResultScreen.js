@@ -7,12 +7,16 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { RatingBadge, Card, NutriscoreBadge } from '../components';
+import { DietListPickerModal } from '../components/DietListPickerModal';
+import { UpgradeModal } from '../components/UpgradeModal';
 import { calculateNutriScore } from '../engine/analyzer';
 import { useHistory } from '../hooks/useStorage';
+import { usePremiumContext } from '../context/PremiumContext';
 
 const RATING_CONFIG = {
   SAFE:    { gradient: Colors.safeGradient,    light: Colors.safeBg,    border: Colors.safeBorder    },
@@ -35,8 +39,11 @@ export default function ResultScreen({ route, navigation }) {
 
   const insets = useSafeAreaInsets();
   const { addScan } = useHistory();
+  const { isPremium } = usePremiumContext();
   const [saved, setSaved] = useState(false);
   const [expandedIssues, setExpandedIssues] = useState({});
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [upgradeVisible, setUpgradeVisible] = useState(false);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
@@ -328,13 +335,39 @@ export default function ResultScreen({ route, navigation }) {
 
       {/* ── Bottom Bar ── */}
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 12 }]}>
-        <TouchableOpacity style={styles.scanAgainBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.scanAgainBtn} onPress={() => navigation.navigate('Scanner')}>
           <LinearGradient colors={cfg.gradient} style={styles.scanAgainGradient}>
-            <Feather name="maximize" size={18} color="#fff" />
+            <Feather name="maximize-2" size={18} color="#fff" />
             <Text style={styles.scanAgainText}>Scan Another Product</Text>
           </LinearGradient>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.addToListBtn}
+          onPress={() => isPremium ? setPickerVisible(true) : setUpgradeVisible(true)}
+          activeOpacity={0.8}
+        >
+          <Feather name="bookmark" size={16} color={Colors.primary} />
+          <Text style={styles.addToListText}>Add to Diet List</Text>
+        </TouchableOpacity>
       </View>
+
+      <DietListPickerModal
+        visible={pickerVisible}
+        onClose={() => setPickerVisible(false)}
+        product={{
+          barcode,
+          productName: product?.name,
+          brand: product?.brand,
+          rating: analysis.rating,
+          imageUrl: product?.imageThumbnailUrl || product?.imageUrl,
+        }}
+      />
+      <UpgradeModal
+        feature="dietlist"
+        visible={upgradeVisible}
+        onClose={() => setUpgradeVisible(false)}
+        onUpgrade={() => setUpgradeVisible(false)}
+      />
     </View>
   );
 }
@@ -407,9 +440,9 @@ const styles = StyleSheet.create({
     width: '100%', height: '100%',
     alignItems: 'center', justifyContent: 'center',
   },
-  productBrand: { color: 'rgba(255,255,255,0.72)', fontSize: 12, fontWeight: '600', marginBottom: 4 },
-  productName: { color: '#fff', fontSize: 18, fontWeight: '800', lineHeight: 24, marginBottom: 4 },
-  productQuantity: { color: 'rgba(255,255,255,0.65)', fontSize: 12 },
+  productBrand: { color: 'rgba(255,255,255,0.72)', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold, marginBottom: 4 },
+  productName: { color: '#fff', fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold, lineHeight: 24, marginBottom: 4 },
+  productQuantity: { color: 'rgba(255,255,255,0.65)', fontSize: FONT_SIZE.sm },
 
   // ── Summary Card ─────────────────────────────────────────────────────────────
   summaryCard: { marginHorizontal: 16, marginTop: -14 },
@@ -423,12 +456,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   statValue: {
-    fontSize: 24, fontWeight: '800',
+    fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold,
     color: Colors.onSurface, letterSpacing: -0.5,
   },
   statLabel: {
-    fontSize: 11, color: Colors.onSurfaceMuted,
-    fontWeight: '600', textAlign: 'center', lineHeight: 15,
+    fontSize: FONT_SIZE.xs, color: Colors.onSurfaceMuted,
+    fontWeight: FONT_WEIGHT.semibold, textAlign: 'center', lineHeight: 15,
   },
   statDivider: { width: 1, height: 56, backgroundColor: Colors.outline },
   summaryDivider: { height: 1, backgroundColor: Colors.outlineVariant, marginVertical: 14 },
@@ -441,10 +474,10 @@ const styles = StyleSheet.create({
     width: 32, height: 32, borderRadius: 10,
     alignItems: 'center', justifyContent: 'center',
   },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: Colors.onSurface, letterSpacing: -0.2 },
+  sectionTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, letterSpacing: -0.2 },
 
   // ── Condition Groups ──────────────────────────────────────────────────────────
-  conditionGroup: { borderRadius: Radius.xl, overflow: 'hidden', ...Shadow.sm, marginBottom: 4 },
+  conditionGroup: { borderRadius: Radius.xl, overflow: 'hidden', ...SHADOW.sm, marginBottom: 4 },
   conditionHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 14, borderWidth: 1.5,
@@ -455,12 +488,12 @@ const styles = StyleSheet.create({
     width: 30, height: 30, borderRadius: 8,
     alignItems: 'center', justifyContent: 'center',
   },
-  conditionHeaderLabel: { fontSize: 14, fontWeight: '700' },
+  conditionHeaderLabel: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold },
   conditionCount: {
     width: 24, height: 24, borderRadius: 12,
     alignItems: 'center', justifyContent: 'center',
   },
-  conditionCountText: { color: '#fff', fontSize: 12, fontWeight: '800' },
+  conditionCountText: { color: '#fff', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold },
 
   issueCard: {
     paddingHorizontal: 16, paddingVertical: 13, marginHorizontal: 1,
@@ -468,11 +501,11 @@ const styles = StyleSheet.create({
   },
   issueHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   issueRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ingredientName: { fontSize: 14, fontWeight: '700', color: Colors.onSurface, textTransform: 'capitalize' },
-  ingredientCategory: { fontSize: 11, color: Colors.onSurfaceMuted, marginTop: 2 },
+  ingredientName: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, textTransform: 'capitalize' },
+  ingredientCategory: { fontSize: FONT_SIZE.xs, color: Colors.onSurfaceMuted, marginTop: 2 },
   issueExpanded: { marginTop: 10 },
   issueDivider: { height: 1, backgroundColor: 'rgba(0,0,0,0.08)', marginBottom: 10 },
-  issueReason: { ...Typography.body, fontSize: 13, lineHeight: 20 },
+  issueReason: { ...Typography.body, fontSize: FONT_SIZE.sm, lineHeight: 20 },
 
   // ── Safe Card ────────────────────────────────────────────────────────────────
   safeCard: {
@@ -482,10 +515,10 @@ const styles = StyleSheet.create({
   safeIconWrap: {
     width: 72, height: 72, borderRadius: 36,
     backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
-    ...Shadow.sm,
+    ...SHADOW.sm,
   },
-  safeTitle: { fontSize: 20, fontWeight: '800', color: Colors.safe },
-  safeBody: { ...Typography.body, textAlign: 'center', fontSize: 14 },
+  safeTitle: { fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold, color: Colors.safe },
+  safeBody: { ...Typography.body, textAlign: 'center', fontSize: FONT_SIZE.md },
 
   // ── Tips ─────────────────────────────────────────────────────────────────────
   tipsCard: {
@@ -494,16 +527,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: Colors.primaryBorder,
   },
   tipsHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  tipsTitle: { fontSize: 14, fontWeight: '700', color: Colors.primary },
+  tipsTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
   tipRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
   tipDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.primary, marginTop: 6 },
-  tipText: { flex: 1, ...Typography.body, fontSize: 13, lineHeight: 20 },
+  tipText: { flex: 1, ...Typography.body, fontSize: FONT_SIZE.sm, lineHeight: 20 },
 
   // ── Info Cards ───────────────────────────────────────────────────────────────
   infoCard: { marginHorizontal: 16, marginTop: 4, gap: 10 },
   infoCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  infoCardTitle: { fontSize: 14, fontWeight: '700', color: Colors.onSurface },
-  infoCardText: { ...Typography.body, fontSize: 13, lineHeight: 20 },
+  infoCardTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  infoCardText: { ...Typography.body, fontSize: FONT_SIZE.sm, lineHeight: 20 },
 
   allergenChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 },
   allergenChip: {
@@ -511,7 +544,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 5,
     borderWidth: 1, borderColor: Colors.avoidBorder,
   },
-  allergenChipText: { fontSize: 12, fontWeight: '700', color: Colors.avoidText, textTransform: 'capitalize' },
+  allergenChipText: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.avoidText, textTransform: 'capitalize' },
 
   // ── Nutrition ────────────────────────────────────────────────────────────────
   nutritionCard: { marginHorizontal: 16, marginTop: 4, gap: 4 },
@@ -520,30 +553,35 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceVariant,
     marginHorizontal: -4, paddingHorizontal: 4, borderRadius: 6,
   },
-  nutritionLabel: { ...Typography.body, fontSize: 13 },
-  nutritionValue: { ...Typography.label, fontSize: 13 },
+  nutritionLabel: { ...Typography.body, fontSize: FONT_SIZE.sm },
+  nutritionValue: { ...Typography.label, fontSize: FONT_SIZE.sm },
   showMoreBtn: {
     flexDirection: 'row', alignItems: 'center',
     justifyContent: 'center', gap: 4, marginTop: 6,
   },
-  showMoreText: { color: Colors.primary, fontWeight: '700', fontSize: 12 },
+  showMoreText: { color: Colors.primary, fontWeight: FONT_WEIGHT.bold, fontSize: FONT_SIZE.sm },
 
   // ── Barcode ──────────────────────────────────────────────────────────────────
   barcodeInfo: { marginHorizontal: 16, marginTop: 12, marginBottom: 8, alignItems: 'center', gap: 4 },
   barcodeText: { ...Typography.caption, textAlign: 'center' },
-  barcodeLink: { color: Colors.primary, fontSize: 12, fontWeight: '700' },
+  barcodeLink: { color: Colors.primary, fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold },
 
   // ── Bottom Bar ───────────────────────────────────────────────────────────────
   bottomBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: Colors.surface, paddingTop: 12, paddingHorizontal: 16,
     borderTopWidth: 1, borderTopColor: Colors.outlineVariant,
-    ...Shadow.lg,
+    ...SHADOW.lg,
   },
   scanAgainBtn: { borderRadius: Radius.xl, overflow: 'hidden' },
   scanAgainGradient: {
-    paddingVertical: 16, flexDirection: 'row',
+    paddingVertical: 14, flexDirection: 'row',
     alignItems: 'center', justifyContent: 'center', gap: 10,
   },
-  scanAgainText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  scanAgainText: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold },
+  addToListBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 14, marginTop: 4, borderRadius: Radius.xl,
+  },
+  addToListText: { color: Colors.primary, fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold },
 });

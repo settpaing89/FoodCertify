@@ -4,17 +4,26 @@
 const BASE_URL = 'https://world.openfoodfacts.org/api/v0/product';
 const USER_AGENT = 'FoodSafe/1.0.0 (com.yourname.foodsafe; contact@yourname.com)';
 
+// In-memory cache — cleared on app restart, which is fine for barcodes
+const productCache = new Map();
+
 /**
  * Fetch product data by barcode from Open Food Facts.
  * Returns null if not found.
  */
 export async function fetchProductByBarcode(barcode) {
+  // Return cached result immediately on repeat scans
+  if (productCache.has(barcode)) {
+    return productCache.get(barcode);
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
   try {
     const response = await fetch(`${BASE_URL}/${barcode}.json`, {
-      headers: {
-        'User-Agent': USER_AGENT,
-      },
-      timeout: 10000,
+      headers: { 'User-Agent': USER_AGENT },
+      signal: controller.signal,
     });
 
     if (!response.ok) {
@@ -23,20 +32,19 @@ export async function fetchProductByBarcode(barcode) {
 
     const data = await response.json();
 
-    if (data.status === 0 || !data.product) {
-      return { found: false, barcode };
-    }
+    const result = data.status === 0 || !data.product
+      ? { found: false, barcode }
+      : { found: true, barcode, product: normalizeProduct(data.product) };
 
-    return {
-      found: true,
-      barcode,
-      product: normalizeProduct(data.product),
-    };
+    productCache.set(barcode, result);
+    return result;
   } catch (error) {
-    if (error.name === 'AbortError' || error.message.includes('timeout')) {
+    if (error.name === 'AbortError') {
       throw new Error('Request timed out. Check your connection.');
     }
     throw new Error(`Could not fetch product: ${error.message}`);
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

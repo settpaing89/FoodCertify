@@ -2,7 +2,8 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, Linking } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Shadow, Typography } from '../theme';
+import { Colors, Spacing, Radius, Typography } from '../theme';
+import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 
 function SettingsRow({ icon, label, subtitle, onPress, danger, last }) {
   return (
@@ -137,21 +138,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: 17, fontWeight: '700', color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
 
   noticeCard: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
     backgroundColor: Colors.primarySurface, borderRadius: Radius.lg,
     padding: Spacing.md, borderWidth: 1, borderColor: Colors.primaryBorder,
   },
-  noticeText: { flex: 1, fontSize: 13, color: Colors.primary, fontWeight: '500', lineHeight: 20 },
+  noticeText: { flex: 1, fontSize: FONT_SIZE.sm, color: Colors.primary, fontWeight: FONT_WEIGHT.medium, lineHeight: 20 },
 
   sectionLabel: {
-    fontSize: 11, fontWeight: '800', letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4, marginBottom: 8,
   },
   sectionCard: {
-    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...Shadow.md, overflow: 'hidden',
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, ...SHADOW.md, overflow: 'hidden',
   },
 
   row: {
@@ -164,9 +165,9 @@ const styles = StyleSheet.create({
   },
   rowIconDanger: { backgroundColor: Colors.avoidBg },
   rowBody: { flex: 1 },
-  rowLabel: { fontSize: 14, fontWeight: '600', color: Colors.onSurface },
+  rowLabel: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
   rowLabelDanger: { color: Colors.avoid },
-  rowSubtitle: { fontSize: 12, color: Colors.onSurfaceMuted, marginTop: 2 },
+  rowSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
 
   divider: { height: 1, backgroundColor: Colors.outlineVariant, marginLeft: 60 },
 });
