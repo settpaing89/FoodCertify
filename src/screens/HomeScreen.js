@@ -1,15 +1,48 @@
 // src/screens/HomeScreen.js
+import { useRef, useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
-  View, Text, ScrollView, StyleSheet,
+  View, Text, ScrollView, StyleSheet, Animated, Easing,
   TouchableOpacity, Image,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
 import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { RatingBadge } from '../components';
-import { useConditions, useHistory } from '../hooks/useStorage';
+import { AnimatedCard } from '../components/AnimatedCard';
+import { useConditions } from '../hooks/useStorage';
+import { useHistoryContext } from '../context/HistoryContext';
 import { usePremiumContext } from '../context/PremiumContext';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return 'Good morning';
+  if (h >= 12 && h < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function calculateStreak(history) {
+  if (!history.length) return 0;
+  const dayKeys = new Set(
+    history.map(h => {
+      const d = new Date(h.scannedAt);
+      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    })
+  );
+  let streak = 0;
+  const now = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    if (dayKeys.has(key)) streak++;
+    else break;
+  }
+  return streak;
+}
 
 function formatRelativeTime(dateStr) {
   if (!dateStr) return '';
@@ -30,17 +63,75 @@ function formatRelativeTime(dateStr) {
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { conditions } = useConditions();
-  const { history } = useHistory();
+  const { history } = useHistoryContext();
   const { isPremium, remaining } = usePremiumContext();
 
-  const safeCount    = history.filter(h => h.rating === 'SAFE').length;
-  const safetyScore  = history.length > 0 ? Math.round((safeCount / history.length) * 100) : null;
-  const recentScans  = history.slice(0, 5);
+  const safeCount     = history.filter(h => h.safetyRating === 'SAFE').length;
+  const safetyScore   = history.length > 0 ? Math.round((safeCount / history.length) * 100) : null;
+  const recentScans   = history.slice(0, 5);
+  const streak        = calculateStreak(history);
+  const greeting      = getGreeting();
+  const targetProgress = safetyScore ?? 0;
 
-  const statusHeading =
-    safetyScore === null || safetyScore >= 80 ? "You're Safe Today"
-    : safetyScore >= 50 ? "Stay Cautious"
-    : "Check Your Products";
+  const fillColor = safetyScore === null ? Colors.border
+    : safetyScore >= 70 ? Colors.safe
+    : safetyScore >= 40 ? Colors.caution
+    : Colors.avoid;
+
+  const progressMessage = safetyScore === null
+    ? 'Scan your first product to see your score'
+    : safetyScore >= 70 ? 'Great choices this week 💪'
+    : safetyScore >= 40 ? 'Some items to watch — keep scanning'
+    : "Let's improve your choices this week";
+
+  const scanSubLabel = !isPremium
+    ? (remaining > 0
+        ? `${remaining} free scan${remaining !== 1 ? 's' : ''} remaining this week`
+        : 'Weekly limit reached — upgrade to scan')
+    : 'Premium · Unlimited scans';
+
+  // ── State ────────────────────────────────────────────────────────────────────
+  const [userName, setUserName] = useState('Hey there');
+  const [showContent, setShowContent] = useState(true);
+
+  useFocusEffect(useCallback(() => {
+    setShowContent(true);
+    return () => setShowContent(false);
+  }, []));
+
+  // ── Animation refs ────────────────────────────────────────────────────────────
+  const greetFade    = useRef(new Animated.Value(0)).current;
+  const pulseAnim    = useRef(new Animated.Value(1)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
+
+  // ── Effects ───────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    AsyncStorage.getItem('@foodsafe:userName').then(name => {
+      if (name) setUserName(name);
+    });
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(greetFade, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+  }, []);
+
+  useEffect(() => {
+    const anim = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.08, duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1.0,  duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ])
+    );
+    anim.start();
+    return () => anim.stop();
+  }, []);
+
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: targetProgress, duration: 900,
+      easing: Easing.out(Easing.cubic), useNativeDriver: false,
+    }).start();
+  }, [targetProgress]);
 
   return (
     <ScrollView
@@ -48,109 +139,146 @@ export default function HomeScreen({ navigation }) {
       contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* ── Header row ── */}
+      {/* ── Header ── */}
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <TouchableOpacity
           style={styles.avatarBtn}
           onPress={() => navigation.navigate('Profile')}
           activeOpacity={0.85}
         >
-          <Feather name="user" size={22} color="#fff" />
+          <Feather name="user" size={20} color={Colors.accent} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.bellBtn} activeOpacity={0.85}>
-          <Feather name="bell" size={22} color={Colors.onSurface} />
+          <Feather name="bell" size={20} color={Colors.onSurface} />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        {/* ── Status Section ── */}
-        <View style={styles.statusSection}>
-          <Text style={styles.statusLabel}>CURRENT STATUS</Text>
-          <Text style={styles.statusHeading}>{statusHeading}</Text>
-        </View>
+      {showContent && <View style={styles.content}>
+        {/* ── Greeting ── */}
+        <Animated.View style={{ opacity: greetFade }}>
+          <Text style={styles.greetingText}>{greeting}, {userName} 👋</Text>
+        </Animated.View>
+
+        {/* ── Streak Card ── */}
+        <AnimatedCard delay={0} style={styles.heroCard}>
+          <View style={styles.streakRow}>
+            <Animated.View style={[styles.fireWrap, { transform: [{ scale: pulseAnim }] }]}>
+              <Text style={styles.fireEmoji}>🔥</Text>
+            </Animated.View>
+            <View style={{ flex: 1 }}>
+              {streak > 0 ? (
+                <>
+                  <Text style={styles.streakValue}>{streak} day streak</Text>
+                  <Text style={styles.streakSub}>Keep checking your food!</Text>
+                </>
+              ) : (
+                <Text style={styles.streakSub}>Start your streak — scan a product today!</Text>
+              )}
+            </View>
+          </View>
+        </AnimatedCard>
+
+        {/* ── Safety Progress Card ── */}
+        <AnimatedCard delay={80} style={styles.heroCard}>
+          <View style={styles.progressLabelRow}>
+            <Text style={styles.progressLabel}>Weekly Safety Score</Text>
+            <Text style={styles.progressValue}>
+              {safetyScore !== null ? `${safetyScore}%` : '--'}
+            </Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <Animated.View style={[styles.progressFill, {
+              width: progressAnim.interpolate({
+                inputRange: [0, 100], outputRange: ['0%', '100%'], extrapolate: 'clamp',
+              }),
+              backgroundColor: fillColor,
+            }]} />
+          </View>
+          <Text style={styles.progressMessage}>{progressMessage}</Text>
+        </AnimatedCard>
 
         {/* ── Scan Button ── */}
-        <TouchableOpacity
+        <AnimatedCard delay={160}><TouchableOpacity
           style={styles.scanBtn}
           onPress={() => navigation.navigate('Scanner')}
           activeOpacity={0.88}
         >
-          <Feather name="maximize-2" size={24} color="#fff" />
-          <View style={{ alignItems: 'center' }}>
-            <Text style={styles.scanBtnText}>Scan Product</Text>
-            {!isPremium && (
-              <Text style={styles.scanBtnSub}>
-                {remaining > 0
-                  ? `${remaining} scan${remaining !== 1 ? 's' : ''} left this week`
-                  : 'Weekly limit reached — upgrade to scan'}
-              </Text>
-            )}
-          </View>
+          <Feather name="camera" size={20} color={Colors.textInverse} />
+          <Text style={styles.scanBtnText}>Scan Product</Text>
         </TouchableOpacity>
+        <Text style={styles.scanSubLabel}>{scanSubLabel}</Text></AnimatedCard>
 
         {/* ── Stats Row ── */}
-        <View style={styles.statsRow}>
+        <AnimatedCard delay={240}><View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <View style={styles.statIconWrap}>
-              <Feather name="check-circle" size={22} color={Colors.primary} />
-            </View>
+            <Text style={styles.statLabel}>Safe Items</Text>
             <Text style={styles.statValue}>{safeCount}</Text>
-            <Text style={styles.statLabel}>Safe items</Text>
           </View>
 
           <View style={styles.statCard}>
-            <View style={styles.statIconWrap}>
-              <Feather name="droplet" size={22} color={Colors.primary} />
-            </View>
+            <Text style={styles.statLabel}>Safety Score</Text>
             <Text style={styles.statValue}>
               {safetyScore !== null ? `${safetyScore}%` : '--'}
             </Text>
-            <Text style={styles.statLabel}>Safety Score</Text>
           </View>
-        </View>
+        </View></AnimatedCard>
 
-        {/* ── Recent Activity ── */}
+        {/* ── Recent History ── */}
+        <AnimatedCard delay={320}><View style={styles.recentSection}>
         <View style={styles.sectionRow}>
-          <Text style={styles.sectionTitle}>RECENT ACTIVITY</Text>
+          <Text style={styles.sectionTitle}>Recent History</Text>
           <TouchableOpacity onPress={() => navigation.navigate('History')}>
-            <Text style={styles.sectionLink}>VIEW LOGS</Text>
+            <Text style={styles.sectionLink}>See All</Text>
           </TouchableOpacity>
         </View>
 
         {recentScans.length > 0 ? (
-          recentScans.map((item, i) => (
-            <TouchableOpacity
-              key={item.id || i}
-              style={styles.activityItem}
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('Result', {
-                product: { name: item.productName, brand: item.brand },
-                analysis: { rating: item.rating },
-                barcode: item.barcode,
-                fromHistory: true,
-              })}
-            >
-              {item.imageUrl ? (
-                <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
-              ) : (
-                <View style={styles.productImagePlaceholder}>
-                  <Feather name="shopping-bag" size={26} color={Colors.primary} />
-                </View>
-              )}
-
-              <View style={styles.activityInfo}>
-                <Text style={styles.productName} numberOfLines={1}>{item.productName}</Text>
-                <Text style={styles.productTime}>{formatRelativeTime(item.scannedAt)}</Text>
+          <View style={styles.activityCard}>
+            {recentScans.map((item, i) => (
+              <View key={item.id || i}>
+                <TouchableOpacity
+                  style={styles.activityRow}
+                  activeOpacity={0.85}
+                  onPress={() => navigation.navigate('Result', {
+                    product: {
+                      name: item.productName,
+                      brand: item.brand,
+                      allergens:         item.savedProduct?.allergens,
+                      ingredients:       item.savedProduct?.ingredients,
+                      imageUrl:          item.savedProduct?.imageUrl,
+                      imageThumbnailUrl: item.savedProduct?.imageThumbnailUrl,
+                      nutriments:        item.savedProduct?.nutriments,
+                      servingSize:       item.savedProduct?.servingSize,
+                      quantity:          item.savedProduct?.quantity,
+                    },
+                    analysis: item.savedAnalysis || { rating: item.safetyRating },
+                    barcode: item.barcode,
+                    fromHistory: true,
+                    isFromHistory: true,
+                  })}
+                >
+                  {item.imageUrl ? (
+                    <Image source={{ uri: item.imageUrl }} style={styles.productImage} />
+                  ) : (
+                    <View style={styles.productImagePlaceholder}>
+                      <Feather name="shopping-bag" size={18} color={Colors.accent} />
+                    </View>
+                  )}
+                  <View style={styles.activityInfo}>
+                    <Text style={styles.productName} numberOfLines={1}>{item.productName}</Text>
+                    <Text style={styles.productTime}>{formatRelativeTime(item.scannedAt)}</Text>
+                  </View>
+                  <RatingBadge rating={item.safetyRating} size="sm" />
+                </TouchableOpacity>
+                {i < recentScans.length - 1 && <View style={styles.rowDivider} />}
               </View>
-
-              <RatingBadge rating={item.rating} size="sm" />
-            </TouchableOpacity>
-          ))
+            ))}
+          </View>
         ) : (
           <View style={styles.emptyCard}>
             <View style={styles.emptyIconWrap}>
-              <Feather name="package" size={36} color={Colors.onSurfaceMuted} />
+              <Feather name="package" size={32} color={Colors.onSurfaceMuted} />
             </View>
             <Text style={styles.emptyTitle}>Ready to scan!</Text>
             <Text style={styles.emptyBody}>
@@ -166,7 +294,8 @@ export default function HomeScreen({ navigation }) {
             )}
           </View>
         )}
-      </View>
+        </View></AnimatedCard>
+      </View>}
     </ScrollView>
   );
 }
@@ -186,72 +315,133 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.sm,
   },
   avatarBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 16,
-    backgroundColor: '#F4845F',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   bellBtn: {
-    width: 50,
-    height: 50,
-    borderRadius: 16,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    ...SHADOW.sm,
+  },
+
+  // ── Content ──────────────────────────────────────────────────────────────────
+  content: {
+    paddingHorizontal: Spacing.md,
+    gap: Spacing.md,
+    paddingTop: Spacing.xs,
+  },
+
+  // ── Greeting ─────────────────────────────────────────────────────────────────
+  greetingText: {
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.bold,
+    color: Colors.textPrimary,
+    letterSpacing: -0.3,
+  },
+
+  // ── Hero Cards ────────────────────────────────────────────────────────────────
+  heroCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
     ...SHADOW.md,
   },
 
-  content: {
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.lg,
+  // Streak card
+  streakRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
   },
-
-  // ── Status ──────────────────────────────────────────────────────────────────
-  statusSection: {
-    gap: 8,
-    marginTop: Spacing.md,
+  fireWrap: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
   },
-  statusLabel: {
+  fireEmoji: {
+    fontSize: 28,
+  },
+  streakValue: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
+    color: Colors.accent,
+    letterSpacing: -0.3,
+  },
+  streakSub: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: 1.4,
-    color: Colors.primary,
-  },
-  statusHeading: {
-    fontSize: FONT_SIZE.display,
-    fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: -1,
-    color: Colors.onSurface,
-    lineHeight: 46,
+    color: Colors.textSecondary,
+    marginTop: 2,
+    lineHeight: 18,
   },
 
-  // ── Scan Button ─────────────────────────────────────────────────────────────
+  // Safety progress card
+  progressLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  progressLabel: {
+    fontSize: FONT_SIZE.sm,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: Colors.textSecondary,
+  },
+  progressValue: {
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.bold,
+    color: Colors.accent,
+  },
+  progressTrack: {
+    height: 8,
+    backgroundColor: Colors.border,
+    borderRadius: Radius.full,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: Radius.full,
+  },
+  progressMessage: {
+    fontSize: FONT_SIZE.sm,
+    color: Colors.textSecondary,
+    marginTop: Spacing.sm,
+  },
+
   scanBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.xl,
-    paddingVertical: 24,
+    backgroundColor: Colors.accent,
+    borderRadius: Radius.full,
+    height: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 14,
-    ...SHADOW.md,
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
   },
   scanBtnText: {
-    color: '#fff',
-    fontSize: FONT_SIZE.xl,
+    color: Colors.textInverse,
+    fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 0.2,
   },
-  scanBtnSub: {
-    color: 'rgba(255,255,255,0.72)',
-    fontSize: FONT_SIZE.sm,
+  scanSubLabel: {
+    fontSize: FONT_SIZE.xs,
+    color: Colors.textSecondary,
     fontWeight: FONT_WEIGHT.medium,
+    textAlign: 'center',
     marginTop: 2,
   },
 
-  // ── Stats ────────────────────────────────────────────────────────────────────
+  // ── Stats Row ────────────────────────────────────────────────────────────────
   statsRow: {
     flexDirection: 'row',
     gap: Spacing.md,
@@ -259,30 +449,26 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
-    padding: 20,
-    gap: 8,
-    ...SHADOW.md,
-  },
-  statIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.primarySurface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  statValue: {
-    fontSize: FONT_SIZE.display,
-    fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
-    letterSpacing: -1,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    gap: Spacing.xs,
+    ...SHADOW.sm,
   },
   statLabel: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.onSurfaceMuted,
+    fontWeight: FONT_WEIGHT.medium,
+    color: Colors.textSecondary,
+  },
+  statValue: {
+    fontSize: FONT_SIZE.xl,
+    fontWeight: FONT_WEIGHT.bold,
+    color: Colors.textPrimary,
+    letterSpacing: -0.5,
+  },
+
+  // ── Recent Section wrapper (tighter internal gap) ─────────────────────────────
+  recentSection: {
+    gap: Spacing.sm,
   },
 
   // ── Section Header ────────────────────────────────────────────────────────────
@@ -292,56 +478,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sectionTitle: {
-    fontSize: FONT_SIZE.sm,
+    fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: 1.2,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textPrimary,
   },
   sectionLink: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: 0.8,
-    color: Colors.primary,
-    textDecorationLine: 'underline',
+    fontWeight: FONT_WEIGHT.semibold,
+    color: Colors.accent,
   },
 
-  // ── Activity Item ─────────────────────────────────────────────────────────────
-  activityItem: {
+  // ── Activity Card (all rows in one surface) ───────────────────────────────────
+  activityCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    overflow: 'hidden',
+    ...SHADOW.sm,
+  },
+  activityRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
-    padding: 18,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
     gap: Spacing.md,
-    ...SHADOW.md,
+  },
+  rowDivider: {
+    height: 1,
+    backgroundColor: Colors.divider,
+    marginHorizontal: Spacing.md,
   },
   productImage: {
-    width: 68,
-    height: 68,
-    borderRadius: Radius.lg,
+    width: 40,
+    height: 40,
+    borderRadius: Radius.md,
     backgroundColor: Colors.surfaceVariant,
   },
   productImagePlaceholder: {
-    width: 68,
-    height: 68,
-    borderRadius: Radius.lg,
-    backgroundColor: Colors.primarySurface,
+    width: 40,
+    height: 40,
+    borderRadius: Radius.md,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   activityInfo: {
     flex: 1,
-    gap: 5,
+    gap: 3,
   },
   productName: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
-    lineHeight: 22,
+    fontSize: FONT_SIZE.md,
+    fontWeight: FONT_WEIGHT.semibold,
+    color: Colors.textPrimary,
+    lineHeight: 20,
   },
   productTime: {
-    fontSize: FONT_SIZE.sm,
-    color: Colors.onSurfaceMuted,
+    fontSize: FONT_SIZE.xs,
+    color: Colors.textSecondary,
     fontWeight: FONT_WEIGHT.medium,
   },
 
@@ -352,18 +544,29 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     alignItems: 'center',
     gap: Spacing.sm,
-    ...SHADOW.md,
+    ...SHADOW.sm,
   },
   emptyIconWrap: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: Colors.outline,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: Spacing.xs,
   },
-  emptyTitle: { ...Typography.h2, textAlign: 'center' },
-  emptyBody: { ...Typography.body, textAlign: 'center' },
+  emptyTitle: {
+    fontSize: FONT_SIZE.lg,
+    fontWeight: FONT_WEIGHT.bold,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  emptyBody: {
+    fontSize: FONT_SIZE.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   setupBanner: {
     marginTop: Spacing.sm,
     backgroundColor: Colors.cautionBg,

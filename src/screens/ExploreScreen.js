@@ -1,17 +1,19 @@
 // src/screens/ExploreScreen.js
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, ScrollView, StyleSheet, Switch,
   TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Typography } from '../theme';
+import { Colors, Spacing, Radius } from '../theme';
 import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
 import { useDietaryPrefs } from '../hooks/useStorage';
 import { useDietLists } from '../hooks/useDietLists';
 import { usePremiumContext } from '../context/PremiumContext';
 import { UpgradeModal } from '../components/UpgradeModal';
+import { AnimatedCard } from '../components/AnimatedCard';
 
 // ─── Static config ────────────────────────────────────────────────────────────
 
@@ -21,7 +23,7 @@ const PRESETS = [
     label: 'Keto',
     icon: 'leaf',
     desc: 'Low carb, high fat',
-    color: '#0C6B6B',
+    color: '#00A878',
     apply: p => ({
       ...p, preset: 'keto',
       carbs:   { enabled: true, max: 30,   min: null },
@@ -34,7 +36,7 @@ const PRESETS = [
     label: 'Cutting',
     icon: 'zap',
     desc: 'Low calorie',
-    color: '#E8784A',
+    color: '#F0A500',
     apply: p => ({
       ...p, preset: 'cutting',
       calories: { enabled: true, max: 400, min: null },
@@ -45,7 +47,7 @@ const PRESETS = [
     label: 'Bulking',
     icon: 'trending-up',
     desc: 'High protein',
-    color: '#15BAA8',
+    color: '#1E3A5F',
     apply: p => ({
       ...p, preset: 'bulking',
       protein:  { enabled: true, max: null, min: 25  },
@@ -57,7 +59,7 @@ const PRESETS = [
     label: 'Low Sodium',
     icon: 'heart',
     desc: 'Heart health',
-    color: '#E05252',
+    color: '#D62828',
     apply: p => ({
       ...p, preset: 'low_sodium',
       sodium: { enabled: true, max: 500, min: null },
@@ -68,7 +70,7 @@ const PRESETS = [
     label: 'Clean Eating',
     icon: 'sun',
     desc: 'Minimal sugar',
-    color: '#2E9494',
+    color: '#2E5282',
     apply: p => ({
       ...p, preset: 'clean',
       sugar: { enabled: true, max: 5, min: null },
@@ -79,7 +81,7 @@ const PRESETS = [
     label: 'Custom',
     icon: 'sliders',
     desc: 'Set manually',
-    color: '#7AACAC',
+    color: '#6B7F99',
     apply: p => ({ ...p, preset: 'custom' }),
   },
 ];
@@ -102,31 +104,32 @@ function formatListDate(dateStr) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function PresetCard({ preset, isActive, onPress, locked }) {
+function PresetCard({ preset, isActive, onPress, locked, masterOff }) {
   return (
     <TouchableOpacity
       style={[
         styles.presetCard,
         isActive && { backgroundColor: preset.color, borderColor: preset.color },
         locked && styles.lockedCard,
+        masterOff && { opacity: 0.4 },
       ]}
       onPress={onPress}
       activeOpacity={0.8}
     >
       {isActive && (
         <View style={styles.presetCheck}>
-          <Feather name="check" size={11} color="#fff" />
+          <Feather name="check" size={11} color={Colors.textInverse} />
         </View>
       )}
       {locked && (
         <View style={styles.lockBadge}>
-          <Feather name="lock" size={11} color={Colors.primary} />
+          <Feather name="lock" size={11} color={Colors.onSurfaceMuted} />
         </View>
       )}
       <View style={[styles.presetIconWrap, isActive && styles.presetIconWrapActive, locked && { opacity: 0.5 }]}>
-        <Feather name={preset.icon} size={20} color={isActive ? '#fff' : preset.color} />
+        <Feather name={preset.icon} size={20} color={isActive ? Colors.textInverse : preset.color} />
       </View>
-      <Text style={[styles.presetLabel, isActive && { color: '#fff' }, locked && styles.lockedText]}>
+      <Text style={[styles.presetLabel, isActive && { color: Colors.textInverse }, locked && styles.lockedText]}>
         {preset.label}
       </Text>
       <Text style={[styles.presetDesc, isActive && { color: 'rgba(255,255,255,0.75)' }, locked && styles.lockedText]}>
@@ -136,11 +139,12 @@ function PresetCard({ preset, isActive, onPress, locked }) {
   );
 }
 
-function NutrientRow({ nutrient, value, onChange, locked, onLockedPress }) {
+function NutrientRow({ nutrient, value, onChange, locked, masterOff, onLockedPress }) {
   const [expanded, setExpanded] = useState(false);
 
   const toggle = v => {
     if (locked) { onLockedPress?.(); return; }
+    if (masterOff) return;
     onChange({ ...value, enabled: v });
     setExpanded(v);
   };
@@ -154,14 +158,14 @@ function NutrientRow({ nutrient, value, onChange, locked, onLockedPress }) {
     (nutrient.hasMin && value.min !== null ? `Min ${value.min} ${nutrient.unit}` : '');
 
   return (
-    <View style={locked && styles.lockedRow}>
+    <View style={[locked && styles.lockedRow, masterOff && { opacity: 0.4 }]}>
       <TouchableOpacity
         style={styles.nutrientRow}
-        onPress={locked ? onLockedPress : () => value.enabled && setExpanded(e => !e)}
-        activeOpacity={locked ? 0.6 : value.enabled ? 0.7 : 1}
+        onPress={locked ? onLockedPress : masterOff ? undefined : () => value.enabled && setExpanded(e => !e)}
+        activeOpacity={locked || masterOff ? 0.6 : value.enabled ? 0.7 : 1}
       >
         <View style={styles.nutrientIconWrap}>
-          <Feather name={nutrient.icon} size={16} color={locked ? Colors.onSurfaceMuted : Colors.primary} />
+          <Feather name={nutrient.icon} size={16} color={locked ? Colors.onSurfaceMuted : Colors.accent} />
         </View>
         <View style={styles.nutrientMeta}>
           <Text style={[styles.nutrientLabel, locked && styles.lockedText]}>{nutrient.label}</Text>
@@ -173,15 +177,15 @@ function NutrientRow({ nutrient, value, onChange, locked, onLockedPress }) {
           <Feather name="lock" size={16} color={Colors.onSurfaceMuted} />
         ) : (
           <Switch
-            value={value.enabled}
+            value={masterOff ? false : value.enabled}
             onValueChange={toggle}
-            trackColor={{ false: Colors.outline, true: Colors.primaryLight }}
-            thumbColor={value.enabled ? Colors.primary : Colors.surface}
+            trackColor={{ false: Colors.border, true: Colors.accentLight }}
+            thumbColor={(!masterOff && value.enabled) ? Colors.accent : Colors.surface}
           />
         )}
       </TouchableOpacity>
 
-      {value.enabled && expanded && (
+      {!masterOff && value.enabled && expanded && (
         <View style={styles.nutrientInputs}>
           {nutrient.hasMax && (
             <View style={styles.inputGroup}>
@@ -230,10 +234,17 @@ export default function ExploreScreen({ navigation }) {
   const [newListInput, setNewListInput] = useState('');
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [upgradeVisible, setUpgradeVisible] = useState(false);
+  const [showContent, setShowContent] = useState(true);
+
+  useFocusEffect(useCallback(() => {
+    setShowContent(true);
+    return () => setShowContent(false);
+  }, []));
 
   if (!prefs) return null;
 
   const dietaryLocked = !isPremium;
+  const masterOff     = !dietaryLocked && !prefs.enabled;
   const listLocked    = !isPremium;
   const showUpgrade   = () => setUpgradeVisible(true);
 
@@ -254,7 +265,13 @@ export default function ExploreScreen({ navigation }) {
 
   const updatePrefs    = partial  => savePrefs({ ...prefs, ...partial });
   const updateNutrient = (key, v) => savePrefs({ ...prefs, [key]: v });
-  const applyPreset    = preset   => savePrefs(preset.apply({ ...prefs }));
+  const applyPreset = preset => {
+    if (prefs.preset === preset.key) {
+      savePrefs({ ...prefs, preset: null });
+    } else {
+      savePrefs(preset.apply({ ...prefs }));
+    }
+  };
 
   const addBlacklist = () => {
     if (dietaryLocked) { showUpgrade(); return; }
@@ -278,14 +295,17 @@ export default function ExploreScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* ── Page Header ── */}
-        <View style={[styles.pageHeader, { paddingTop: insets.top + 20 }]}>
+        {/* ── Page Content ── */}
+        {showContent && <>
+        <AnimatedCard delay={0}>
+        <View style={[styles.pageHeader, { paddingTop: insets.top + 16 }]}>
           <Text style={styles.pageTitle}>Explore</Text>
           <Text style={styles.pageSub}>Dietary goals & nutrition guides</Text>
         </View>
+        </AnimatedCard>
 
         {/* ── Tab Toggle ── */}
-        <View style={styles.tabToggleWrap}>
+        <AnimatedCard delay={80}><View style={styles.tabToggleWrap}>
           <View style={styles.tabToggle}>
             {[
               { key: 'dietary',  icon: 'sliders', label: 'Dietary'   },
@@ -300,7 +320,7 @@ export default function ExploreScreen({ navigation }) {
                 <Feather
                   name={t.icon}
                   size={15}
-                  color={activeTab === t.key ? '#fff' : Colors.onSurfaceMuted}
+                  color={activeTab === t.key ? Colors.textInverse : Colors.textSecondary}
                 />
                 <Text style={[
                   styles.tabPillText,
@@ -311,16 +331,16 @@ export default function ExploreScreen({ navigation }) {
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </View></AnimatedCard>
 
         {/* ══ DIETARY TAB ══════════════════════════════════════════════════════ */}
         {activeTab === 'dietary' && (
-          <View style={styles.tabContent}>
+          <AnimatedCard delay={160}><View style={styles.tabContent}>
 
             {/* Premium gate banner */}
             {dietaryLocked && (
               <TouchableOpacity style={styles.gateBanner} onPress={showUpgrade} activeOpacity={0.85}>
-                <Feather name="lock" size={15} color={Colors.primary} />
+                <Feather name="lock" size={15} color={Colors.accent} />
                 <Text style={styles.gateBannerText}>
                   Dietary configuration is a Premium feature
                 </Text>
@@ -348,8 +368,8 @@ export default function ExploreScreen({ navigation }) {
                 <Switch
                   value={prefs.enabled}
                   onValueChange={v => updatePrefs({ enabled: v })}
-                  trackColor={{ false: Colors.outline, true: Colors.primaryLight }}
-                  thumbColor={prefs.enabled ? Colors.primary : Colors.surface}
+                  trackColor={{ false: Colors.border, true: Colors.accentLight }}
+                  thumbColor={prefs.enabled ? Colors.accent : Colors.surface}
                 />
               )}
             </TouchableOpacity>
@@ -365,9 +385,10 @@ export default function ExploreScreen({ navigation }) {
                 <PresetCard
                   key={p.key}
                   preset={p}
-                  isActive={!dietaryLocked && prefs.preset === p.key}
+                  isActive={!dietaryLocked && !masterOff && prefs.preset === p.key}
                   locked={dietaryLocked}
-                  onPress={dietaryLocked ? showUpgrade : () => applyPreset(p)}
+                  masterOff={masterOff}
+                  onPress={dietaryLocked ? showUpgrade : masterOff ? undefined : () => applyPreset(p)}
                 />
               ))}
             </ScrollView>
@@ -385,6 +406,7 @@ export default function ExploreScreen({ navigation }) {
                     value={prefs[n.key]}
                     onChange={v => updateNutrient(n.key, v)}
                     locked={dietaryLocked}
+                    masterOff={masterOff}
                     onLockedPress={showUpgrade}
                   />
                   {i < NUTRIENTS.length - 1 && <View style={styles.divider} />}
@@ -415,7 +437,7 @@ export default function ExploreScreen({ navigation }) {
                   onPress={addBlacklist}
                   activeOpacity={0.8}
                 >
-                  <Feather name={dietaryLocked ? 'lock' : 'plus'} size={20} color="#fff" />
+                  <Feather name={dietaryLocked ? 'lock' : 'plus'} size={20} color={Colors.textInverse} />
                 </TouchableOpacity>
               </TouchableOpacity>
 
@@ -429,7 +451,7 @@ export default function ExploreScreen({ navigation }) {
                           onPress={() => removeBlacklist(item)}
                           hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
                         >
-                          <Feather name="x" size={13} color={Colors.primary} />
+                          <Feather name="x" size={13} color={Colors.accent} />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -443,17 +465,17 @@ export default function ExploreScreen({ navigation }) {
                 </Text>
               )}
             </View>
-          </View>
+          </View></AnimatedCard>
         )}
 
         {/* ══ DIET LIST TAB ════════════════════════════════════════════════════ */}
         {activeTab === 'dietlist' && (
-          <View style={styles.tabContent}>
+          <AnimatedCard delay={160}><View style={styles.tabContent}>
 
             {/* Premium gate banner */}
             {listLocked && (
               <TouchableOpacity style={styles.gateBanner} onPress={showUpgrade} activeOpacity={0.85}>
-                <Feather name="lock" size={15} color={Colors.primary} />
+                <Feather name="lock" size={15} color={Colors.accent} />
                 <Text style={styles.gateBannerText}>
                   Diet List is a Premium feature
                 </Text>
@@ -475,7 +497,7 @@ export default function ExploreScreen({ navigation }) {
                   onSubmitEditing={handleAddList}
                 />
                 <TouchableOpacity style={styles.addBtn} onPress={handleAddList} activeOpacity={0.8}>
-                  <Feather name="check" size={20} color="#fff" />
+                  <Feather name="check" size={20} color={Colors.textInverse} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.addBtn, styles.cancelBtn]}
@@ -494,7 +516,7 @@ export default function ExploreScreen({ navigation }) {
                 onPress={() => setShowNewListInput(true)}
                 activeOpacity={0.85}
               >
-                <Feather name="plus" size={18} color={Colors.primary} />
+                <Feather name="plus" size={18} color={Colors.accent} />
                 <Text style={styles.addListBtnText}>New List</Text>
               </TouchableOpacity>
             )}
@@ -519,7 +541,7 @@ export default function ExploreScreen({ navigation }) {
                   <Feather
                     name={list.isDefault ? 'star' : 'list'}
                     size={20}
-                    color={listLocked ? Colors.onSurfaceMuted : Colors.primary}
+                    color={listLocked ? Colors.onSurfaceMuted : Colors.accent}
                   />
                 </View>
                 <View style={styles.listMeta}>
@@ -545,8 +567,9 @@ export default function ExploreScreen({ navigation }) {
                 Scan a product and tap "Add to Diet List" to build your personal food lists.
               </Text>
             )}
-          </View>
+          </View></AnimatedCard>
         )}
+        </>}
       </ScrollView>
 
       <UpgradeModal
@@ -574,15 +597,15 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   pageTitle: {
-    fontSize: FONT_SIZE.display,
+    fontSize: FONT_SIZE.xxl,
     fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: -0.8,
-    color: Colors.onSurface,
+    letterSpacing: -0.5,
+    color: Colors.textPrimary,
   },
   pageSub: {
-    fontSize: FONT_SIZE.md,
+    fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.medium,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
   },
 
   // ── Tab Toggle ───────────────────────────────────────────────────────────────
@@ -608,15 +631,15 @@ const styles = StyleSheet.create({
     borderRadius: Radius.full,
   },
   tabPillActive: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
   },
   tabPillText: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
   },
   tabPillTextActive: {
-    color: '#fff',
+    color: Colors.textInverse,
   },
 
   // ── Tab content ──────────────────────────────────────────────────────────────
@@ -629,10 +652,11 @@ const styles = StyleSheet.create({
   // ── Section labels ───────────────────────────────────────────────────────────
   sectionLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: 1.2,
-    color: Colors.onSurfaceMuted,
+    fontWeight: FONT_WEIGHT.semibold,
+    letterSpacing: 1.5,
+    color: Colors.textSecondary,
     marginTop: 4,
+    textTransform: 'uppercase',
   },
   sectionLabelRow: {
     flexDirection: 'row',
@@ -643,7 +667,7 @@ const styles = StyleSheet.create({
   sectionMeta: {
     fontSize: FONT_SIZE.xs,
     fontWeight: FONT_WEIGHT.medium,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
     opacity: 0.7,
   },
 
@@ -652,20 +676,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
-    padding: 20,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
     gap: Spacing.md,
-    ...SHADOW.md,
+    ...SHADOW.sm,
   },
   masterTitle: {
     fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
   },
   masterSub: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.regular,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
     lineHeight: 18,
   },
 
@@ -677,11 +701,11 @@ const styles = StyleSheet.create({
   presetCard: {
     width: 120,
     backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
+    borderRadius: Radius.lg,
     padding: 16,
     gap: 4,
     borderWidth: 1.5,
-    borderColor: Colors.outline,
+    borderColor: Colors.border,
     ...SHADOW.sm,
     position: 'relative',
   },
@@ -700,7 +724,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: Radius.md,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
@@ -711,36 +735,36 @@ const styles = StyleSheet.create({
   presetLabel: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
   },
   presetDesc: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.medium,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
     lineHeight: 16,
   },
 
   // ── Card container ───────────────────────────────────────────────────────────
   card: {
     backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
+    borderRadius: Radius.lg,
     overflow: 'hidden',
-    ...SHADOW.md,
+    ...SHADOW.sm,
   },
 
   // ── Nutrient rows ────────────────────────────────────────────────────────────
   nutrientRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    gap: 14,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    gap: Spacing.sm,
   },
   nutrientIconWrap: {
     width: 36,
     height: 36,
     borderRadius: Radius.sm,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -751,18 +775,18 @@ const styles = StyleSheet.create({
   nutrientLabel: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
   },
   nutrientSummary: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.medium,
-    color: Colors.primary,
+    color: Colors.accent,
   },
   nutrientInputs: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingBottom: 16,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
     gap: 12,
     flexWrap: 'wrap',
   },
@@ -774,7 +798,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
     letterSpacing: 0.3,
   },
   numInput: {
@@ -784,9 +808,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
     borderWidth: 1,
-    borderColor: Colors.outline,
+    borderColor: Colors.border,
   },
   collapseBtn: {
     padding: 8,
@@ -794,16 +818,16 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: Colors.outlineVariant,
-    marginHorizontal: 18,
+    backgroundColor: Colors.divider,
+    marginHorizontal: Spacing.md,
   },
 
   // ── Blacklist ────────────────────────────────────────────────────────────────
   blacklistRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    gap: 10,
+    padding: Spacing.sm,
+    gap: Spacing.sm,
   },
   blacklistInput: {
     flex: 1,
@@ -812,15 +836,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: FONT_SIZE.md,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
     borderWidth: 1,
-    borderColor: Colors.outline,
+    borderColor: Colors.border,
   },
   addBtn: {
     width: 46,
     height: 46,
     borderRadius: Radius.md,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -828,30 +852,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    paddingHorizontal: 14,
-    paddingBottom: 14,
+    paddingHorizontal: Spacing.sm,
+    paddingBottom: Spacing.sm,
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     borderRadius: Radius.full,
     paddingVertical: 7,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: Colors.primaryBorder,
+    borderColor: Colors.border,
   },
   chipText: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.primary,
+    color: Colors.accent,
   },
   emptyNote: {
     fontSize: FONT_SIZE.sm,
-    color: Colors.onSurfaceMuted,
-    paddingHorizontal: 14,
-    paddingBottom: 16,
+    color: Colors.textSecondary,
+    paddingHorizontal: Spacing.sm,
+    paddingBottom: Spacing.md,
     paddingTop: 4,
     lineHeight: 18,
   },
@@ -861,23 +885,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     borderRadius: Radius.lg,
-    paddingHorizontal: 14,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 12,
     borderWidth: 1,
-    borderColor: Colors.primaryBorder,
+    borderColor: Colors.border,
   },
   gateBannerText: {
     flex: 1,
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.primary,
+    color: Colors.textPrimary,
   },
   gateBannerCta: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.primary,
+    color: Colors.accent,
   },
   lockedCard: {
     opacity: 0.65,
@@ -895,7 +919,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -913,43 +937,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: FONT_SIZE.md,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
     borderWidth: 1,
-    borderColor: Colors.outline,
+    borderColor: Colors.border,
   },
   cancelBtn: {
-    backgroundColor: Colors.outline,
+    backgroundColor: Colors.border,
   },
   addListBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: Colors.primarySurface,
-    borderRadius: Radius.xl,
+    backgroundColor: Colors.accentLight,
+    borderRadius: Radius.lg,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: Colors.primaryBorder,
+    borderColor: Colors.border,
   },
   addListBtnText: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.primary,
+    color: Colors.accent,
   },
   listCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
-    padding: 16,
-    gap: 14,
-    ...SHADOW.md,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    gap: Spacing.md,
+    ...SHADOW.sm,
   },
   listIconWrap: {
     width: 44,
     height: 44,
     borderRadius: Radius.md,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
@@ -961,11 +985,11 @@ const styles = StyleSheet.create({
   listName: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
   },
   listCount: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.medium,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
   },
 });

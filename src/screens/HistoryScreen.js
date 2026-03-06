@@ -1,18 +1,20 @@
 // src/screens/HistoryScreen.js
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, SectionList, StyleSheet, TouchableOpacity,
-  Image, Alert, TextInput,
+  Image, Alert, TextInput, Animated, Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Radius, Typography, Spacing } from '../theme';
 import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
-import { useHistory } from '../hooks/useStorage';
+import { useHistoryContext } from '../context/HistoryContext';
 import { usePremiumContext } from '../context/PremiumContext';
 import { UpgradeModal } from '../components/UpgradeModal';
 import { DietListPickerModal } from '../components/DietListPickerModal';
+import { RatingBadge } from '../components';
 
 const FREE_HISTORY_LIMIT = 15;
 
@@ -24,7 +26,7 @@ const STATUS_CFG = {
 };
 
 function StatusBadge({ rating }) {
-  const cfg = STATUS_CFG[rating] || { dot: '#ccc', text: 'UNKNOWN', bg: '#F3F4F6', color: '#6B7280' };
+  const cfg = STATUS_CFG[rating] || { dot: Colors.outline, text: 'UNKNOWN', bg: Colors.surfaceVariant, color: Colors.onSurfaceMuted };
   return (
     <View style={[styles.statusBadge, { backgroundColor: cfg.bg }]}>
       <View style={[styles.statusDot, { backgroundColor: cfg.dot }]} />
@@ -59,8 +61,28 @@ function dateGroupKey(dateStr) {
 const FILTERS = ['All', 'Safe', 'Warning', 'Unsafe'];
 const RATING_MAP = { Safe: 'SAFE', Warning: 'CAUTION', Unsafe: 'AVOID' };
 
+// ─── Staggered row wrapper ────────────────────────────────────────────────────
+function AnimatedRow({ index, children }) {
+  const opacity    = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(12)).current;
+  const rowDelay   = Math.min(index, 7) * 60;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity,    { toValue: 1, duration: 350, delay: rowDelay, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: 0, duration: 350, delay: rowDelay, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity, transform: [{ translateY }] }}>
+      {children}
+    </Animated.View>
+  );
+}
+
 export default function HistoryScreen({ navigation }) {
-  const { history, clearHistory, removeItem } = useHistory();
+  const { history, clearHistory, removeEntry, isLoading } = useHistoryContext();
   const { isPremium } = usePremiumContext();
   const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
@@ -69,6 +91,12 @@ export default function HistoryScreen({ navigation }) {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [dietListUpgradeVisible, setDietListUpgradeVisible] = useState(false);
+  const [showContent, setShowContent] = useState(true);
+
+  useFocusEffect(useCallback(() => {
+    setShowContent(true);
+    return () => setShowContent(false);
+  }, []));
 
   // Free users: cap at 15 items
   const cappedHistory = isPremium ? history : history.slice(0, FREE_HISTORY_LIMIT);
@@ -78,7 +106,7 @@ export default function HistoryScreen({ navigation }) {
   const filtered = useMemo(() => {
     let result = [...cappedHistory];
     if (activeFilter !== 'All') {
-      result = result.filter(h => h.rating === RATING_MAP[activeFilter]);
+      result = result.filter(h => h.safetyRating === RATING_MAP[activeFilter]);
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -111,21 +139,22 @@ export default function HistoryScreen({ navigation }) {
   const handleLongPress = (item) => {
     Alert.alert('Remove Item', `Remove "${item.productName}" from history?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: () => removeItem(item.id) },
+      { text: 'Remove', style: 'destructive', onPress: () => removeEntry(item.id) },
     ]);
   };
+
+  if (isLoading) {
+    return <View style={[styles.container, { paddingTop: insets.top }]} />;
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
 
-      {/* ── Top bar ── */}
-      <View style={styles.topBar}>
-        <TouchableOpacity style={styles.topBarBtn} onPress={() => navigation.goBack()}>
-          <Feather name="chevron-left" size={22} color={Colors.onSurface} />
-        </TouchableOpacity>
-        <Text style={styles.topBarTitle}>Scan History</Text>
-        <TouchableOpacity style={styles.topBarBtn} onPress={handleClear}>
-          <Feather name="trash-2" size={20} color={Colors.onSurface} />
+      {/* ── Header ── */}
+      <View style={styles.header}>
+        <Text style={styles.screenTitle}>Scan History</Text>
+        <TouchableOpacity style={styles.headerBtn} onPress={handleClear}>
+          <Feather name="trash-2" size={18} color={Colors.onSurface} />
         </TouchableOpacity>
       </View>
 
@@ -164,7 +193,7 @@ export default function HistoryScreen({ navigation }) {
       </View>
 
       {/* ── List ── */}
-      <SectionList
+      {showContent && <SectionList
         sections={sections}
         keyExtractor={(item, i) => item.id || String(i)}
         contentContainerStyle={{
@@ -176,16 +205,28 @@ export default function HistoryScreen({ navigation }) {
         renderSectionHeader={({ section: { title } }) => (
           <Text style={styles.sectionLabel}>{title}</Text>
         )}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-        renderItem={({ item }) => (
+        ItemSeparatorComponent={() => <View style={{ height: Spacing.sm }} />}
+        renderItem={({ item, index }) => (
+          <AnimatedRow index={index}>
           <TouchableOpacity
             style={styles.card}
             activeOpacity={0.85}
             onPress={() => navigation.navigate('Result', {
-              product: { name: item.productName, brand: item.brand },
-              analysis: { rating: item.rating },
+              product: {
+                name: item.productName,
+                brand: item.brand,
+                allergens:          item.savedProduct?.allergens,
+                ingredients:        item.savedProduct?.ingredients,
+                imageUrl:           item.savedProduct?.imageUrl,
+                imageThumbnailUrl:  item.savedProduct?.imageThumbnailUrl,
+                nutriments:         item.savedProduct?.nutriments,
+                servingSize:        item.savedProduct?.servingSize,
+                quantity:           item.savedProduct?.quantity,
+              },
+              analysis: item.savedAnalysis || { rating: item.safetyRating },
               barcode: item.barcode,
               fromHistory: true,
+              isFromHistory: true,
             })}
             onLongPress={() => handleLongPress(item)}
           >
@@ -194,21 +235,21 @@ export default function HistoryScreen({ navigation }) {
               <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
             ) : (
               <View style={[styles.cardImage, styles.cardImagePlaceholder]}>
-                <Feather name="shopping-bag" size={22} color={Colors.onSurfaceMuted} />
+                <Feather name="shopping-bag" size={20} color={Colors.onSurfaceMuted} />
               </View>
             )}
 
-            {/* Info */}
+            {/* Name + date */}
             <View style={styles.cardInfo}>
               <Text style={styles.cardName} numberOfLines={1}>
                 {item.productName || 'Unknown Product'}
               </Text>
-              <StatusBadge rating={item.rating} />
+              <Text style={styles.cardTime}>{formatItemTime(item.scannedAt)}</Text>
             </View>
 
-            {/* Time + add to list */}
+            {/* Badge + bookmark */}
             <View style={styles.cardRight}>
-              <Text style={styles.cardTime}>{formatItemTime(item.scannedAt)}</Text>
+              <RatingBadge rating={item.safetyRating} size="sm" />
               <TouchableOpacity
                 style={styles.cardAddBtn}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -221,16 +262,17 @@ export default function HistoryScreen({ navigation }) {
                     barcode: item.barcode,
                     productName: item.productName,
                     brand: item.brand,
-                    rating: item.rating,
+                    rating: item.safetyRating,
                     imageUrl: item.imageUrl,
                   });
                   setPickerVisible(true);
                 }}
               >
-                <Feather name="bookmark" size={16} color={Colors.primary} />
+                <Feather name="bookmark" size={15} color={Colors.accent} />
               </TouchableOpacity>
             </View>
           </TouchableOpacity>
+        </AnimatedRow>
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -250,15 +292,15 @@ export default function HistoryScreen({ navigation }) {
                 style={styles.scanNowBtn}
                 onPress={() => navigation.navigate('Scanner')}
               >
-                <Feather name="maximize-2" size={16} color="#fff" />
+                <Feather name="maximize-2" size={16} color={Colors.textInverse} />
                 <Text style={styles.scanNowText}>Scan Now</Text>
               </TouchableOpacity>
             )}
           </View>
         }
-      />
+      />}
 
-      {/* ── Free tier history blur overlay ── */}
+      {/* ── Free tier history gate ── */}
       {hasMore && (
         <View style={styles.historyGate} pointerEvents="box-none">
           <LinearGradient
@@ -313,37 +355,42 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
 
-  // Top bar
-  topBar: {
+  // ── Header ───────────────────────────────────────────────────────────────────
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
   },
-  topBarBtn: {
-    width: 36,
-    height: 36,
+  screenTitle: {
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.bold,
+    color: Colors.textPrimary,
+    letterSpacing: -0.5,
+  },
+  headerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  topBarTitle: {
-    ...Typography.h2,
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
+    ...SHADOW.sm,
   },
 
-  // Search
+  // ── Search ───────────────────────────────────────────────────────────────────
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.surface,
     borderRadius: Radius.full,
     marginHorizontal: Spacing.md,
-    marginTop: Spacing.sm,
+    marginTop: Spacing.xs,
     paddingHorizontal: Spacing.md,
     paddingVertical: 12,
-    gap: 10,
+    gap: Spacing.sm,
     ...SHADOW.sm,
   },
   searchInput: {
@@ -353,45 +400,46 @@ const styles = StyleSheet.create({
     padding: 0,
   },
 
-  // Filter pills
+  // ── Filter pills ──────────────────────────────────────────────────────────────
   filterRow: {
     flexDirection: 'row',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
-    gap: 8,
+    gap: Spacing.sm,
   },
   filterPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: Radius.full,
     backgroundColor: Colors.surface,
     borderWidth: 1,
-    borderColor: Colors.outline,
+    borderColor: Colors.border,
   },
   filterPillActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
+    backgroundColor: Colors.accent,
+    borderColor: Colors.accent,
   },
   filterPillText: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.onSurfaceVariant,
+    color: Colors.textSecondary,
   },
   filterPillTextActive: {
-    color: '#fff',
+    color: Colors.textInverse,
   },
 
-  // Section label
+  // ── Section label ─────────────────────────────────────────────────────────────
   sectionLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: 1,
-    color: Colors.onSurfaceMuted,
+    fontWeight: FONT_WEIGHT.semibold,
+    letterSpacing: 1.5,
+    color: Colors.textSecondary,
     marginTop: Spacing.md,
     marginBottom: Spacing.sm,
+    textTransform: 'uppercase',
   },
 
-  // Card
+  // ── Card ─────────────────────────────────────────────────────────────────────
   card: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -399,11 +447,11 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     padding: Spacing.md,
     gap: Spacing.md,
-    ...SHADOW.md,
+    ...SHADOW.sm,
   },
   cardImage: {
-    width: 64,
-    height: 64,
+    width: 48,
+    height: 48,
     borderRadius: Radius.md,
     backgroundColor: Colors.surfaceVariant,
   },
@@ -413,27 +461,27 @@ const styles = StyleSheet.create({
   },
   cardInfo: {
     flex: 1,
-    gap: 6,
+    gap: 4,
   },
   cardName: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
-  },
-  cardRight: {
-    alignItems: 'center',
-    gap: 8,
+    color: Colors.textPrimary,
   },
   cardTime: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.onSurfaceMuted,
+    fontSize: FONT_SIZE.xs,
+    fontWeight: FONT_WEIGHT.medium,
+    color: Colors.textSecondary,
+  },
+  cardRight: {
+    alignItems: 'flex-end',
+    gap: Spacing.sm,
   },
   cardAddBtn: {
     padding: 2,
   },
 
-  // Status badge (dot + label)
+  // ── Status badge ──────────────────────────────────────────────────────────────
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -454,7 +502,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4,
   },
 
-  // History gate overlay
+  // ── History gate ──────────────────────────────────────────────────────────────
   historyGate: {
     position: 'absolute',
     bottom: 0, left: 0, right: 0,
@@ -469,45 +517,47 @@ const styles = StyleSheet.create({
   historyGateCard: {
     backgroundColor: Colors.surface,
     margin: Spacing.md,
-    borderRadius: Radius.xl,
-    padding: 20,
+    borderRadius: Radius.lg,
+    padding: Spacing.lg,
     alignItems: 'center',
-    gap: 8,
+    gap: Spacing.sm,
     ...SHADOW.lg,
   },
   historyGateIconWrap: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   historyGateTitle: {
     fontSize: FONT_SIZE.lg,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
     textAlign: 'center',
   },
   historyGateSub: {
     fontSize: FONT_SIZE.sm,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
     textAlign: 'center',
   },
   historyGateBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.xl,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    marginTop: 4,
+    backgroundColor: Colors.accent,
+    borderRadius: Radius.full,
+    height: 52,
+    paddingHorizontal: Spacing.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Spacing.xs,
   },
   historyGateBtnText: {
-    color: '#fff',
+    color: Colors.textInverse,
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.semibold,
   },
 
-  // Empty
+  // ── Empty state ───────────────────────────────────────────────────────────────
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
@@ -519,24 +569,24 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: Colors.outline,
+    backgroundColor: Colors.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyTitle: { ...Typography.h2, textAlign: 'center' },
+  emptyTitle: { ...Typography.h2, textAlign: 'center', color: Colors.textPrimary },
   emptyBody: { ...Typography.body, textAlign: 'center', maxWidth: 260 },
   scanNowBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.xl,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: 14,
+    gap: Spacing.sm,
+    backgroundColor: Colors.accent,
+    borderRadius: Radius.full,
+    height: 52,
+    paddingHorizontal: Spacing.xl,
     marginTop: Spacing.sm,
   },
   scanNowText: {
-    color: '#fff',
+    color: Colors.textInverse,
     fontWeight: FONT_WEIGHT.semibold,
     fontSize: FONT_SIZE.md,
   },

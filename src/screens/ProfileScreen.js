@@ -1,11 +1,14 @@
 // src/screens/ProfileScreen.js
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Typography } from '../theme';
+import { Colors, Spacing, Radius } from '../theme';
 import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
-import { useConditions, useHistory } from '../hooks/useStorage';
+import { useConditions } from '../hooks/useStorage';
+import { AnimatedCard } from '../components/AnimatedCard';
+import { useHistoryContext } from '../context/HistoryContext';
 import { useAppContext } from '../navigation';
 import { usePremiumContext } from '../context/PremiumContext';
 
@@ -90,7 +93,7 @@ function ArticleCard({ article }) {
     >
       <View style={styles.articleHeader}>
         <View style={styles.articleIconWrap}>
-          <Feather name={article.icon} size={22} color={Colors.primary} />
+          <Feather name={article.icon} size={20} color={Colors.accent} />
         </View>
         <View style={{ flex: 1, gap: 3 }}>
           <Text style={styles.articleCategory}>{article.category}</Text>
@@ -126,7 +129,7 @@ function SettingsRow({ icon, label, value, onPress, last }) {
         activeOpacity={onPress ? 0.7 : 1}
       >
         <View style={styles.rowIcon}>
-          <Feather name={icon} size={18} color={Colors.primary} />
+          <Feather name={icon} size={18} color={Colors.accent} />
         </View>
         <Text style={styles.rowLabel}>{label}</Text>
         {value ? <Text style={styles.rowValue}>{value}</Text> : null}
@@ -150,11 +153,17 @@ function Section({ label, children }) {
 export default function ProfileScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { conditions } = useConditions();
-  const { history } = useHistory();
+  const { history } = useHistoryContext();
   const { resetOnboarding } = useAppContext();
   const { isPremium, hasBeenPremium, remaining, restorePurchases } = usePremiumContext();
 
   const activeConditionCount = conditions.length;
+  const [showContent, setShowContent] = useState(true);
+
+  useFocusEffect(useCallback(() => {
+    setShowContent(true);
+    return () => setShowContent(false);
+  }, []));
 
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -173,7 +182,7 @@ export default function ProfileScreen({ navigation }) {
       <View style={[styles.header, { paddingTop: insets.top + 20 }]}>
         {/* Avatar */}
         <View style={styles.avatar}>
-          <Feather name="user" size={34} color="#fff" />
+          <Feather name="user" size={34} color={Colors.textInverse} />
         </View>
 
         {/* Name + PRO badge */}
@@ -202,7 +211,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.statItem}>
             <Text style={styles.statNum}>
               {history.length > 0
-                ? `${Math.round((history.filter(h => h.rating === 'SAFE').length / history.length) * 100)}%`
+                ? `${Math.round((history.filter(h => h.safetyRating === 'SAFE').length / history.length) * 100)}%`
                 : '--'}
             </Text>
             <Text style={styles.statLabel}>Safe Rate</Text>
@@ -210,14 +219,15 @@ export default function ProfileScreen({ navigation }) {
         </View>
       </View>
 
-      <View style={styles.content}>
+      {showContent && <View style={styles.content}>
 
         {/* ── Subscription Status Card ── */}
+        <AnimatedCard delay={0}>
         {isPremium ? (
           <View style={styles.premiumCard}>
             <View style={styles.premiumCardLeft}>
               <View style={styles.premiumIconWrap}>
-                <Feather name="award" size={22} color="#fff" />
+                <Feather name="award" size={22} color={Colors.textInverse} />
               </View>
               <View>
                 <Text style={styles.premiumTitle}>Premium Member</Text>
@@ -231,7 +241,7 @@ export default function ProfileScreen({ navigation }) {
         ) : (
           <View style={styles.freeCard}>
             <View style={styles.freeCardTop}>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={styles.freePlanTitle}>Free Plan</Text>
                 <Text style={styles.freePlanSub}>
                   {remaining > 0 ? `${remaining} scans left this week` : 'Weekly scan limit reached'}
@@ -242,14 +252,15 @@ export default function ProfileScreen({ navigation }) {
                 onPress={() => navigation.navigate('Paywall')}
                 activeOpacity={0.88}
               >
-                <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
+                <Text style={styles.upgradeBtnText}>Upgrade</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
+        </AnimatedCard>
 
         {/* ── Account Settings ── */}
-        <Section label="ACCOUNT SETTINGS">
+        <AnimatedCard delay={80}><Section label="ACCOUNT SETTINGS">
           <SettingsRow
             icon="user"
             label="Personal Information"
@@ -262,10 +273,10 @@ export default function ProfileScreen({ navigation }) {
             onPress={() => navigation.navigate('DietaryPreferences')}
             last
           />
-        </Section>
+        </Section></AnimatedCard>
 
         {/* ── Preferences ── */}
-        <Section label="PREFERENCES">
+        <AnimatedCard delay={160}><Section label="PREFERENCES">
           <SettingsRow
             icon="bell"
             label="Notifications"
@@ -284,20 +295,20 @@ export default function ProfileScreen({ navigation }) {
             onPress={() => navigation.navigate('Language')}
             last
           />
-        </Section>
+        </Section></AnimatedCard>
 
         {/* ── Learn ── */}
-        <View style={styles.sectionBlock}>
+        <AnimatedCard delay={240}><View style={styles.sectionBlock}>
           <Text style={styles.sectionLabel}>LEARN</Text>
           <View style={styles.articlesWrap}>
             {ARTICLES.map(a => (
               <ArticleCard key={a.id} article={a} />
             ))}
           </View>
-        </View>
+        </View></AnimatedCard>
 
         {/* ── Security & Support ── */}
-        <Section label="SECURITY & SUPPORT">
+        <AnimatedCard delay={320}><Section label="SECURITY & SUPPORT">
           <SettingsRow
             icon="shield"
             label="Privacy & Security"
@@ -322,16 +333,18 @@ export default function ProfileScreen({ navigation }) {
               last
             />
           )}
-        </Section>
+        </Section></AnimatedCard>
 
         {/* ── Sign Out ── */}
+        <AnimatedCard delay={400}>
         <TouchableOpacity style={styles.signOutCard} onPress={handleSignOut} activeOpacity={0.8}>
           <Text style={styles.signOutText}>Sign Out</Text>
         </TouchableOpacity>
 
         {/* ── Version ── */}
         <Text style={styles.version}>VERSION 1.0.0</Text>
-      </View>
+        </AnimatedCard>
+      </View>}
     </ScrollView>
   );
 }
@@ -342,7 +355,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
 
-  // Header
+  // ── Header ────────────────────────────────────────────────────────────────────
   header: {
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
@@ -352,14 +365,14 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.primaryDark,
+    backgroundColor: Colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
   },
   welcomeText: {
     fontSize: FONT_SIZE.sm,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
     fontWeight: FONT_WEIGHT.medium,
     marginBottom: 4,
   },
@@ -370,30 +383,32 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   nameText: {
-    ...Typography.h1,
-    color: Colors.primary,
+    fontSize: FONT_SIZE.xxl,
+    fontWeight: FONT_WEIGHT.bold,
+    color: Colors.textPrimary,
+    letterSpacing: -0.5,
   },
   proBadge: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
     borderRadius: Radius.sm,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
   proBadgeText: {
-    color: '#fff',
+    color: Colors.textInverse,
     fontSize: FONT_SIZE.xs,
     fontWeight: FONT_WEIGHT.bold,
     letterSpacing: 1,
   },
 
-  // Quick stats
+  // ── Quick stats ────────────────────────────────────────────────────────────────
   statsRow: {
     flexDirection: 'row',
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     paddingVertical: 14,
     width: '100%',
-    ...SHADOW.md,
+    ...SHADOW.sm,
   },
   statItem: {
     flex: 1,
@@ -403,100 +418,102 @@ const styles = StyleSheet.create({
   statNum: {
     fontSize: FONT_SIZE.xl,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
+    color: Colors.accent,
   },
   statLabel: {
     fontSize: FONT_SIZE.xs,
     fontWeight: FONT_WEIGHT.semibold,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
   },
   statDivider: {
     width: 1,
     height: 32,
-    backgroundColor: Colors.outline,
+    backgroundColor: Colors.divider,
   },
 
+  // ── Content ────────────────────────────────────────────────────────────────────
   content: {
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.sm,
-    gap: Spacing.sm,
+    gap: Spacing.md,
   },
 
-  // Premium card
+  // ── Premium card ──────────────────────────────────────────────────────────────
   premiumCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
     borderRadius: Radius.lg,
-    padding: 16,
-    ...SHADOW.md,
+    padding: Spacing.md,
+    ...SHADOW.sm,
   },
   premiumCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   premiumIconWrap: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  premiumTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: '#fff' },
+  premiumTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.textInverse },
   premiumSub:   { fontSize: FONT_SIZE.sm, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
   manageLink:   { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold, color: 'rgba(255,255,255,0.85)', textDecorationLine: 'underline' },
 
-  // Free card
+  // ── Free card ─────────────────────────────────────────────────────────────────
   freeCard: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
-    padding: 16,
+    padding: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.outline,
-    ...SHADOW.md,
+    borderColor: Colors.border,
+    ...SHADOW.sm,
   },
-  freeCardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  freePlanTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
-  freePlanSub:   { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
+  freeCardTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  freePlanTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.textPrimary },
+  freePlanSub:   { fontSize: FONT_SIZE.sm, color: Colors.textSecondary, marginTop: 2 },
   upgradeBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.xl,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
+    backgroundColor: Colors.accent,
+    borderRadius: Radius.full,
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.md,
     flexShrink: 0,
   },
-  upgradeBtnText: { color: '#fff', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold },
+  upgradeBtnText: { color: Colors.textInverse, fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold },
 
-  // Section block
+  // ── Section block ─────────────────────────────────────────────────────────────
   sectionBlock: {
     gap: 8,
   },
   sectionLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: 1,
-    color: Colors.onSurfaceMuted,
+    fontWeight: FONT_WEIGHT.semibold,
+    letterSpacing: 1.5,
+    color: Colors.textSecondary,
     paddingHorizontal: 4,
+    textTransform: 'uppercase',
   },
   sectionCard: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
-    ...SHADOW.md,
+    ...SHADOW.sm,
     overflow: 'hidden',
   },
 
-  // Row
+  // ── Row ────────────────────────────────────────────────────────────────────────
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: Spacing.md,
-    gap: 14,
+    gap: Spacing.sm,
   },
   rowIcon: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     borderRadius: Radius.sm,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -504,28 +521,27 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.medium,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
   },
   rowValue: {
     fontSize: FONT_SIZE.sm,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
     fontWeight: FONT_WEIGHT.medium,
     marginRight: 4,
   },
   rowDivider: {
     height: 1,
-    backgroundColor: Colors.outlineVariant,
-    marginLeft: 60,
+    backgroundColor: Colors.divider,
+    marginLeft: 64,
   },
 
-  // Sign Out
+  // ── Sign Out ──────────────────────────────────────────────────────────────────
   signOutCard: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     paddingVertical: 16,
     alignItems: 'center',
-    ...SHADOW.md,
-    marginTop: Spacing.sm,
+    ...SHADOW.sm,
   },
   signOutText: {
     fontSize: FONT_SIZE.md,
@@ -533,68 +549,69 @@ const styles = StyleSheet.create({
     color: Colors.avoid,
   },
 
-  // Version
+  // ── Version ───────────────────────────────────────────────────────────────────
   version: {
     textAlign: 'center',
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: 1,
-    color: Colors.onSurfaceMuted,
+    fontWeight: FONT_WEIGHT.semibold,
+    letterSpacing: 1.5,
+    color: Colors.textSecondary,
     paddingVertical: Spacing.md,
   },
 
-  // Learn — articles
+  // ── Learn — articles ──────────────────────────────────────────────────────────
   articlesWrap: {
-    gap: 10,
+    gap: Spacing.sm,
   },
   articleCard: {
     backgroundColor: Colors.surface,
-    borderRadius: Radius.xl,
+    borderRadius: Radius.lg,
     overflow: 'hidden',
-    ...SHADOW.md,
+    ...SHADOW.sm,
   },
   articleHeader: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    padding: 18,
-    gap: 14,
+    padding: Spacing.md,
+    gap: Spacing.sm,
   },
   articleIconWrap: {
     width: 44,
     height: 44,
     borderRadius: Radius.md,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
   articleCategory: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.bold,
-    letterSpacing: 1,
-    color: Colors.primary,
+    fontWeight: FONT_WEIGHT.semibold,
+    letterSpacing: 1.5,
+    color: Colors.accent,
+    textTransform: 'uppercase',
   },
   articleTitle: {
-    fontSize: FONT_SIZE.lg,
+    fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.bold,
-    color: Colors.onSurface,
+    color: Colors.textPrimary,
     lineHeight: 21,
   },
   articleSubtitle: {
     fontSize: FONT_SIZE.sm,
     fontWeight: FONT_WEIGHT.regular,
-    color: Colors.onSurfaceMuted,
+    color: Colors.textSecondary,
     lineHeight: 18,
   },
   articleBody: {
-    paddingHorizontal: 18,
-    paddingBottom: 18,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
     gap: 10,
   },
   articlePara: {
     fontSize: FONT_SIZE.md,
     fontWeight: FONT_WEIGHT.regular,
-    color: Colors.onSurfaceVariant,
+    color: Colors.textSecondary,
     lineHeight: 21,
   },
 });
