@@ -5,7 +5,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'rea
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { useConditions } from '../hooks/useStorage';
 import { AnimatedCard } from '../components/AnimatedCard';
 import { useHistoryContext } from '../context/HistoryContext';
@@ -227,7 +227,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.premiumCard}>
             <View style={styles.premiumCardLeft}>
               <View style={styles.premiumIconWrap}>
-                <Feather name="award" size={22} color={Colors.textInverse} />
+                <Feather name="award" size={22} color={Colors.heroAccent} />
               </View>
               <View>
                 <Text style={styles.premiumTitle}>Premium Member</Text>
@@ -297,6 +297,18 @@ export default function ProfileScreen({ navigation }) {
           />
         </Section></AnimatedCard>
 
+        {/* ── How Scoring Works ── */}
+        <AnimatedCard delay={220}>
+          <Section>
+            <SettingsRow
+              icon="bar-chart-2"
+              label="How Scoring Works"
+              onPress={() => navigation.navigate('ScoringExplainer', { source: 'result' })}
+              last
+            />
+          </Section>
+        </AnimatedCard>
+
         {/* ── Learn ── */}
         <AnimatedCard delay={240}><View style={styles.sectionBlock}>
           <Text style={styles.sectionLabel}>LEARN</Text>
@@ -365,7 +377,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.accent,
+    backgroundColor: Colors.hero,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -373,7 +385,7 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: FONT_SIZE.sm,
     color: Colors.textSecondary,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     marginBottom: 4,
   },
   nameRow: {
@@ -384,7 +396,7 @@ const styles = StyleSheet.create({
   },
   nameText: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.displayBold,
     color: Colors.textPrimary,
     letterSpacing: -0.5,
   },
@@ -397,7 +409,7 @@ const styles = StyleSheet.create({
   proBadgeText: {
     color: Colors.textInverse,
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 1,
   },
 
@@ -417,12 +429,12 @@ const styles = StyleSheet.create({
   },
   statNum: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.accent,
   },
   statLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textSecondary,
   },
   statDivider: {
@@ -443,23 +455,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: Colors.accent,
+    backgroundColor: Colors.hero,
     borderRadius: Radius.lg,
     padding: Spacing.md,
-    ...SHADOW.sm,
+    ...SHADOW.md,
   },
   premiumCardLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   premiumIconWrap: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  premiumTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.textInverse },
-  premiumSub:   { fontSize: FONT_SIZE.sm, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
-  manageLink:   { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold, color: 'rgba(255,255,255,0.85)', textDecorationLine: 'underline' },
+  premiumTitle: { fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, color: Colors.heroText },
+  premiumSub:   { fontSize: FONT_SIZE.sm, color: Colors.heroSubtext, marginTop: 2 },
+  manageLink:   { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.heroAccent, textDecorationLine: 'underline' },
 
   // ── Free card ─────────────────────────────────────────────────────────────────
   freeCard: {
@@ -471,7 +483,7 @@ const styles = StyleSheet.create({
     ...SHADOW.sm,
   },
   freeCardTop: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  freePlanTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.textPrimary },
+  freePlanTitle: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.textPrimary },
   freePlanSub:   { fontSize: FONT_SIZE.sm, color: Colors.textSecondary, marginTop: 2 },
   upgradeBtn: {
     backgroundColor: Colors.accent,
@@ -480,7 +492,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     flexShrink: 0,
   },
-  upgradeBtnText: { color: Colors.textInverse, fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold },
+  upgradeBtnText: { color: Colors.textInverse, fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold },
 
   // ── Section block ─────────────────────────────────────────────────────────────
   sectionBlock: {
@@ -488,7 +500,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 1.5,
     color: Colors.textSecondary,
     paddingHorizontal: 4,
@@ -520,13 +532,13 @@ const styles = StyleSheet.create({
   rowLabel: {
     flex: 1,
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.textPrimary,
   },
   rowValue: {
     fontSize: FONT_SIZE.sm,
     color: Colors.textSecondary,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     marginRight: 4,
   },
   rowDivider: {
@@ -545,7 +557,7 @@ const styles = StyleSheet.create({
   },
   signOutText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.avoid,
   },
 
@@ -553,7 +565,7 @@ const styles = StyleSheet.create({
   version: {
     textAlign: 'center',
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 1.5,
     color: Colors.textSecondary,
     paddingVertical: Spacing.md,
@@ -586,20 +598,20 @@ const styles = StyleSheet.create({
   },
   articleCategory: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 1.5,
-    color: Colors.accent,
+    color: Colors.textSecondary,
     textTransform: 'uppercase',
   },
   articleTitle: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
     lineHeight: 21,
   },
   articleSubtitle: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
+    fontFamily: FONTS.body,
     color: Colors.textSecondary,
     lineHeight: 18,
   },
@@ -610,7 +622,7 @@ const styles = StyleSheet.create({
   },
   articlePara: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.regular,
+    fontFamily: FONTS.body,
     color: Colors.textSecondary,
     lineHeight: 21,
   },

@@ -5,7 +5,7 @@ import {
   Animated, TouchableWithoutFeedback, Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { Colors, Radius, Spacing } from '../theme';
 import { usePremiumContext } from '../context/PremiumContext';
 
@@ -61,7 +61,7 @@ export function UpgradeModal({ feature = 'scanner', visible, onClose, onUpgrade 
 
         {/* Icon + copy */}
         <View style={styles.featureIconWrap}>
-          <Feather name={cfg.icon} size={28} color={Colors.primary} />
+          <Feather name={cfg.icon} size={28} color={Colors.accent} />
         </View>
         <Text style={styles.headline}>{cfg.headline}</Text>
         <Text style={styles.subtext}>{cfg.subtext}</Text>
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   sheet: {
     position: 'absolute',
     bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 28,
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   headline: {
-    fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold,
+    fontSize: FONT_SIZE.xl, fontFamily: FONTS.displaySemibold,
     color: Colors.onSurface,
     textAlign: 'center',
     letterSpacing: -0.3,
@@ -144,11 +144,11 @@ const styles = StyleSheet.create({
   benefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   benefitCheck: {
     width: 26, height: 26, borderRadius: 13,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
     alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  benefitText: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.medium, color: Colors.onSurface, flex: 1 },
+  benefitText: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodyMedium, color: Colors.onSurface, flex: 1 },
   trialNote: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -157,18 +157,18 @@ const styles = StyleSheet.create({
   },
   trialNoteText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.primary,
   },
   ctaBtn: {
     width: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
     borderRadius: Radius.xl,
     paddingVertical: 14,
     alignItems: 'center',
     marginBottom: 12,
   },
-  ctaBtnText: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold },
+  ctaBtnText: { color: Colors.textInverse, fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold },
   restoreBtn: { paddingVertical: 14 },
-  restoreText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, fontWeight: FONT_WEIGHT.semibold },
+  restoreText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, fontFamily: FONTS.bodySemibold },
 });

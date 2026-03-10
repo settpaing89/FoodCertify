@@ -7,7 +7,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { PrimaryButton } from '../components';
 import { analyzeIngredients } from '../engine/analyzer';
 import { useConditions, useDietaryPrefs } from '../hooks/useStorage';
@@ -153,15 +153,15 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md, paddingHorizontal: 14, paddingVertical: 7,
     alignSelf: 'flex-start', marginBottom: 16,
   },
-  backText: { color: '#fff', fontWeight: FONT_WEIGHT.semibold, fontSize: FONT_SIZE.md },
-  title: { color: '#fff', fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold, marginBottom: 6 },
+  backText: { color: Colors.textInverse, fontFamily: FONTS.bodySemibold, fontSize: FONT_SIZE.md },
+  title: { color: Colors.textInverse, fontSize: FONT_SIZE.xl, fontFamily: FONTS.displaySemibold, marginBottom: 6 },
   subtitle: { color: 'rgba(255,255,255,0.75)', fontSize: FONT_SIZE.md, lineHeight: 20 },
 
   content: { padding: 16, gap: 16 },
 
   field: { gap: 8 },
-  label: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
-  labelNote: { fontWeight: FONT_WEIGHT.regular, color: Colors.onSurfaceMuted },
+  label: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
+  labelNote: { fontFamily: FONTS.body, color: Colors.onSurfaceMuted },
 
   nameInput: {
     backgroundColor: Colors.surface, borderRadius: Radius.lg,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     padding: 14, borderWidth: 1, borderColor: Colors.cautionBorder,
     ...SHADOW.sm,
   },
-  warningText: { color: Colors.caution, fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold, lineHeight: 18 },
+  warningText: { color: Colors.caution, fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, lineHeight: 18 },
 
   examplesTitle: { ...Typography.title, marginBottom: -4 },
   exampleCard: {
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     padding: 14, borderWidth: 1.5, borderColor: Colors.outlineVariant,
     ...SHADOW.sm,
   },
-  exampleName: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.primary, marginBottom: 4 },
+  exampleName: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.primary, marginBottom: 4 },
   examplePreview: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, lineHeight: 18 },
 
   bottomBar: {

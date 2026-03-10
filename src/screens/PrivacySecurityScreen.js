@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, Linking } 
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
 function SettingsRow({ icon, label, subtitle, onPress, danger, last }) {
   return (
@@ -138,17 +138,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
 
   noticeCard: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
     backgroundColor: Colors.primarySurface, borderRadius: Radius.lg,
     padding: Spacing.md, borderWidth: 1, borderColor: Colors.primaryBorder,
   },
-  noticeText: { flex: 1, fontSize: FONT_SIZE.sm, color: Colors.primary, fontWeight: FONT_WEIGHT.medium, lineHeight: 20 },
+  noticeText: { flex: 1, fontSize: FONT_SIZE.sm, color: Colors.primary, fontFamily: FONTS.bodyMedium, lineHeight: 20 },
 
   sectionLabel: {
-    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4, marginBottom: 8,
   },
   sectionCard: {
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   },
   rowIconDanger: { backgroundColor: Colors.avoidBg },
   rowBody: { flex: 1 },
-  rowLabel: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
+  rowLabel: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
   rowLabelDanger: { color: Colors.avoid },
   rowSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
 

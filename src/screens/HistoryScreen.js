@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Radius, Typography, Spacing } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { useHistoryContext } from '../context/HistoryContext';
 import { usePremiumContext } from '../context/PremiumContext';
 import { UpgradeModal } from '../components/UpgradeModal';
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
   },
   screenTitle: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.displayBold,
     color: Colors.textPrimary,
     letterSpacing: -0.5,
   },
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   },
   filterPillText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textSecondary,
   },
   filterPillTextActive: {
@@ -431,7 +431,7 @@ const styles = StyleSheet.create({
   // ── Section label ─────────────────────────────────────────────────────────────
   sectionLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 1.5,
     color: Colors.textSecondary,
     marginTop: Spacing.md,
@@ -465,12 +465,12 @@ const styles = StyleSheet.create({
   },
   cardName: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
   },
   cardTime: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.textSecondary,
   },
   cardRight: {
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 0.4,
   },
 
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
   },
   historyGateTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
     textAlign: 'center',
   },
@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
   historyGateBtnText: {
     color: Colors.textInverse,
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
   },
 
   // ── Empty state ───────────────────────────────────────────────────────────────
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   },
   scanNowText: {
     color: Colors.textInverse,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     fontSize: FONT_SIZE.md,
   },
 });

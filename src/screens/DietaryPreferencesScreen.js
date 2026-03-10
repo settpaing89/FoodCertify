@@ -7,7 +7,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { useConditions } from '../hooks/useStorage';
 import { CONDITIONS } from '../engine/analyzer';
 import { usePremiumContext } from '../context/PremiumContext';
@@ -83,7 +83,7 @@ export default function DietaryPreferencesScreen({ navigation }) {
                   <MaterialCommunityIcons
                     name={cond.icon}
                     size={20}
-                    color={active ? '#fff' : Colors.onSurfaceMuted}
+                    color={active ? Colors.textInverse : Colors.onSurfaceMuted}
                   />
                 </View>
                 <View style={{ flex: 1 }}>
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   topBarTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.onSurface,
   },
 
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   freeBannerText: {
     flex: 1,
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.cautionText,
     lineHeight: 18,
   },
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   // conditionIcon no longer used (replaced by Feather in conditionIconBg)
   conditionName: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.onSurface,
   },
   conditionStatus: {
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   summaryText: {
     flex: 1,
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.safeText,
     lineHeight: 19,
   },

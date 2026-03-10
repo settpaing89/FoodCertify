@@ -11,7 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT } from '../utils/tokens';
+import { FONT_SIZE, FONTS } from '../utils/tokens';
 import { fetchProductByBarcode } from '../engine/api';
 import { analyzeIngredients } from '../engine/analyzer';
 import { useConditions, useDietaryPrefs } from '../hooks/useStorage';
@@ -107,12 +107,17 @@ export default function ScannerScreen({ navigation }) {
         return;
       }
 
-      const analysis = analyzeIngredients(result.product.ingredients, conditions, dietaryPrefs, result.product.nutriments);
+      const analysis = analyzeIngredients(result.product.ingredients, conditions, dietaryPrefs, {
+        ...result.product.nutriments,
+        nova_group:        result.product.novaGroup,
+        nutriscore_grade:  result.product.nutriscoreGrade,
+      });
 
       navigation.navigate('Result', {
         product: result.product,
         analysis,
         barcode: data,
+        conditionsCount: conditions.length,
       });
 
     } catch (error) {
@@ -280,8 +285,8 @@ const styles = StyleSheet.create({
   scanLine: {
     position: 'absolute',
     left: 0, right: 0, height: 2,
-    backgroundColor: Colors.primaryLight,
-    shadowColor: Colors.primaryLight,
+    backgroundColor: Colors.accent,
+    shadowColor: Colors.accent,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 6,
@@ -291,7 +296,7 @@ const styles = StyleSheet.create({
   corner: {
     position: 'absolute',
     width: CORNER_SIZE, height: CORNER_SIZE,
-    borderColor: '#fff',
+    borderColor: Colors.accent,
   },
   cornerTL: {
     top: 0, left: 0,
@@ -317,26 +322,26 @@ const styles = StyleSheet.create({
   scanLoadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   scanLoadingPulse: {
     width: 50, height: 50, borderRadius: 25,
-    borderWidth: 3, borderColor: Colors.primaryLight,
+    borderWidth: 3, borderColor: Colors.accent,
     opacity: 0.8,
   },
-  scanLoadingText: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold },
+  scanLoadingText: { color: Colors.textInverse, fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold },
 
   scanHint: {
     color: 'rgba(255,255,255,0.85)', textAlign: 'center',
-    fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.semibold, marginTop: 24,
+    fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, marginTop: 24,
   },
   warningBanner: {
-    backgroundColor: 'rgba(255,152,0,0.85)',
+    backgroundColor: 'rgba(245,158,11,0.85)',
     margin: 16, borderRadius: 12, padding: 12,
   },
-  warningText: { color: '#fff', textAlign: 'center', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold },
+  warningText: { color: Colors.textInverse, textAlign: 'center', fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold },
   scanCountBanner: {
-    backgroundColor: 'rgba(12,107,107,0.85)',
+    backgroundColor: 'rgba(14,165,160,0.85)',
     marginHorizontal: 16, marginTop: 8,
     borderRadius: 12, paddingVertical: 8, paddingHorizontal: 16,
   },
-  scanCountText: { color: '#fff', textAlign: 'center', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold },
+  scanCountText: { color: Colors.textInverse, textAlign: 'center', fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold },
 
   scanActions: {
     flexDirection: 'row', justifyContent: 'center',
@@ -344,7 +349,7 @@ const styles = StyleSheet.create({
   },
   actionBtn: { alignItems: 'center', gap: 6 },
   actionBtnIcon: { fontSize: FONT_SIZE.xxl },
-  actionBtnLabel: { color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold },
+  actionBtnLabel: { color: 'rgba(255,255,255,0.8)', fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold },
 
   topBar: {
     position: 'absolute', top: 0, left: 0, right: 0,
@@ -352,7 +357,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 12,
   },
   topBarClose: { padding: 4, width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { color: '#fff', fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold },
+  topBarTitle: { color: Colors.textInverse, fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold },
 
   // Permissions
   permissionContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 40 },
@@ -365,11 +370,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 20,
   },
-  permissionTitle: { fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold, color: '#fff', marginBottom: 16, textAlign: 'center' },
+  permissionTitle: { fontSize: FONT_SIZE.xl, fontFamily: FONTS.displaySemibold, color: Colors.textInverse, marginBottom: 16, textAlign: 'center' },
   permissionBody: { fontSize: FONT_SIZE.md, color: 'rgba(255,255,255,0.8)', textAlign: 'center', lineHeight: 22, marginBottom: 32 },
   permissionButton: {
-    backgroundColor: '#fff', borderRadius: Radius.xl,
+    backgroundColor: Colors.accent, borderRadius: Radius.xl,
     paddingHorizontal: 32, paddingVertical: 14,
   },
-  permissionButtonText: { color: Colors.primaryDark, fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold },
+  permissionButtonText: { color: Colors.textInverse, fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold },
 });

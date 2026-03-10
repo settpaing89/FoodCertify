@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert, Platform }
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { usePremiumContext } from '../context/PremiumContext';
 
 // ─── Feature comparison rows ──────────────────────────────────────────────────
@@ -59,7 +59,7 @@ export default function PaywallScreen({ navigation }) {
           </TouchableOpacity>
         )}
         <View style={styles.headerIcon}>
-          <Feather name="award" size={28} color={Colors.primary} />
+          <Feather name="award" size={28} color={Colors.accent} />
         </View>
         <Text style={styles.headerTitle}>FoodSafe Premium</Text>
         <Text style={styles.headerSub}>Everything you need to eat safe and smart</Text>
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.onSurface,
     letterSpacing: -0.4,
     marginBottom: 6,
@@ -188,8 +188,8 @@ const styles = StyleSheet.create({
   },
   colFree:    { width: 72, alignItems: 'center', justifyContent: 'center' },
   colPremium: { width: 80, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.primarySurface },
-  colLabelFree:    { fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurfaceMuted, letterSpacing: 0.8 },
-  colLabelPremium: { fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, color: Colors.primary, letterSpacing: 0.8 },
+  colLabelFree:    { fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, color: Colors.onSurfaceMuted, letterSpacing: 0.8 },
+  colLabelPremium: { fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, color: Colors.primary, letterSpacing: 0.8 },
   tableRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -197,9 +197,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   tableRowAlt:      { backgroundColor: Colors.outlineVariant },
-  rowLabel:         { flex: 1, fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.medium, color: Colors.onSurface },
-  cellText:         { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurfaceMuted, textAlign: 'center' },
-  cellTextPremium:  { color: Colors.primary, fontWeight: FONT_WEIGHT.bold },
+  rowLabel:         { flex: 1, fontSize: FONT_SIZE.md, fontFamily: FONTS.bodyMedium, color: Colors.onSurface },
+  cellText:         { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.onSurfaceMuted, textAlign: 'center' },
+  cellTextPremium:  { color: Colors.primary, fontFamily: FONTS.bodySemibold },
 
   // Trial badge
   trialBadge: {
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   trialBadgeText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.primary,
   },
 
@@ -228,21 +228,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: -4,
   },
-  price:     { fontSize: FONT_SIZE.display, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, letterSpacing: -1 },
-  pricePer:  { fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurfaceMuted },
+  price:     { fontSize: FONT_SIZE.display, fontFamily: FONTS.displayBold, color: Colors.onSurface, letterSpacing: -1 },
+  pricePer:  { fontSize: FONT_SIZE.xl, fontFamily: FONTS.displaySemibold, color: Colors.onSurfaceMuted },
   priceNote: { textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: -8 },
 
   // Buttons
   ctaBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.accent,
     borderRadius: Radius.xl,
     paddingVertical: 20,
     alignItems: 'center',
     ...SHADOW.md,
   },
-  ctaBtnText: { color: '#fff', fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold, letterSpacing: 0.2 },
+  ctaBtnText: { color: Colors.textInverse, fontSize: FONT_SIZE.xl, fontFamily: FONTS.bodySemibold, letterSpacing: 0.2 },
   restoreBtn: { alignItems: 'center', paddingVertical: 4 },
-  restoreText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, fontWeight: FONT_WEIGHT.medium },
+  restoreText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, fontFamily: FONTS.bodyMedium },
 
   // Legal
   legal: {

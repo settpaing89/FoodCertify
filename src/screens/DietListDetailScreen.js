@@ -3,7 +3,7 @@ import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Alert } from
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { RatingBadge } from '../components';
 import { useDietLists } from '../hooks/useDietLists';
 
@@ -161,11 +161,11 @@ const styles = StyleSheet.create({
   topBarTitle: {
     ...Typography.h2,
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
   },
   topBarSub: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.onSurfaceMuted,
   },
 
@@ -202,12 +202,12 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.onSurface,
   },
   productBrand: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.onSurfaceMuted,
   },
   productMeta: {
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
   },
   productDate: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.onSurfaceMuted,
   },
   deleteBtn: {
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   },
   backBtnInlineText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.primary,
   },
 });

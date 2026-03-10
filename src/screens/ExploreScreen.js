@@ -8,7 +8,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { useDietaryPrefs } from '../hooks/useStorage';
 import { useDietLists } from '../hooks/useDietLists';
 import { usePremiumContext } from '../context/PremiumContext';
@@ -23,7 +23,7 @@ const PRESETS = [
     label: 'Keto',
     icon: 'leaf',
     desc: 'Low carb, high fat',
-    color: '#00A878',
+    color: '#2D6A4F',
     apply: p => ({
       ...p, preset: 'keto',
       carbs:   { enabled: true, max: 30,   min: null },
@@ -36,7 +36,7 @@ const PRESETS = [
     label: 'Cutting',
     icon: 'zap',
     desc: 'Low calorie',
-    color: '#F0A500',
+    color: '#D97706',
     apply: p => ({
       ...p, preset: 'cutting',
       calories: { enabled: true, max: 400, min: null },
@@ -47,7 +47,7 @@ const PRESETS = [
     label: 'Bulking',
     icon: 'trending-up',
     desc: 'High protein',
-    color: '#1E3A5F',
+    color: '#1C1C1E',
     apply: p => ({
       ...p, preset: 'bulking',
       protein:  { enabled: true, max: null, min: 25  },
@@ -59,7 +59,7 @@ const PRESETS = [
     label: 'Low Sodium',
     icon: 'heart',
     desc: 'Heart health',
-    color: '#D62828',
+    color: '#DC2626',
     apply: p => ({
       ...p, preset: 'low_sodium',
       sodium: { enabled: true, max: 500, min: null },
@@ -70,7 +70,7 @@ const PRESETS = [
     label: 'Clean Eating',
     icon: 'sun',
     desc: 'Minimal sugar',
-    color: '#2E5282',
+    color: '#6B6B70',
     apply: p => ({
       ...p, preset: 'clean',
       sugar: { enabled: true, max: 5, min: null },
@@ -81,7 +81,7 @@ const PRESETS = [
     label: 'Custom',
     icon: 'sliders',
     desc: 'Set manually',
-    color: '#6B7F99',
+    color: '#6B6B70',
     apply: p => ({ ...p, preset: 'custom' }),
   },
 ];
@@ -109,7 +109,7 @@ function PresetCard({ preset, isActive, onPress, locked, masterOff }) {
     <TouchableOpacity
       style={[
         styles.presetCard,
-        isActive && { backgroundColor: preset.color, borderColor: preset.color },
+        isActive && { backgroundColor: Colors.hero, borderColor: Colors.hero },
         locked && styles.lockedCard,
         masterOff && { opacity: 0.4 },
       ]}
@@ -126,13 +126,10 @@ function PresetCard({ preset, isActive, onPress, locked, masterOff }) {
           <Feather name="lock" size={11} color={Colors.onSurfaceMuted} />
         </View>
       )}
-      <View style={[styles.presetIconWrap, isActive && styles.presetIconWrapActive, locked && { opacity: 0.5 }]}>
-        <Feather name={preset.icon} size={20} color={isActive ? Colors.textInverse : preset.color} />
-      </View>
-      <Text style={[styles.presetLabel, isActive && { color: Colors.textInverse }, locked && styles.lockedText]}>
+      <Text style={[styles.presetLabel, isActive && { color: Colors.heroText }, locked && styles.lockedText]}>
         {preset.label}
       </Text>
-      <Text style={[styles.presetDesc, isActive && { color: 'rgba(255,255,255,0.75)' }, locked && styles.lockedText]}>
+      <Text style={[styles.presetDesc, isActive && { color: Colors.heroSubtext }, locked && styles.lockedText]}>
         {preset.desc}
       </Text>
     </TouchableOpacity>
@@ -598,13 +595,13 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     fontSize: FONT_SIZE.xxl,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.displayBold,
     letterSpacing: -0.5,
     color: Colors.textPrimary,
   },
   pageSub: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.textSecondary,
   },
 
@@ -635,7 +632,7 @@ const styles = StyleSheet.create({
   },
   tabPillText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textSecondary,
   },
   tabPillTextActive: {
@@ -652,7 +649,7 @@ const styles = StyleSheet.create({
   // ── Section labels ───────────────────────────────────────────────────────────
   sectionLabel: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 1.5,
     color: Colors.textSecondary,
     marginTop: 4,
@@ -666,7 +663,7 @@ const styles = StyleSheet.create({
   },
   sectionMeta: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.textSecondary,
     opacity: 0.7,
   },
@@ -683,12 +680,12 @@ const styles = StyleSheet.create({
   },
   masterTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
   },
   masterSub: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.regular,
+    fontFamily: FONTS.body,
     color: Colors.textSecondary,
     lineHeight: 18,
   },
@@ -720,26 +717,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  presetIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: Radius.md,
-    backgroundColor: Colors.accentLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },
-  presetIconWrapActive: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-  },
   presetLabel: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontSize: FONT_SIZE.lg,
+    fontFamily: FONTS.displayBold,
     color: Colors.textPrimary,
   },
   presetDesc: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.body,
     color: Colors.textSecondary,
     lineHeight: 16,
   },
@@ -774,12 +759,12 @@ const styles = StyleSheet.create({
   },
   nutrientLabel: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
   },
   nutrientSummary: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.accent,
   },
   nutrientInputs: {
@@ -797,7 +782,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textSecondary,
     letterSpacing: 0.3,
   },
@@ -807,7 +792,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -868,7 +853,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.accent,
   },
   emptyNote: {
@@ -885,7 +870,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: Colors.accentLight,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     paddingHorizontal: Spacing.md,
     paddingVertical: 12,
@@ -895,12 +880,12 @@ const styles = StyleSheet.create({
   gateBannerText: {
     flex: 1,
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
   },
   gateBannerCta: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.accent,
   },
   lockedCard: {
@@ -949,7 +934,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: Colors.accentLight,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     paddingVertical: 14,
     borderWidth: 1,
@@ -957,7 +942,7 @@ const styles = StyleSheet.create({
   },
   addListBtnText: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.accent,
   },
   listCard: {
@@ -984,12 +969,12 @@ const styles = StyleSheet.create({
   },
   listName: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
   },
   listCount: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.textSecondary,
   },
 });

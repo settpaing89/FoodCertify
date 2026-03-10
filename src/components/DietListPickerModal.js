@@ -5,7 +5,7 @@ import {
   Animated, TouchableWithoutFeedback, Alert, FlatList,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { Colors, Radius, Spacing } from '../theme';
 import { useDietLists } from '../hooks/useDietLists';
 
@@ -67,7 +67,7 @@ export function DietListPickerModal({ visible, onClose, product }) {
               activeOpacity={0.8}
             >
               <View style={styles.listIconWrap}>
-                <Feather name="list" size={18} color={Colors.primary} />
+                <Feather name="list" size={18} color={Colors.accent} />
               </View>
               <View style={styles.listInfo}>
                 <Text style={styles.listName}>{item.name}</Text>
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   sheet: {
     position: 'absolute',
     bottom: 0, left: 0, right: 0,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.surface,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: 24,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   title: {
-    fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold,
+    fontSize: FONT_SIZE.xl, fontFamily: FONTS.displaySemibold,
     color: Colors.onSurface,
     textAlign: 'center',
     letterSpacing: -0.3,
@@ -141,11 +141,11 @@ const styles = StyleSheet.create({
   listIconWrap: {
     width: 40, height: 40,
     borderRadius: 10,
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
     alignItems: 'center', justifyContent: 'center',
   },
   listInfo: { flex: 1 },
-  listName: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  listName: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
   listCount: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
   emptyRow: { paddingVertical: 20, alignItems: 'center' },
   emptyText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, textAlign: 'center' },
@@ -154,5 +154,5 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
   },
-  cancelText: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurfaceMuted },
+  cancelText: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurfaceMuted },
 });

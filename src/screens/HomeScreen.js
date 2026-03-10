@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { RatingBadge } from '../components';
 import { AnimatedCard } from '../components/AnimatedCard';
 import { useConditions } from '../hooks/useStorage';
@@ -17,6 +17,13 @@ import { useHistoryContext } from '../context/HistoryContext';
 import { usePremiumContext } from '../context/PremiumContext';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+function getStreakMessage(streak) {
+  if (streak === 0) return 'Start your streak';
+  if (streak <= 3) return 'Good start!';
+  if (streak <= 6) return 'Keep it up!';
+  return 'On a roll!';
+}
+
 function getGreeting() {
   const h = new Date().getHours();
   if (h >= 5 && h < 12) return 'Good morning';
@@ -43,6 +50,55 @@ function calculateStreak(history) {
   }
   return streak;
 }
+
+// ─── Streak Ring (pure RN arc via two half-circle clips) ─────────────────────
+const RING_SIZE   = 72;
+const RING_STROKE = 5;
+const RING_HALF   = RING_SIZE / 2;                   // 36
+const RING_INNER  = RING_SIZE - RING_STROKE * 2;     // 62
+
+function StreakRing({ streak, goal = 7, arcAnim }) {
+  const rightDeg = arcAnim.interpolate({
+    inputRange:  [0,        0.5,     1],
+    outputRange: ['-180deg', '0deg', '0deg'],
+    extrapolate: 'clamp',
+  });
+  const leftDeg = arcAnim.interpolate({
+    inputRange:  [0,       0.5,      1],
+    outputRange: ['180deg', '180deg', '0deg'],
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <View style={ringS.wrap}>
+      <View style={ringS.track} />
+      <View style={[ringS.halfClip, ringS.rightClip]}>
+        <Animated.View style={[ringS.halfFill, ringS.rightFill, { transform: [{ rotate: rightDeg }] }]} />
+      </View>
+      <View style={[ringS.halfClip, ringS.leftClip]}>
+        <Animated.View style={[ringS.halfFill, ringS.leftFill, { transform: [{ rotate: leftDeg }] }]} />
+      </View>
+      <View style={ringS.inner}>
+        <Text style={ringS.ringNum}>{streak}</Text>
+        <Text style={ringS.ringLabel}>days</Text>
+      </View>
+    </View>
+  );
+}
+
+const ringS = StyleSheet.create({
+  wrap:      { width: RING_SIZE, height: RING_SIZE, borderRadius: RING_HALF },
+  track:     { position: 'absolute', width: RING_SIZE, height: RING_SIZE, borderRadius: RING_HALF, backgroundColor: Colors.heroSubtext, opacity: 0.35 },
+  halfClip:  { position: 'absolute', height: RING_SIZE, width: RING_HALF, overflow: 'hidden' },
+  rightClip: { right: 0 },
+  leftClip:  { left: 0 },
+  halfFill:  { position: 'absolute', width: RING_SIZE, height: RING_SIZE, borderRadius: RING_HALF, backgroundColor: Colors.heroAccent },
+  rightFill: { left: -RING_HALF },
+  leftFill:  { left: 0 },
+  inner:     { position: 'absolute', top: RING_STROKE, left: RING_STROKE, width: RING_INNER, height: RING_INNER, borderRadius: RING_INNER / 2, backgroundColor: Colors.hero, alignItems: 'center', justifyContent: 'center' },
+  ringNum:   { fontSize: FONT_SIZE.lg, fontFamily: FONTS.displayBold,   color: Colors.heroText,    lineHeight: FONT_SIZE.lg + 2 },
+  ringLabel: { fontSize: FONT_SIZE.xs, fontFamily: FONTS.body,           color: Colors.heroSubtext, lineHeight: FONT_SIZE.xs + 2 },
+});
 
 function formatRelativeTime(dateStr) {
   if (!dateStr) return '';
@@ -101,7 +157,7 @@ export default function HomeScreen({ navigation }) {
 
   // ── Animation refs ────────────────────────────────────────────────────────────
   const greetFade    = useRef(new Animated.Value(0)).current;
-  const pulseAnim    = useRef(new Animated.Value(1)).current;
+  const arcAnim      = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   // ── Effects ───────────────────────────────────────────────────────────────────
@@ -116,15 +172,14 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   useEffect(() => {
-    const anim = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.08, duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1.0,  duration: 1000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
-      ])
-    );
+    const progress = Math.min(streak / 7, 1);
+    const anim = Animated.timing(arcAnim, {
+      toValue: progress, duration: 1000,
+      easing: Easing.out(Easing.cubic), useNativeDriver: false,
+    });
     anim.start();
     return () => anim.stop();
-  }, []);
+  }, [streak]);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -146,7 +201,7 @@ export default function HomeScreen({ navigation }) {
           onPress={() => navigation.navigate('Profile')}
           activeOpacity={0.85}
         >
-          <Feather name="user" size={20} color={Colors.accent} />
+          <Feather name="user" size={20} color={Colors.heroText} />
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.bellBtn} activeOpacity={0.85}>
@@ -161,20 +216,13 @@ export default function HomeScreen({ navigation }) {
         </Animated.View>
 
         {/* ── Streak Card ── */}
-        <AnimatedCard delay={0} style={styles.heroCard}>
+        <AnimatedCard delay={0} style={styles.streakCard}>
           <View style={styles.streakRow}>
-            <Animated.View style={[styles.fireWrap, { transform: [{ scale: pulseAnim }] }]}>
-              <Text style={styles.fireEmoji}>🔥</Text>
-            </Animated.View>
-            <View style={{ flex: 1 }}>
-              {streak > 0 ? (
-                <>
-                  <Text style={styles.streakValue}>{streak} day streak</Text>
-                  <Text style={styles.streakSub}>Keep checking your food!</Text>
-                </>
-              ) : (
-                <Text style={styles.streakSub}>Start your streak — scan a product today!</Text>
-              )}
+            <StreakRing streak={streak} goal={7} arcAnim={arcAnim} />
+            <View style={styles.streakInfo}>
+              <Text style={styles.streakEyebrow}>CURRENT STREAK</Text>
+              <Text style={styles.streakMessage}>{getStreakMessage(streak)}</Text>
+              <Text style={styles.streakProgress}>{Math.min(streak, 7)} of 7 days this week</Text>
             </View>
           </View>
         </AnimatedCard>
@@ -318,7 +366,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.accentLight,
+    backgroundColor: Colors.hero,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -342,17 +390,23 @@ const styles = StyleSheet.create({
   // ── Greeting ─────────────────────────────────────────────────────────────────
   greetingText: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.displaySemibold,
     color: Colors.textPrimary,
     letterSpacing: -0.3,
   },
 
   // ── Hero Cards ────────────────────────────────────────────────────────────────
+  streakCard: {
+    backgroundColor: Colors.hero,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    ...SHADOW.md,
+  },
   heroCard: {
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     padding: Spacing.md,
-    ...SHADOW.md,
+    ...SHADOW.sm,
   },
 
   // Streak card
@@ -361,27 +415,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.md,
   },
-  fireWrap: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
+  streakInfo: {
+    flex: 1,
+    gap: 4,
   },
-  fireEmoji: {
-    fontSize: 28,
+  streakEyebrow: {
+    fontSize: FONT_SIZE.xs,
+    fontFamily: FONTS.bodyMedium,
+    color: Colors.heroSubtext,
+    letterSpacing: 1.2,
   },
-  streakValue: {
-    fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
-    color: Colors.accent,
-    letterSpacing: -0.3,
+  streakMessage: {
+    fontSize: FONT_SIZE.md,
+    fontFamily: FONTS.displayBold,
+    color: Colors.heroText,
   },
-  streakSub: {
+  streakProgress: {
     fontSize: FONT_SIZE.sm,
-    color: Colors.textSecondary,
-    marginTop: 2,
-    lineHeight: 18,
+    fontFamily: FONTS.body,
+    color: Colors.heroSubtext,
   },
 
   // Safety progress card
@@ -393,17 +445,17 @@ const styles = StyleSheet.create({
   },
   progressLabel: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textSecondary,
   },
   progressValue: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.accent,
   },
   progressTrack: {
     height: 8,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.surfaceSecondary,
     borderRadius: Radius.full,
     overflow: 'hidden',
   },
@@ -430,13 +482,13 @@ const styles = StyleSheet.create({
   scanBtnText: {
     color: Colors.textInverse,
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 0.2,
   },
   scanSubLabel: {
     fontSize: FONT_SIZE.xs,
     color: Colors.textSecondary,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     textAlign: 'center',
     marginTop: 2,
   },
@@ -456,12 +508,12 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
     color: Colors.textSecondary,
   },
   statValue: {
     fontSize: FONT_SIZE.xl,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.displaySemibold,
     color: Colors.textPrimary,
     letterSpacing: -0.5,
   },
@@ -479,12 +531,12 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
   },
   sectionLink: {
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.accent,
   },
 
@@ -527,14 +579,14 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
     lineHeight: 20,
   },
   productTime: {
     fontSize: FONT_SIZE.xs,
     color: Colors.textSecondary,
-    fontWeight: FONT_WEIGHT.medium,
+    fontFamily: FONTS.bodyMedium,
   },
 
   // ── Empty State ───────────────────────────────────────────────────────────────
@@ -557,7 +609,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: FONT_SIZE.lg,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     color: Colors.textPrimary,
     textAlign: 'center',
   },
@@ -579,7 +631,7 @@ const styles = StyleSheet.create({
   setupBannerText: {
     color: Colors.cautionText,
     fontSize: FONT_SIZE.sm,
-    fontWeight: FONT_WEIGHT.semibold,
+    fontFamily: FONTS.bodySemibold,
     textAlign: 'center',
   },
 });

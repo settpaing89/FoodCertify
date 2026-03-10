@@ -4,7 +4,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
 const LANGUAGES = [
   { value: 'en', label: 'English',  subtitle: 'en-US' },
@@ -74,11 +74,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
 
   sectionBlock: { gap: 8 },
   sectionLabel: {
-    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4,
   },
   sectionCard: {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     width: 32, height: 32, borderRadius: Radius.sm,
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
-  rowTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
+  rowTitle: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
   rowSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
 
   radio: {

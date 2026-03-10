@@ -4,7 +4,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Linkin
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
 const FAQS = [
   {
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
 
   searchBar: {
     flexDirection: 'row', alignItems: 'center',
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: FONT_SIZE.md, color: Colors.onSurface, padding: 0 },
 
   sectionLabel: {
-    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4,
   },
 
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   },
   faqItem: { paddingHorizontal: Spacing.md, paddingVertical: 14 },
   faqHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  faqQuestion: { flex: 1, fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
+  faqQuestion: { flex: 1, fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
   faqAnswer: {
     marginTop: 10, fontSize: FONT_SIZE.sm, color: Colors.onSurfaceVariant,
     lineHeight: 20, paddingRight: 28,
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   divider: { height: 1, backgroundColor: Colors.outlineVariant },
 
   noResults: { padding: Spacing.lg, alignItems: 'center' },
-  noResultsText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, fontWeight: FONT_WEIGHT.medium },
+  noResultsText: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceMuted, fontFamily: FONTS.bodyMedium },
 
   contactCard: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
@@ -179,6 +179,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
   contactBody: { flex: 1 },
-  contactTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  contactTitle: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
   contactSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
 });

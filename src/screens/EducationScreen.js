@@ -5,40 +5,40 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { Colors, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
 const ARTICLES = [
   {
     id: '1',
-    icon: 'activity', tag: 'Diabetes', tagColor: '#e53935', tagBg: '#fce4ec',
+    icon: 'activity', tag: 'Diabetes', tagColor: '#DC2626', tagBg: '#FEE2E2',
     title: 'Understanding Glycemic Index',
     summary: 'How different carbs affect your blood sugar and what to choose instead.',
     content: `The glycemic index (GI) measures how quickly foods raise blood glucose. Foods scoring 70+ are high-GI and cause rapid spikes.\n\nHigh fructose corn syrup (HFCS) has a GI of ~87 — nearly as high as pure glucose. Maltodextrin scores an alarming 185. These ingredients are common in processed foods and can be particularly harmful for people managing diabetes.\n\nLower-risk sweeteners: stevia (GI=0), erythritol (GI=0), monk fruit (GI=0).\n\nAlways check nutrition labels for total carbohydrates and added sugars per serving.`,
   },
   {
     id: '2',
-    icon: 'alert-circle', tag: 'Gluten', tagColor: '#f57c00', tagBg: '#fff3e0',
+    icon: 'alert-circle', tag: 'Gluten', tagColor: '#D97706', tagBg: '#FEF3C7',
     title: 'Hidden Gluten Sources',
     summary: 'Gluten hides in unexpected places — from soy sauce to medications.',
     content: `Gluten is found in wheat, barley, rye, and often oats (due to cross-contamination).\n\nSurprising hidden sources:\n• Soy sauce (wheat-based)\n• Malt vinegar and malt extract\n• Some spice mixes and seasonings\n• Licorice candy\n• Some medications use wheat starch as filler\n• Beer (barley)\n• Seitan (literally wheat gluten)\n\nSafe alternatives: Tamari (gluten-free soy sauce), rice vinegar, certified GF oats.\n\nAlways look for the "Certified Gluten-Free" seal for guaranteed safety.`,
   },
   {
     id: '3',
-    icon: 'shield', tag: 'Peanut Allergy', tagColor: '#6d4c41', tagBg: '#efebe9',
+    icon: 'shield', tag: 'Peanut Allergy', tagColor: '#D97706', tagBg: '#FEF3C7',
     title: 'Peanut Allergy Safety Guide',
     summary: 'Cross-contamination risks, label reading, and emergency response.',
     content: `Peanut allergy is one of the most common and severe food allergies, affecting ~1% of the population.\n\nHidden names for peanuts:\n• Groundnuts / groundnut oil\n• Arachis oil\n• Mixed nuts\n• Monkey nuts\n\nCross-contamination warnings to watch:\n• "May contain peanuts"\n• "Made in a facility with peanuts"\n• "Processed on shared equipment"\n\nEmergency response: If experiencing anaphylaxis — use epinephrine auto-injector (EpiPen), call 911 immediately, lie flat with legs elevated.\n\nAlways carry your prescribed epinephrine. Never rely on antihistamines alone for anaphylaxis.`,
   },
   {
     id: '4',
-    icon: 'leaf', tag: 'Vegan', tagColor: '#2e7d32', tagBg: '#e8f5e9',
+    icon: 'leaf', tag: 'Vegan', tagColor: '#2D6A4F', tagBg: '#DCFCE7',
     title: 'Non-Vegan Additives to Avoid',
     summary: 'E120, E441, L-Cysteine — the hidden animal ingredients in processed foods.',
     content: `Many processed foods contain hidden animal derivatives:\n\n• E120 (Carmine/Cochineal): Red dye from crushed insects. Found in some juices, yogurts, and candies.\n\n• E441 (Gelatin): Boiled animal bones/skin. Found in gummies, marshmallows, some yogurts.\n\n• E904 (Shellac): Insect secretion used as glazing on some candies and produce.\n\n• Whey/Casein: Milk proteins hidden in protein bars, bread, crackers.\n\n• L-Cysteine (E920): Usually from duck feathers/animal hair. Used as dough conditioner in bread.\n\n• Natural flavors: Can legally include animal-derived compounds. Contact manufacturers.\n\nLook for Vegan Society certification or "100% Plant-Based" claims.`,
   },
   {
     id: '5',
-    icon: 'search', tag: 'General', tagColor: '#1565c0', tagBg: '#e3f2fd',
+    icon: 'search', tag: 'General', tagColor: '#1C1C1E', tagBg: '#EAEFEA',
     title: 'How to Read a Food Label',
     summary: 'Serving sizes, % Daily Value, and ingredient order — demystified.',
     content: `Ingredients are listed by weight, highest first. If sugar is the first ingredient, the product is mostly sugar.\n\nKey label elements:\n\n• Serving size: All nutrition data is per serving — check how many servings are in the package.\n\n• % Daily Value (%DV): 5% or less = low; 20% or more = high.\n\n• Added sugars: Separate from natural sugars. Look for "0g added sugars" for diabetic-friendly products.\n\n• Total carbohydrates: Includes fiber, which doesn't spike blood sugar like net carbs do.\n\n• Allergen statement: "Contains: wheat, milk, peanuts" — required by law in many countries.\n\n• "May contain" statements: Voluntary cross-contamination warnings — take seriously if severely allergic.`,
@@ -117,7 +117,7 @@ export default function EducationScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   header: { paddingHorizontal: 20, paddingBottom: 20 },
-  headerTitle: { color: '#fff', fontSize: FONT_SIZE.xl, fontWeight: FONT_WEIGHT.bold },
+  headerTitle: { color: Colors.textInverse, fontSize: FONT_SIZE.xl, fontFamily: FONTS.displaySemibold },
   headerSub: { color: 'rgba(255,255,255,0.7)', fontSize: FONT_SIZE.sm, marginTop: 4 },
 
   content: { padding: 16, gap: 14 },
@@ -138,8 +138,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   tag: { borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start', marginBottom: 6 },
-  tagText: { color: '#fff', fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 0.5 },
-  articleTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, lineHeight: 22 },
+  tagText: { color: Colors.textInverse, fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, letterSpacing: 0.5 },
+  articleTitle: { fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, color: Colors.onSurface, lineHeight: 22 },
 
   articleBody: { padding: 16, gap: 12 },
   articleSummary: { ...Typography.body, fontSize: FONT_SIZE.md },
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderRadius: Radius.full,
     paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start',
   },
-  readBtnText: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold },
+  readBtnText: { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold },
 
   attribution: {
     backgroundColor: Colors.surfaceVariant, borderRadius: Radius.lg, padding: 14,

@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
 function LinkRow({ icon, label, subtitle, onPress, last }) {
   return (
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
 
   // Identity
   identityCard: {
@@ -162,15 +162,15 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: 4,
   },
   appName: { ...Typography.h1, color: Colors.primary },
-  appTagline: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant, fontWeight: FONT_WEIGHT.medium },
+  appTagline: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant, fontFamily: FONTS.bodyMedium },
   versionPill: {
     backgroundColor: Colors.primarySurface, borderRadius: Radius.full,
     paddingHorizontal: 14, paddingVertical: 5, marginTop: 4,
   },
-  versionPillText: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
+  versionPillText: { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.primary },
 
   sectionLabel: {
-    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1,
+    fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, letterSpacing: 1,
     color: Colors.onSurfaceMuted, paddingHorizontal: 4, marginBottom: 8,
   },
   sectionCard: {
@@ -181,8 +181,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: Spacing.md, paddingVertical: 14,
   },
-  infoLabel: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.medium, color: Colors.onSurfaceVariant },
-  infoValue: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
+  infoLabel: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodyMedium, color: Colors.onSurfaceVariant },
+  infoValue: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
 
   row: {
     flexDirection: 'row', alignItems: 'center',
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
   rowBody: { flex: 1 },
-  rowLabel: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurface },
+  rowLabel: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
   rowSubtitle: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, marginTop: 2 },
   divider: { height: 1, backgroundColor: Colors.outlineVariant, marginLeft: 60 },
 
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   poweredBody: { flex: 1 },
-  poweredTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, marginBottom: 6 },
+  poweredTitle: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.onSurface, marginBottom: 6 },
   poweredDesc: { fontSize: FONT_SIZE.sm, color: Colors.onSurfaceVariant, lineHeight: 19 },
 
   // Mission
@@ -217,11 +217,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primarySurface, borderRadius: Radius.lg,
     padding: Spacing.md, gap: 8, borderWidth: 1, borderColor: Colors.primaryBorder,
   },
-  missionTitle: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
+  missionTitle: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.primary },
   missionText: { fontSize: FONT_SIZE.sm, color: Colors.primary, lineHeight: 20, opacity: 0.85 },
 
   footer: {
     textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted,
-    fontWeight: FONT_WEIGHT.medium, paddingVertical: 4,
+    fontFamily: FONTS.bodyMedium, paddingVertical: 4,
   },
 });

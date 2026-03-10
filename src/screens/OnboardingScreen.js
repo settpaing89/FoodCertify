@@ -8,15 +8,15 @@ import { Feather } from '@expo/vector-icons';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { Colors, Spacing, Radius } from '../theme';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { useConditions } from '../hooks/useStorage';
 import { CONDITIONS } from '../engine/analyzer';
 
 const { width, height } = Dimensions.get('window');
 const TOTAL_STEPS = 3;
 
-// ─── Progress bar (slides 1 & 2) ─────────────────────────────────────────────
+// ─── Progress pills ───────────────────────────────────────────────────────────
 function ProgressBar({ step }) {
   return (
     <View style={pb.row}>
@@ -36,10 +36,10 @@ function ProgressTrack({ step }) {
 
 const pb = StyleSheet.create({
   row:   { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  label: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurfaceVariant },
-  count: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
-  track: { height: 6, backgroundColor: Colors.outline, borderRadius: 3, overflow: 'hidden', marginBottom: Spacing.lg },
-  fill:  { height: '100%', backgroundColor: Colors.primary, borderRadius: 3 },
+  label: { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.textSecondary },
+  count: { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.accent },
+  track: { height: 6, backgroundColor: Colors.border, borderRadius: Radius.full, overflow: 'hidden', marginBottom: Spacing.lg },
+  fill:  { height: '100%', backgroundColor: Colors.accent, borderRadius: Radius.full },
 });
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ export default function OnboardingScreen({ completeOnboarding }) {
         </View>
 
         {/* Hero image */}
-        <LinearGradient colors={['#1C2B1C', '#2A3D2A', '#1a301a']} style={styles.hero}>
+        <LinearGradient colors={[Colors.primaryDark, Colors.primary, Colors.primaryDark]} style={styles.hero}>
           <View style={styles.heroContent}>
             <View style={[styles.heroIcon, styles.heroEmoji1]}><MaterialCommunityIcons name="food-apple"    size={42} color="rgba(255,255,255,0.55)" /></View>
             <View style={[styles.heroIcon, styles.heroEmoji2]}><MaterialCommunityIcons name="leaf"          size={34} color="rgba(255,255,255,0.45)" /></View>
@@ -182,14 +182,14 @@ export default function OnboardingScreen({ completeOnboarding }) {
                 >
                   {active && (
                     <View style={styles.condCheck}>
-                      <Feather name="check-circle" size={18} color={Colors.primary} />
+                      <Feather name="check-circle" size={18} color={Colors.accent} />
                     </View>
                   )}
                   <View style={[styles.condIconBg, active && styles.condIconBgActive]}>
                     <MaterialCommunityIcons
                       name={cond.icon}
                       size={26}
-                      color={active ? Colors.primary : Colors.onSurfaceMuted}
+                      color={active ? Colors.accent : Colors.heroText}
                     />
                   </View>
                   <Text style={[styles.condLabel, active && styles.condLabelActive]}>
@@ -247,7 +247,7 @@ export default function OnboardingScreen({ completeOnboarding }) {
         <View style={styles.formBlock}>
           <Text style={styles.fieldLabel}>Full Name</Text>
           <View style={styles.inputWrapper}>
-            <Feather name="user" size={16} color={Colors.primary} style={styles.inputIcon} />
+            <Feather name="user" size={16} color={Colors.accent} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Enter your full name"
@@ -260,7 +260,7 @@ export default function OnboardingScreen({ completeOnboarding }) {
 
           <Text style={styles.fieldLabel}>Email Address</Text>
           <View style={styles.inputWrapper}>
-            <Feather name="mail" size={16} color={Colors.primary} style={styles.inputIcon} />
+            <Feather name="mail" size={16} color={Colors.accent} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="name@example.com"
@@ -274,7 +274,7 @@ export default function OnboardingScreen({ completeOnboarding }) {
 
           <Text style={styles.fieldLabel}>Password</Text>
           <View style={styles.inputWrapper}>
-            <Feather name="lock" size={16} color={Colors.primary} style={styles.inputIcon} />
+            <Feather name="lock" size={16} color={Colors.accent} style={styles.inputIcon} />
             <TextInput
               style={[styles.input, { flex: 1 }]}
               placeholder="••••••••"
@@ -299,12 +299,12 @@ export default function OnboardingScreen({ completeOnboarding }) {
 
         {/* Social */}
         <TouchableOpacity style={styles.socialBtnGoogle} onPress={finish} activeOpacity={0.85}>
-          <Feather name="globe" size={18} color="#555" />
+          <Feather name="globe" size={18} color={Colors.textPrimary} />
           <Text style={styles.socialBtnTextDark}>Continue with Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.socialBtnApple} onPress={finish} activeOpacity={0.85}>
-          <Feather name="smartphone" size={18} color="#fff" />
+          <Feather name="smartphone" size={18} color={Colors.textInverse} />
           <Text style={styles.socialBtnTextLight}>Continue with Apple</Text>
         </TouchableOpacity>
 
@@ -331,17 +331,17 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
 
-  // Top bar
+  // ── Top bar ───────────────────────────────────────────────────────────────────
   topBar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, color: Colors.textPrimary },
   topBarSkip: { paddingHorizontal: 4, paddingVertical: 8 },
-  skipText: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, color: Colors.onSurfaceMuted },
+  skipText: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.textSecondary },
 
-  // ── Slide 0 ──
+  // ── Slide 0 ───────────────────────────────────────────────────────────────────
   hero: {
     width: '100%',
     height: height * 0.42,
@@ -367,33 +367,33 @@ const styles = StyleSheet.create({
     flex: 1, paddingHorizontal: Spacing.lg, paddingTop: Spacing.md,
   },
   welcomeTitle: {
-    fontSize: FONT_SIZE.xxl, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface,
+    fontSize: FONT_SIZE.xxl, fontFamily: FONTS.displayBold, color: Colors.textPrimary,
     letterSpacing: -0.5, marginBottom: 12,
   },
   welcomeSubtitle: {
-    fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant, lineHeight: 22, marginBottom: Spacing.lg,
+    fontSize: FONT_SIZE.md, color: Colors.textSecondary, lineHeight: 22, marginBottom: Spacing.lg,
   },
   dots: {
     flexDirection: 'row', gap: 8, marginBottom: Spacing.lg,
   },
   dot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.outline,
+    width: 8, height: 8, borderRadius: Radius.full, backgroundColor: Colors.border,
   },
   dotActive: {
-    width: 24, backgroundColor: Colors.primary, borderRadius: 4,
+    width: 24, backgroundColor: Colors.accent, borderRadius: Radius.full,
   },
 
-  // ── Slide 1 ──
+  // ── Slide 1 ───────────────────────────────────────────────────────────────────
   conditionsContent: {
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.md,
   },
   slideTitle: {
-    fontSize: FONT_SIZE.xxl, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface,
+    fontSize: FONT_SIZE.xxl, fontFamily: FONTS.displayBold, color: Colors.textPrimary,
     letterSpacing: -0.3, marginBottom: 8,
   },
   slideSubtitle: {
-    fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant, lineHeight: 20, marginBottom: Spacing.lg,
+    fontSize: FONT_SIZE.md, color: Colors.textSecondary, lineHeight: 20, marginBottom: Spacing.lg,
   },
 
   conditionsGrid: {
@@ -404,7 +404,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     borderWidth: 1.5,
-    borderColor: Colors.outline,
+    borderColor: Colors.border,
     padding: Spacing.md,
     alignItems: 'center',
     gap: 10,
@@ -412,38 +412,38 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   condCardActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primarySurface,
+    borderColor: Colors.accent,
+    backgroundColor: Colors.surface,
   },
   condCheck: {
     position: 'absolute', top: 10, right: 10,
   },
   condIconBg: {
     width: 56, height: 56, borderRadius: Radius.full,
-    backgroundColor: Colors.surfaceVariant,
+    backgroundColor: Colors.hero,
     alignItems: 'center', justifyContent: 'center',
   },
   condIconBgActive: {
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.accentLight,
   },
   condLabel: {
-    fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, textAlign: 'center',
+    fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.textPrimary, textAlign: 'center',
   },
-  condLabelActive: { color: Colors.primary },
+  condLabelActive: { color: Colors.accent },
 
   updateNote: {
-    textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted,
-    fontWeight: FONT_WEIGHT.medium, marginTop: Spacing.lg,
+    textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.textSecondary,
+    fontFamily: FONTS.bodyMedium, marginTop: Spacing.lg,
   },
 
   bottomFixed: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     backgroundColor: Colors.background,
     paddingHorizontal: Spacing.md, paddingTop: 12,
-    borderTopWidth: 1, borderTopColor: Colors.outlineVariant,
+    borderTopWidth: 1, borderTopColor: Colors.divider,
   },
 
-  // ── Slide 2 ──
+  // ── Slide 2 ───────────────────────────────────────────────────────────────────
   signUpContent: {
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.sm,
@@ -452,30 +452,31 @@ const styles = StyleSheet.create({
 
   formBlock: { gap: 12 },
   fieldLabel: {
-    fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface, marginBottom: 4,
+    fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.textPrimary, marginBottom: 4,
   },
   inputWrapper: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: Colors.primarySurface,
+    backgroundColor: Colors.surface,
     borderRadius: Radius.md,
-    paddingHorizontal: 14,
+    paddingHorizontal: Spacing.md,
     paddingVertical: 14,
     gap: 10,
     borderWidth: 1,
-    borderColor: Colors.primaryBorder,
+    borderColor: Colors.border,
+    ...SHADOW.sm,
   },
   inputIcon: {},
   input: {
-    flex: 1, fontSize: FONT_SIZE.md, color: Colors.onSurface, padding: 0,
+    flex: 1, fontSize: FONT_SIZE.md, color: Colors.textPrimary, padding: 0,
   },
   eyeBtn: { padding: 2 },
 
   dividerRow: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
   },
-  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.outline },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.divider },
   dividerText: {
-    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurfaceMuted, letterSpacing: 0.5,
+    fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, color: Colors.textSecondary, letterSpacing: 0.5,
   },
 
   socialBtnGoogle: {
@@ -484,38 +485,39 @@ const styles = StyleSheet.create({
     borderRadius: Radius.lg,
     paddingVertical: 15,
     borderWidth: 1.5,
-    borderColor: Colors.outline,
+    borderColor: Colors.border,
     ...SHADOW.sm,
   },
-  socialBtnTextDark: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
+  socialBtnTextDark: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.textPrimary },
 
   socialBtnApple: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-    backgroundColor: '#111',
+    backgroundColor: Colors.primary,
     borderRadius: Radius.lg,
     paddingVertical: 15,
   },
-  socialBtnTextLight: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: '#fff' },
+  socialBtnTextLight: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.textInverse },
 
   termsText: {
-    textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.onSurfaceMuted, lineHeight: 18,
+    textAlign: 'center', fontSize: FONT_SIZE.sm, color: Colors.textSecondary, lineHeight: 18,
   },
-  termsLink: { color: Colors.primary, fontWeight: FONT_WEIGHT.semibold },
+  termsLink: { color: Colors.accent, fontFamily: FONTS.bodySemibold },
 
-  // Shared
+  // ── Shared ────────────────────────────────────────────────────────────────────
   primaryBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: Radius.xl,
-    paddingVertical: 14,
+    backgroundColor: Colors.accent,
+    borderRadius: Radius.full,
+    height: 52,
     alignItems: 'center',
-    ...SHADOW.md,
+    justifyContent: 'center',
+    ...SHADOW.sm,
   },
-  primaryBtnText: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, letterSpacing: 0.2 },
+  primaryBtnText: { color: Colors.textInverse, fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, letterSpacing: 0.2 },
 
   signInRow: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
     marginTop: Spacing.md,
   },
-  signInLabel: { fontSize: FONT_SIZE.md, color: Colors.onSurfaceVariant },
-  signInLink: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
+  signInLabel: { fontSize: FONT_SIZE.md, color: Colors.textSecondary },
+  signInLink: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.accent },
 });

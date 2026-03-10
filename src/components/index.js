@@ -4,7 +4,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { Colors, Spacing, Radius, Typography } from '../theme';
 
 // ─── Rating Badge ─────────────────────────────────────────────────────────────
@@ -14,7 +14,7 @@ export function RatingBadge({ rating, size = 'sm' }) {
     SAFE:    { bg: Colors.safeBg,    border: Colors.safeBorder,    color: Colors.safeText,    label: 'SAFE'    },
     CAUTION: { bg: Colors.cautionBg, border: Colors.cautionBorder, color: Colors.cautionText, label: 'CAUTION' },
     AVOID:   { bg: Colors.avoidBg,   border: Colors.avoidBorder,   color: Colors.avoidText,   label: 'UNSAFE'  },
-  }[rating] || { bg: '#F3F4F6', border: '#E5E7EB', color: '#6B7280', label: '?' };
+  }[rating] || { bg: Colors.surfaceVariant, border: Colors.outline, color: Colors.onSurfaceMuted, label: '?' };
 
   const large = size === 'lg';
 
@@ -106,13 +106,13 @@ export function PrimaryButton({ label, onPress, disabled, icon, loading }) {
       style={[styles.primaryBtn, disabled && styles.primaryBtnDisabled]}
     >
       <LinearGradient
-        colors={disabled ? ['#E2E8F0', '#E2E8F0'] : [Colors.primary, Colors.primaryLight]}
+        colors={disabled ? [Colors.border, Colors.border] : [Colors.accent, Colors.accent]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.primaryBtnGradient}
       >
         {loading ? (
-          <ActivityIndicator color="#fff" size="small" />
+          <ActivityIndicator color={Colors.textInverse} size="small" />
         ) : (
           <>
             {icon || null}
@@ -133,7 +133,7 @@ export function NutriscoreBadge({ grade }) {
     D: '#EE8100', E: '#E63946',
   };
   return (
-    <View style={[styles.nutriBadge, { backgroundColor: colors[grade] || '#ccc' }]}>
+    <View style={[styles.nutriBadge, { backgroundColor: colors[grade] || Colors.outline }]}>
       <Text style={styles.nutriLabel}>Nutri-Score</Text>
       <Text style={styles.nutriGrade}>{grade || '?'}</Text>
     </View>
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontSize: FONT_SIZE.xs,
-    fontWeight: FONT_WEIGHT.bold,
+    fontFamily: FONTS.bodySemibold,
     letterSpacing: 0.8,
   },
   badgeTextLg: {
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   chipIcon: { fontSize: FONT_SIZE.md },
-  chipLabel: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold },
+  chipLabel: { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold },
 
   loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
 
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   primaryBtnIcon: { fontSize: FONT_SIZE.xl },
-  primaryBtnLabel: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.semibold, letterSpacing: 0.2 },
+  primaryBtnLabel: { color: Colors.textInverse, fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, letterSpacing: 0.2 },
 
   nutriBadge: {
     borderRadius: Radius.md,
@@ -216,6 +216,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     alignItems: 'center',
   },
-  nutriLabel: { color: '#fff', fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.semibold, letterSpacing: 0.5 },
-  nutriGrade: { color: '#fff', fontSize: FONT_SIZE.xxl, fontWeight: FONT_WEIGHT.bold },
+  nutriLabel: { color: Colors.textInverse, fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, letterSpacing: 0.5 },
+  nutriGrade: { color: Colors.textInverse, fontSize: FONT_SIZE.xxl, fontFamily: FONTS.displayBold },
 });

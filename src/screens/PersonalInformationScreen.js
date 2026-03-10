@@ -7,7 +7,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
-import { FONT_SIZE, FONT_WEIGHT, SHADOW } from '../utils/tokens';
+import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
 const GENDER_OPTIONS = ['Prefer not to say', 'Male', 'Female', 'Non-binary'];
 
@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm,
   },
   topBarBtn: { width: 44, height: 36, alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: FONT_SIZE.lg, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurface },
-  saveBtn: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
+  topBarTitle: { fontSize: FONT_SIZE.lg, fontFamily: FONTS.bodySemibold, color: Colors.onSurface },
+  saveBtn: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.primary },
 
   avatarSection: { alignItems: 'center', paddingVertical: Spacing.md, gap: 12 },
   avatar: {
@@ -191,13 +191,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 8,
     borderRadius: Radius.full, borderWidth: 1.5, borderColor: Colors.primary,
   },
-  changePhotoText: { fontSize: FONT_SIZE.sm, fontWeight: FONT_WEIGHT.bold, color: Colors.primary },
+  changePhotoText: { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.primary },
 
   sectionCard: {
     backgroundColor: Colors.surface, borderRadius: Radius.lg, ...SHADOW.md, overflow: 'hidden',
   },
   sectionLabel: {
-    fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, letterSpacing: 1, color: Colors.onSurfaceMuted,
+    fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, letterSpacing: 1, color: Colors.onSurfaceMuted,
     paddingHorizontal: Spacing.md, paddingTop: 14, paddingBottom: 8,
   },
 
@@ -210,9 +210,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primarySurface, alignItems: 'center', justifyContent: 'center',
   },
   rowFieldBody: { flex: 1 },
-  fieldLabel: { fontSize: FONT_SIZE.xs, fontWeight: FONT_WEIGHT.bold, color: Colors.onSurfaceMuted, marginBottom: 3 },
+  fieldLabel: { fontSize: FONT_SIZE.xs, fontFamily: FONTS.bodySemibold, color: Colors.onSurfaceMuted, marginBottom: 3 },
   fieldInput: { fontSize: FONT_SIZE.md, color: Colors.onSurface, padding: 0 },
-  fieldValue: { fontSize: FONT_SIZE.md, color: Colors.onSurface, fontWeight: FONT_WEIGHT.medium },
+  fieldValue: { fontSize: FONT_SIZE.md, color: Colors.onSurface, fontFamily: FONTS.bodyMedium },
 
   divider: { height: 1, backgroundColor: Colors.outlineVariant, marginLeft: 60 },
 
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: Colors.outlineVariant,
   },
-  genderOptionText: { fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.medium, color: Colors.onSurfaceVariant },
-  genderOptionActive: { color: Colors.primary, fontWeight: FONT_WEIGHT.bold },
+  genderOptionText: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodyMedium, color: Colors.onSurfaceVariant },
+  genderOptionActive: { color: Colors.primary, fontFamily: FONTS.bodySemibold },
 
   saveCard: {
     backgroundColor: Colors.primary, borderRadius: Radius.lg,
     paddingVertical: 16, alignItems: 'center', ...SHADOW.md,
   },
-  saveCardText: { color: '#fff', fontSize: FONT_SIZE.md, fontWeight: FONT_WEIGHT.bold },
+  saveCardText: { color: Colors.textInverse, fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold },
 });

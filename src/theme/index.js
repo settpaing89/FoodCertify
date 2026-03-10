@@ -1,54 +1,83 @@
 // src/theme/index.js
 
 export const Colors = {
-  // Primary – Deep Teal
-  primary:       '#0C6B6B',
-  primaryDark:   '#084E4E',
-  primaryLight:  '#2E9494',
-  primarySurface:'#E0F5F4',
-  primaryBorder: '#A8E0DE',
+  // ── Primary / Hero dark ───────────────────────────────────────────────────
+  primary:        '#1C1C1E',   // charcoal — text, headings, body
+  primaryDark:    '#111112',   // gradient start for hero header BGs
+  primaryLight:   '#2D6A4F',   // legacy alias — maps to accent
+  primarySurface: '#DCFCE7',   // legacy alias — maps to accentLight
+  primaryBorder:  '#E0E4E0',   // legacy alias — maps to border
 
-  // Safe – Teal Green
-  safe:         '#15BAA8',
-  safeBg:       '#E0F8F5',
-  safeBorder:   '#8EDED8',
-  safeText:     '#0A8C82',
-  safeGradient: ['#22D4BF', '#0C8A7A'],
+  // ── Accent ────────────────────────────────────────────────────────────────
+  accent:      '#2D6A4F',   // CTAs, active states, key numbers, links
+  accentLight: '#DCFCE7',   // icon circle backgrounds ONLY
 
-  // Caution – Salmon Orange
-  caution:          '#E8784A',
-  cautionBg:        '#FFF3EF',
-  cautionBorder:    '#F5C4B0',
-  cautionText:      '#C45A2E',
-  cautionGradient:  ['#F5936A', '#D45A30'],
+  // ── Hero / dark surface ───────────────────────────────────────────────────
+  hero:        '#1C1C1E',   // hero cards, avatar, floating scan button
+  heroText:    '#FFFFFF',   // text on dark hero elements
+  heroSubtext: '#A0A0A8',   // muted text on dark hero elements
+  heroAccent:  '#2D6A4F',   // accent on dark backgrounds
 
-  // Danger / Avoid – Red
-  avoid:         '#E05252',
-  avoidBg:       '#FFF0F0',
-  avoidBorder:   '#F5B8B8',
-  avoidText:     '#B83030',
-  avoidGradient: ['#F07070', '#C82828'],
+  // ── Safe – Forest Green ───────────────────────────────────────────────────
+  safe:         '#2D6A4F',
+  safeBg:       '#DCFCE7',
+  safeBorder:   '#BBD5C8',
+  safeText:     '#2D6A4F',
+  safeGradient: ['#2D6A4F', '#1A4A38'],
 
-  // Neutral
-  background:     '#E2EFEE',
-  surface:        '#FFFFFF',
-  surfaceVariant: '#F0FAFA',
-  outline:        '#C8E0DE',
-  outlineVariant: '#DCF0EE',
+  // ── Caution – Amber ───────────────────────────────────────────────────────
+  caution:         '#D97706',
+  cautionBg:       '#FEF3C7',
+  cautionBorder:   '#FDE68A',
+  cautionText:     '#B45309',
+  cautionGradient: ['#D97706', '#B45309'],
 
-  // Text
-  onSurface:        '#0A2828',
-  onSurfaceVariant: '#3A5F5F',
-  onSurfaceMuted:   '#7AACAC',
+  // ── Avoid – Red ───────────────────────────────────────────────────────────
+  avoid:         '#DC2626',
+  avoidBg:       '#FEE2E2',
+  avoidBorder:   '#FECACA',
+  avoidText:     '#991B1B',
+  avoidGradient: ['#DC2626', '#B91C1C'],
+
+  // ── Neutral surfaces ──────────────────────────────────────────────────────
+  background:       '#F5F5F5',
+  surface:          '#FFFFFF',
+  surfaceVariant:   '#EAEFEA',   // legacy alias — maps to surfaceSecondary
+  surfaceSecondary: '#EAEFEA',
+
+  // ── UI outlines ───────────────────────────────────────────────────────────
+  outline:        '#E0E4E0',   // legacy alias — maps to border
+  outlineVariant: '#F0F2F0',   // legacy alias — maps to divider
+  border:         '#E0E4E0',
+  divider:        '#F0F2F0',
+
+  // ── Text ──────────────────────────────────────────────────────────────────
+  onSurface:        '#1C1C1E',   // legacy alias — maps to textPrimary
+  onSurfaceVariant: '#6B6B70',   // legacy alias — maps to textSecondary
+  onSurfaceMuted:   '#9A9AA0',   // muted / inactive icons and placeholders
   onPrimary:        '#FFFFFF',
+  textPrimary:      '#1C1C1E',
+  textSecondary:    '#6B6B70',
+  textInverse:      '#FFFFFF',
 
-  // Conditions
+  // ── Tab bar ───────────────────────────────────────────────────────────────
+  tabBarActive:     '#2D6A4F',
+  tabBarInactive:   '#9A9AA0',
+  tabBarBackground: '#FFFFFF',
+
+  // ── Source tag pills ──────────────────────────────────────────────────────
+  sourceFda:          '#E0F2FE',
+  sourceFdaText:      '#0369A1',
+  sourcePersonal:     '#DCFCE7',
+  sourcePersonalText: '#2D6A4F',
+
+  // ── Conditions ────────────────────────────────────────────────────────────
   conditions: {
-    diabetes:   { color: '#E05252', bg: '#FFF0F0', icon: '🩺' },
-    gluten:     { color: '#E8784A', bg: '#FFF3EF', icon: '🌾' },
-    peanut:     { color: '#C45A2E', bg: '#FEF0E8', icon: '🥜' },
-    vegan:      { color: '#0C6B6B', bg: '#E0F5F4', icon: '🌿' },
-    vegetarian: { color: '#15BAA8', bg: '#E0F8F5', icon: '🥗' },
+    diabetes:   { color: '#DC2626', bg: '#FEE2E2', icon: '🩺' },
+    gluten:     { color: '#D97706', bg: '#FEF3C7', icon: '🌾' },
+    peanut:     { color: '#D97706', bg: '#FEF3C7', icon: '🥜' },
+    vegan:      { color: '#1C1C1E', bg: '#EAEFEA', icon: '🌿' },
+    vegetarian: { color: '#2D6A4F', bg: '#DCFCE7', icon: '🥗' },
   },
 };
 
@@ -72,72 +101,72 @@ export const Radius = {
 
 export const Shadow = {
   sm: {
-    shadowColor: '#0C6B6B',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
     elevation: 1,
   },
   md: {
-    shadowColor: '#0A4040',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
   },
   lg: {
-    shadowColor: '#0A4040',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.10,
+    shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 4,
   },
 };
 
-// H1: 26px Bold | H2: 20px Medium | Body: 15px Regular
+// H1: 26px Outfit Bold | H2: 20px Outfit SemiBold | Body: 15px Inter Regular
 export const Typography = {
   h1: {
     fontSize: 26,
-    fontWeight: '700',
+    fontFamily: 'Outfit_700Bold',
     letterSpacing: -0.3,
     color: Colors.onSurface,
   },
   h2: {
     fontSize: 20,
-    fontWeight: '600',
+    fontFamily: 'Outfit_600SemiBold',
     color: Colors.onSurface,
   },
   display: {
     fontSize: 30,
-    fontWeight: '800',
+    fontFamily: 'Outfit_700Bold',
     letterSpacing: -0.5,
     color: Colors.onSurface,
   },
   headline: {
     fontSize: 24,
-    fontWeight: '700',
+    fontFamily: 'Outfit_700Bold',
     letterSpacing: -0.3,
     color: Colors.onSurface,
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: 'Inter_600SemiBold',
     color: Colors.onSurface,
   },
   body: {
     fontSize: 15,
-    fontWeight: '400',
+    fontFamily: 'Inter_400Regular',
     lineHeight: 22,
     color: Colors.onSurfaceVariant,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: Colors.onSurfaceVariant,
   },
   caption: {
     fontSize: 13,
-    fontWeight: '500',
+    fontFamily: 'Inter_500Medium',
     color: Colors.onSurfaceMuted,
   },
 };

@@ -3,13 +3,19 @@
 // FoodSafe Nutrition Safety Analysis Engine
 // Analyzes ingredient lists against user health conditions.
 // ─────────────────────────────────────────────────────────────────────────────
+import {
+  NUTRIENT_THRESHOLDS,
+  BENEFICIAL_NUTRIENTS,
+  NOVA_THRESHOLDS,
+  NUTRISCORE_THRESHOLDS,
+} from '../utils/scoringConstants';
 
 export const CONDITIONS = [
-  { id: 'diabetes',    label: 'Diabetes',       icon: 'diabetes',   color: '#e53935', bg: '#fce4ec' },
-  { id: 'gluten',      label: 'Gluten Allergy', icon: 'wheat-off',  color: '#f57c00', bg: '#fff3e0' },
-  { id: 'peanut',      label: 'Peanut Allergy', icon: 'peanut',     color: '#6d4c41', bg: '#efebe9' },
-  { id: 'vegan',       label: 'Vegan',          icon: 'leaf',       color: '#2e7d32', bg: '#e8f5e9' },
-  { id: 'vegetarian',  label: 'Vegetarian',     icon: 'sprout',     color: '#558b2f', bg: '#f1f8e9' },
+  { id: 'diabetes',    label: 'Diabetes',       icon: 'diabetes',   color: '#DC2626', bg: '#FEE2E2' },
+  { id: 'gluten',      label: 'Gluten Allergy', icon: 'wheat-off',  color: '#D97706', bg: '#FEF3C7' },
+  { id: 'peanut',      label: 'Peanut Allergy', icon: 'peanut',     color: '#D97706', bg: '#FEF3C7' },
+  { id: 'vegan',       label: 'Vegan',          icon: 'leaf',       color: '#1C1C1E', bg: '#EAEFEA' },
+  { id: 'vegetarian',  label: 'Vegetarian',     icon: 'sprout',     color: '#2D6A4F', bg: '#DCFCE7' },
 ];
 
 // ─── Ingredient Database ──────────────────────────────────────────────────────
@@ -445,6 +451,7 @@ export function analyzeIngredients(ingredientText, selectedConditions, dietaryPr
   const found = [];
   const seen = new Set();
 
+  // ── Layer 1: Ingredient DB scan ──────────────────────────────────────────────
   // Sort by length descending to match longest phrases first
   const sortedKeys = Object.keys(INGREDIENT_DB).sort((a, b) => b.length - a.length);
 
@@ -467,7 +474,7 @@ export function analyzeIngredients(ingredientText, selectedConditions, dietaryPr
     }
   }
 
-  // ── Personal blacklist ───────────────────────────────────────────────────────
+  // ── Layer 2: Personal blacklist ──────────────────────────────────────────────
   if (dietaryPrefs?.enabled && dietaryPrefs.blacklist?.length > 0) {
     for (const term of dietaryPrefs.blacklist) {
       const normalized = term.toLowerCase().trim();
@@ -487,50 +494,317 @@ export function analyzeIngredients(ingredientText, selectedConditions, dietaryPr
     }
   }
 
-  // ── Nutrient limits ──────────────────────────────────────────────────────────
+  // ── Layer 3: User-defined nutrient limits (from ExploreScreen prefs) ─────────
   if (dietaryPrefs?.enabled && nutriments) {
     const nutrientIssues = checkNutrientLimits(nutriments, dietaryPrefs);
     found.push(...nutrientIssues);
   }
 
-  // Determine overall rating
-  const hasAvoid = found.some(f => f.severity === 'avoid');
-  const hasCaution = found.some(f => f.severity === 'caution');
-  const rating = hasAvoid ? 'AVOID' : hasCaution ? 'CAUTION' : 'SAFE';
+  // ── Layer 4: WHO/FDA science-based nutrient thresholds ───────────────────────
+  // Checks per-serving values (falls back to per-100g) against NUTRIENT_THRESHOLDS.
+  // These flags are separate from user prefs — they apply regardless of user configuration.
+  const rawNutrientFlags = checkNutrientThresholds(nutriments);
 
-  // Group issues by condition
-  const conditionBreakdown = {};
-  selectedConditions.forEach(cid => {
-    const condInfo = CONDITIONS.find(c => c.id === cid);
-    if (condInfo) {
-      conditionBreakdown[cid] = {
-        ...condInfo,
-        issues: found.filter(f => f.conditions.includes(cid)),
-        status: 'SAFE',
-      };
+  // ── Layer 5: NOVA processing level ───────────────────────────────────────────
+  // Reads nutriments.nova_group — gracefully skipped if not present.
+  const novaFlag = checkNovaGroup(nutriments);
+
+  // ── Layer 6: Nutri-Score ──────────────────────────────────────────────────────
+  // Reads nutriments.nutriscore_grade — gracefully skipped if not present.
+  const nutriscoreFlag = checkNutriScore(nutriments);
+
+  // ── Layer 7: Beneficial nutrients ────────────────────────────────────────────
+  // High fiber + protein can upgrade a single borderline nutrient CAUTION to SAFE.
+  const beneficialNote = checkBeneficialNutrients(nutriments);
+
+  // ── Final rating ─────────────────────────────────────────────────────────────
+  // `found` = ingredient DB + blacklist + user nutrient limits (condition/prefs flags)
+  // `nutrientFlags` = WHO/FDA threshold flags (general quality flags)
+  const allFlags = [...found, ...rawNutrientFlags];
+  if (novaFlag) allFlags.push(novaFlag);
+  if (nutriscoreFlag) allFlags.push(nutriscoreFlag);
+
+  const hasAvoidFlag = allFlags.some(f => f.severity === 'avoid');
+
+  // Caution flags from WHO/FDA nutrients, NOVA, Nutri-Score
+  const softCautionFlags = [
+    ...rawNutrientFlags.filter(f => f.severity === 'caution'),
+    ...(novaFlag?.severity === 'caution' ? [novaFlag] : []),
+    ...(nutriscoreFlag?.severity === 'caution' ? [nutriscoreFlag] : []),
+  ];
+
+  // Any flag from ingredient DB, blacklist, or user nutrient limits = direct CAUTION trigger
+  const hasConditionFlag = found.length > 0;
+
+  let rating;
+  if (hasAvoidFlag) {
+    // Any single AVOID flag from any layer → AVOID
+    rating = 'AVOID';
+  } else if (
+    hasConditionFlag ||        // any ingredient / blacklist / user-prefs flag
+    softCautionFlags.length >= 2  // 2+ soft caution signals (nutrient, NOVA, Nutri-Score)
+  ) {
+    rating = 'CAUTION';
+  } else {
+    rating = 'SAFE';
+  }
+
+  // ── Beneficial bonus ─────────────────────────────────────────────────────────
+  // Upgrade a borderline CAUTION → SAFE only when:
+  // - The sole reason is exactly 1 soft nutrient caution flag
+  // - No condition/blacklist/user-prefs flags exist
+  // - No NOVA or Nutri-Score flags
+  // - Both fiber and protein meet their good thresholds
+  if (
+    rating === 'CAUTION' &&
+    beneficialNote &&
+    !hasConditionFlag &&
+    softCautionFlags.length === 1 &&
+    softCautionFlags[0].category === 'Nutrient'
+  ) {
+    rating = 'SAFE';
+  }
+
+  // ── Build structured return fields ───────────────────────────────────────────
+  const ingredientDBFlags  = found.filter(f => f.category !== 'Personal Blacklist' && f.category !== 'Nutrient Limit');
+  const nutrientLimitFlags = found.filter(f => f.category === 'Nutrient Limit');
+  const blacklistHits      = found.filter(f => f.category === 'Personal Blacklist');
+
+  // conditionFlags: flatten each ingredient flag per relevant condition
+  const conditionFlags = [];
+  for (const flag of ingredientDBFlags) {
+    for (const cid of flag.conditions) {
+      if (!selectedConditions.includes(cid)) continue;
+      const condInfo = CONDITIONS.find(c => c.id === cid);
+      if (!condInfo) continue;
+      conditionFlags.push({
+        condition: condInfo.label,
+        ingredient: flag.ingredient,
+        reason: flag.reason,
+        status: flag.severity,
+        source: 'Your Health Conditions',
+      });
     }
-  });
+  }
 
-  // Set per-condition status
-  Object.values(conditionBreakdown).forEach(cond => {
-    if (cond.issues.some(i => i.severity === 'avoid')) cond.status = 'AVOID';
-    else if (cond.issues.some(i => i.severity === 'caution')) cond.status = 'CAUTION';
-  });
+  // nutrientFlags: WHO/FDA layer + user-defined nutrient limits
+  // Merge both layers, then deduplicate by name — keep the stricter entry (avoid > caution)
+  // Source tracking: tag each entry so the UI can display where the flag came from
+  const rawMergedNutrientFlags = [
+    ...rawNutrientFlags.map(f => ({
+      name:      f.ingredient,
+      value:     `${f._value.toFixed(1)}${f._unit}`,
+      threshold: `${f._value > f._cautionThreshold ? f._cautionThreshold : f._safeThreshold}${f._unit}`,
+      status:    f.severity,
+      reason:    f.reason,
+      source:    'WHO/FDA Guidelines',
+    })),
+    ...nutrientLimitFlags.map(f => ({
+      name:      f.ingredient,
+      value:     '',
+      threshold: '',
+      status:    f.severity,
+      reason:    f.reason,
+      source:    'Your Dietary Limits',
+    })),
+  ];
+  const nutrientFlagsMap = new Map();
+  for (const f of rawMergedNutrientFlags) {
+    const existing = nutrientFlagsMap.get(f.name);
+    if (!existing) {
+      nutrientFlagsMap.set(f.name, f);
+    } else {
+      // Both sources flagged the same nutrient — merge source label, keep stricter entry
+      const mergedSource = existing.source === f.source
+        ? existing.source
+        : 'WHO/FDA Guidelines & Your Dietary Limits';
+      if (f.status === 'avoid' && existing.status !== 'avoid') {
+        nutrientFlagsMap.set(f.name, { ...f, source: mergedSource });
+      } else {
+        nutrientFlagsMap.set(f.name, { ...existing, source: mergedSource });
+      }
+    }
+  }
+  const nutrientFlags = Array.from(nutrientFlagsMap.values());
 
-  // Build nutritional summary
-  const summary = buildSummary(rating, found, selectedConditions);
-  const tips = buildTips(found, selectedConditions);
+  // blacklistFlags: personal blacklist hits
+  const blacklistFlags = blacklistHits.map(f => ({
+    ingredient: f.ingredient,
+    status: 'avoid',
+    source: 'Your Dietary Blacklist',
+  }));
+
+  // beneficialNutrients: array form
+  const beneficialNutrientsArr = beneficialNote
+    ? [
+        { name: 'Fiber',   value: `${beneficialNote.fiber.toFixed(1)}g`,   note: 'good source' },
+        { name: 'Protein', value: `${beneficialNote.protein.toFixed(1)}g`, note: 'good source' },
+      ]
+    : [];
+
+  const summary = buildSummary(rating, allFlags, selectedConditions);
 
   return {
-    rating,
-    issues: found,
-    conditionBreakdown,
+    safetyRating:       rating,
     summary,
-    tips,
-    checkedConditions: selectedConditions.length,
-    flaggedCount: found.length,
+    conditionsChecked:  selectedConditions.length,
+    ingredientsFlagged: nutrientFlags.length + conditionFlags.length + blacklistFlags.length,
+    nutriScore:         nutriments?.nutriscore_grade?.toString().toUpperCase() ?? null,
+    nutrientFlags,
+    beneficialNutrients: beneficialNutrientsArr,
+    conditionFlags,
+    blacklistFlags,
     analyzedAt: new Date().toISOString(),
   };
+}
+
+// ─── WHO/FDA Nutrient Threshold Check ────────────────────────────────────────
+// Compares per-serving nutrient values against NUTRIENT_THRESHOLDS.
+// Prefers _serving fields from Open Food Facts; falls back to _100g.
+// >caution threshold → severity 'avoid'; between safe and caution → severity 'caution'.
+function checkNutrientThresholds(nutriments) {
+  if (!nutriments) return [];
+
+  const checks = [
+    { key: 'sodium',       label: 'Sodium',        sField: 'sodium_serving',           gField: 'sodium_100g',          scale: 1000 },
+    { key: 'sugars',       label: 'Sugar',          sField: 'sugars_serving',           gField: 'sugars_100g',          scale: 1    },
+    { key: 'saturatedFat', label: 'Saturated Fat',  sField: 'saturated-fat_serving',    gField: 'saturated-fat_100g',   scale: 1    },
+    { key: 'transFat',     label: 'Trans Fat',      sField: 'trans-fat_serving',        gField: 'trans-fat_100g',       scale: 1    },
+    { key: 'calories',     label: 'Calories',       sField: 'energy-kcal_serving',      gField: 'energy-kcal_100g',     scale: 1    },
+  ];
+
+  const flags = [];
+
+  for (const { key, label, sField, gField, scale } of checks) {
+    const thresholds = NUTRIENT_THRESHOLDS[key];
+    const rawServing = nutriments[sField];
+    const rawPer100g = nutriments[gField];
+
+    let value = null;
+    let basis = 'per serving';
+
+    if (rawServing != null) {
+      value = rawServing * scale;
+      basis = 'per serving';
+    } else if (rawPer100g != null) {
+      value = rawPer100g * scale;
+      basis = 'per 100g';
+    }
+
+    if (value === null) continue;
+
+    if (value > thresholds.caution) {
+      flags.push({
+        ingredient: label,
+        severity: 'avoid',
+        reason: `${label}: ${value.toFixed(1)}${thresholds.unit} ${basis} — exceeds the recommended ${thresholds.caution}${thresholds.unit} limit.`,
+        category: 'Nutrient',
+        conditions: ['dietary'],
+        _value: value,
+        _safeThreshold: thresholds.safe,
+        _cautionThreshold: thresholds.caution,
+        _unit: thresholds.unit,
+      });
+    } else if (value > thresholds.safe) {
+      flags.push({
+        ingredient: label,
+        severity: 'caution',
+        reason: `${label}: ${value.toFixed(1)}${thresholds.unit} ${basis} — above the ${thresholds.safe}${thresholds.unit} recommended threshold.`,
+        category: 'Nutrient',
+        conditions: ['dietary'],
+        _value: value,
+        _safeThreshold: thresholds.safe,
+        _cautionThreshold: thresholds.caution,
+        _unit: thresholds.unit,
+      });
+    }
+  }
+
+  return flags;
+}
+
+// ─── NOVA Group Check ─────────────────────────────────────────────────────────
+// Reads nutriments.nova_group. Gracefully returns null if not present.
+function checkNovaGroup(nutriments) {
+  if (!nutriments) return null;
+  const raw = nutriments.nova_group ?? null;
+  if (raw == null) return null;
+
+  const group = Number(raw);
+
+  if (NOVA_THRESHOLDS.avoid.includes(group)) {
+    return {
+      ingredient: `NOVA Group ${group}`,
+      severity: 'caution',
+      reason: 'Ultra-processed product (NOVA Group 4) — typically contains additives, preservatives, and has low nutritional quality.',
+      category: 'Processing Level',
+      conditions: ['dietary'],
+      novaGroup: group,
+    };
+  }
+  if (NOVA_THRESHOLDS.caution.includes(group)) {
+    return {
+      ingredient: `NOVA Group ${group}`,
+      severity: 'caution',
+      reason: 'Processed product (NOVA Group 3) — contains some additives or processing agents beyond basic preservation.',
+      category: 'Processing Level',
+      conditions: ['dietary'],
+      novaGroup: group,
+    };
+  }
+  return null;
+}
+
+// ─── Nutri-Score Check ────────────────────────────────────────────────────────
+// Reads nutriments.nutriscore_grade. Gracefully returns null if not present.
+function checkNutriScore(nutriments) {
+  if (!nutriments) return null;
+  const grade = nutriments.nutriscore_grade?.toString().toUpperCase() ?? null;
+  if (!grade) return null;
+
+  if (NUTRISCORE_THRESHOLDS.avoid.includes(grade)) {
+    return {
+      ingredient: `Nutri-Score ${grade}`,
+      severity: 'caution',
+      reason: `Nutri-Score ${grade} — this product has a poor overall nutritional profile.`,
+      category: 'Nutri-Score',
+      conditions: ['dietary'],
+    };
+  }
+  if (NUTRISCORE_THRESHOLDS.caution.includes(grade)) {
+    return {
+      ingredient: `Nutri-Score ${grade}`,
+      severity: 'caution',
+      reason: 'Nutri-Score C — this product has an average nutritional profile.',
+      category: 'Nutri-Score',
+      conditions: ['dietary'],
+    };
+  }
+  return null;
+}
+
+// ─── Beneficial Nutrients Check ───────────────────────────────────────────────
+// Returns a note object when both fiber and protein meet good thresholds.
+// Prefers _serving fields; falls back to _100g.
+function checkBeneficialNutrients(nutriments) {
+  if (!nutriments) return null;
+
+  const fiberValue   = nutriments['fiber_serving']    ?? nutriments['fiber_100g']    ?? null;
+  const proteinValue = nutriments['proteins_serving'] ?? nutriments['proteins_100g'] ?? null;
+
+  if (fiberValue == null || proteinValue == null) return null;
+
+  const fiberGood   = fiberValue   >= BENEFICIAL_NUTRIENTS.fiber.goodThreshold;
+  const proteinGood = proteinValue >= BENEFICIAL_NUTRIENTS.protein.goodThreshold;
+
+  if (fiberGood && proteinGood) {
+    return {
+      fiber:   fiberValue,
+      protein: proteinValue,
+      note: `Good source of fiber (${fiberValue.toFixed(1)}g) and protein (${proteinValue.toFixed(1)}g).`,
+    };
+  }
+  return null;
 }
 
 function buildSummary(rating, issues, conditions) {

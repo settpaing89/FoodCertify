@@ -60,10 +60,33 @@ function normalizeProduct(raw) {
     imageUrl: raw.image_front_url || raw.image_url || null,
     imageThumbnailUrl: raw.image_front_thumb_url || raw.image_thumb_url || null,
 
-    // Ingredients
-    ingredients: raw.ingredients_text || raw.ingredients_text_en || '',
+    // Ingredients — check all language variants, fall back to ingredients array
+    ingredients: (() => {
+      const text =
+        raw.ingredients_text_en ||
+        raw.ingredients_text ||
+        raw.ingredients_text_fr ||
+        raw.ingredients_text_de ||
+        Object.keys(raw)
+          .filter(k => k.startsWith('ingredients_text_') && raw[k])
+          .map(k => raw[k])[0] ||
+        '';
+      if (text) return text;
+      if (Array.isArray(raw.ingredients) && raw.ingredients.length > 0) {
+        return raw.ingredients.map(i => i.text || i.id || '').filter(Boolean).join(', ');
+      }
+      return '';
+    })(),
     ingredientsList: raw.ingredients || [],
-    allergens: raw.allergens_tags || [],
+    allergens: (() => {
+      if (Array.isArray(raw.allergens_tags) && raw.allergens_tags.length > 0)
+        return raw.allergens_tags;
+      if (raw.allergens && typeof raw.allergens === 'string' && raw.allergens.trim())
+        return raw.allergens.split(',').map(s => s.trim()).filter(Boolean);
+      if (Array.isArray(raw.allergens_hierarchy) && raw.allergens_hierarchy.length > 0)
+        return raw.allergens_hierarchy;
+      return [];
+    })(),
     traces: raw.traces_tags || [],
 
     // Nutrition
