@@ -47,7 +47,7 @@ export default function AboutFoodSafeScreen({ navigation }) {
         <TouchableOpacity style={styles.topBarBtn} onPress={() => navigation.goBack()}>
           <Feather name="chevron-left" size={22} color={Colors.onSurface} />
         </TouchableOpacity>
-        <Text style={styles.topBarTitle}>About FoodSafe</Text>
+        <Text style={styles.topBarTitle}>About Vett</Text>
         <View style={styles.topBarBtn} />
       </View>
 
@@ -60,7 +60,7 @@ export default function AboutFoodSafeScreen({ navigation }) {
           <View style={styles.appIcon}>
             <MaterialCommunityIcons name="leaf" size={38} color={Colors.primary} />
           </View>
-          <Text style={styles.appName}>FoodSafe</Text>
+          <Text style={styles.appName}>Vett</Text>
           <Text style={styles.appTagline}>Know what you eat. Stay safe.</Text>
           <View style={styles.versionPill}>
             <Text style={styles.versionPillText}>Version 1.0.0</Text>
@@ -94,47 +94,18 @@ export default function AboutFoodSafeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Links */}
-        <View>
-          <Text style={styles.sectionLabel}>LEGAL & LINKS</Text>
-          <View style={styles.sectionCard}>
-            <LinkRow
-              icon="file-text"
-              label="Terms of Service"
-              onPress={() => {}}
-            />
-            <LinkRow
-              icon="shield"
-              label="Privacy Policy"
-              onPress={() => {}}
-            />
-            <LinkRow
-              icon="star"
-              label="Rate FoodSafe"
-              subtitle="Enjoying the app? Leave us a review"
-              onPress={() => {}}
-            />
-            <LinkRow
-              icon="github"
-              label="Open Source Licenses"
-              onPress={() => {}}
-              last
-            />
-          </View>
-        </View>
-
         {/* Mission */}
         <View style={styles.missionCard}>
           <Text style={styles.missionTitle}>Our Mission</Text>
           <Text style={styles.missionText}>
-            FoodSafe was built to make food safety accessible to everyone. Whether you manage allergies, follow a special diet, or just want to know what's in your food — we believe that information should be instant, clear, and free.
+            Vett was built to make food safety accessible to everyone. Whether you manage allergies, follow a special diet, or just want to know what's in your food — we believe that information should be instant, clear, and free.
           </Text>
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
           <Text style={styles.footer}>Made with</Text>
           <MaterialCommunityIcons name="leaf" size={12} color={Colors.onSurfaceMuted} />
-          <Text style={styles.footer}>FoodSafe © 2026</Text>
+          <Text style={styles.footer}>Vett © 2026</Text>
         </View>
       </ScrollView>
     </View>

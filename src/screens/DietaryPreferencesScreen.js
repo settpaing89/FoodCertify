@@ -49,7 +49,7 @@ export default function DietaryPreferencesScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.subtitle}>
-          FoodSafe checks every scanned product against your active conditions.
+          Vett checks every scanned product against your active conditions.
         </Text>
 
         {!isPremium && (

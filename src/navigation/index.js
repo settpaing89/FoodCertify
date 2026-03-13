@@ -35,6 +35,8 @@ import AboutFoodSafeScreen         from '../screens/AboutFoodSafeScreen';
 import PaywallScreen               from '../screens/PaywallScreen';
 import DietListDetailScreen        from '../screens/DietListDetailScreen';
 import ScoringExplainerScreen      from '../screens/ScoringExplainerScreen';
+import NutritionReferencesScreen   from '../screens/NutritionReferencesScreen';
+import NutritionGuideScreen        from '../screens/NutritionGuideScreen';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -266,7 +268,7 @@ export default function RootNavigator() {
               options={{ presentation: 'card' }}
             />
             <Stack.Screen
-              name="AboutFoodSafe"
+              name="AboutVett"
               component={AboutFoodSafeScreen}
               options={{ presentation: 'card' }}
             />
@@ -283,6 +285,16 @@ export default function RootNavigator() {
             <Stack.Screen
               name="ScoringExplainer"
               component={ScoringExplainerScreen}
+              options={{ presentation: 'card' }}
+            />
+            <Stack.Screen
+              name="NutritionReferences"
+              component={NutritionReferencesScreen}
+              options={{ presentation: 'card' }}
+            />
+            <Stack.Screen
+              name="NutritionGuide"
+              component={NutritionGuideScreen}
               options={{ presentation: 'card' }}
             />
           </>

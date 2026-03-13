@@ -28,7 +28,7 @@ const SECTIONS = [
     iconColor: Colors.primary,
     iconBg: Colors.accentLight,
     content: [
-      'FoodSafe checks the full ingredient list against a database of ~90 known problematic ingredients, matched to your selected health conditions.',
+      'Vett checks the full ingredient list against a database of ~90 known problematic ingredients, matched to your selected health conditions.',
       'Matches are found by scanning the raw ingredient text — no AI guessing. Longest patterns are matched first to avoid false positives (e.g. "peanut butter" is matched before "peanut").',
       'Each match is tagged AVOID or CAUTION based on severity.',
     ],
@@ -132,7 +132,7 @@ export default function ScoringExplainerScreen({ route, navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.intro}>
-          FoodSafe analyses every product through 7 independent layers. Here is what each layer checks and how the final rating is determined.
+          Vett analyses every product through 7 independent layers. Here is what each layer checks and how the final rating is determined.
         </Text>
 
         {SECTIONS.map((section, index) => (

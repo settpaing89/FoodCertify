@@ -143,7 +143,7 @@ export default function ScannerScreen({ navigation }) {
         </View>
         <Text style={styles.permissionTitle}>Camera Access Needed</Text>
         <Text style={styles.permissionBody}>
-          FoodSafe needs your camera to scan product barcodes. Your camera is only used for scanning — no photos are saved.
+          Vett needs your camera to scan product barcodes. Your camera is only used for scanning — no photos are saved.
         </Text>
         <TouchableOpacity style={styles.permissionButton} onPress={requestPermission}>
           <Text style={styles.permissionButtonText}>Grant Camera Access</Text>

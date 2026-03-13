@@ -61,7 +61,7 @@ export default function PaywallScreen({ navigation }) {
         <View style={styles.headerIcon}>
           <Feather name="award" size={28} color={Colors.accent} />
         </View>
-        <Text style={styles.headerTitle}>FoodSafe Premium</Text>
+        <Text style={styles.headerTitle}>Vett Premium</Text>
         <Text style={styles.headerSub}>Everything you need to eat safe and smart</Text>
       </View>
 

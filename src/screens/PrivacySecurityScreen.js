@@ -37,10 +37,6 @@ export default function PrivacySecurityScreen({ navigation }) {
     );
   };
 
-  const handleDownloadData = () => {
-    Alert.alert('Download Data', 'Your data export will be sent to your email address within 24 hours.');
-  };
-
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
 
@@ -61,7 +57,7 @@ export default function PrivacySecurityScreen({ navigation }) {
         <View style={styles.noticeCard}>
           <Feather name="shield" size={20} color={Colors.primary} />
           <Text style={styles.noticeText}>
-            FoodSafe never sells your data. Your scan history stays on your device and is only used to power your personal safety analysis.
+            Vett never sells your data. Your scan history stays on your device and is only used to power your personal safety analysis.
           </Text>
         </View>
 
@@ -69,12 +65,6 @@ export default function PrivacySecurityScreen({ navigation }) {
         <View>
           <Text style={styles.sectionLabel}>YOUR DATA</Text>
           <View style={styles.sectionCard}>
-            <SettingsRow
-              icon="download"
-              label="Download My Data"
-              subtitle="Export all your scan history and preferences"
-              onPress={handleDownloadData}
-            />
             <SettingsRow
               icon="refresh-cw"
               label="Clear Scan History"

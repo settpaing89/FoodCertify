@@ -8,8 +8,8 @@ import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
 const FAQS = [
   {
-    q: 'How does FoodSafe analyze products?',
-    a: 'FoodSafe fetches product data from the Open Food Facts database using the barcode you scan. Our engine then cross-checks the ingredient list against 60+ flagged ingredients across your selected health conditions and returns a SAFE, CAUTION, or UNSAFE verdict.',
+    q: 'How does Vett analyze products?',
+    a: 'Vett fetches product data from the Open Food Facts database using the barcode you scan. Our engine then cross-checks the ingredient list against 60+ flagged ingredients across your selected health conditions and returns a SAFE, CAUTION, or UNSAFE verdict.',
   },
   {
     q: 'Why was my product not found?',
@@ -17,7 +17,7 @@ const FAQS = [
   },
   {
     q: 'How do I add a health condition?',
-    a: 'Go to Profile → Dietary Preferences. Tap any condition card to toggle it on or off. FoodSafe immediately applies your active conditions to all future scans.',
+    a: 'Go to Profile → Dietary Preferences. Tap any condition card to toggle it on or off. Vett immediately applies your active conditions to all future scans.',
   },
   {
     q: 'Is my scan history stored in the cloud?',
@@ -29,7 +29,7 @@ const FAQS = [
   },
   {
     q: 'Can I scan without selecting a health condition?',
-    a: 'Yes. Without any condition selected FoodSafe will still show you the product\'s full ingredient list and Nutri-Score, but it won\'t flag any specific ingredients. We recommend setting at least one condition for the best experience.',
+    a: 'Yes. Without any condition selected Vett will still show you the product\'s full ingredient list and Nutri-Score, but it won\'t flag any specific ingredients. We recommend setting at least one condition for the best experience.',
   },
   {
     q: 'How accurate is the ingredient analysis?',
@@ -113,14 +113,14 @@ export default function HelpCenterScreen({ navigation }) {
         <TouchableOpacity
           style={styles.contactCard}
           activeOpacity={0.85}
-          onPress={() => Linking.openURL('mailto:support@foodsafe.app')}
+          onPress={() => Linking.openURL('mailto:support@vett.app')}
         >
           <View style={styles.contactIcon}>
             <Feather name="mail" size={22} color={Colors.primary} />
           </View>
           <View style={styles.contactBody}>
             <Text style={styles.contactTitle}>Email Support</Text>
-            <Text style={styles.contactSubtitle}>support@foodsafe.app · replies within 24h</Text>
+            <Text style={styles.contactSubtitle}>support@vett.app · replies within 24h</Text>
           </View>
           <Feather name="external-link" size={16} color={Colors.onSurfaceMuted} />
         </TouchableOpacity>

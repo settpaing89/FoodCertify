@@ -299,7 +299,7 @@ export default function ResultScreen({ route, navigation }) {
   const handleShare = async () => {
     const ratingLabel = { SAFE: 'SAFE', CAUTION: 'CAUTION', AVOID: 'UNSAFE' }[analysis.safetyRating] || analysis.safetyRating;
     await Share.share({
-      message: `${product?.name || 'This product'} is ${ratingLabel} for my dietary conditions — checked with FoodSafe`,
+      message: `${product?.name || 'This product'} is ${ratingLabel} for my dietary conditions — checked with Vett`,
     });
   };
 

@@ -2,7 +2,7 @@
 // Open Food Facts API integration — free, no API key required
 
 const BASE_URL = 'https://world.openfoodfacts.org/api/v0/product';
-const USER_AGENT = 'FoodSafe/1.0.0 (com.yourname.foodsafe; contact@yourname.com)';
+const USER_AGENT = 'Vett/1.0.0 (com.yourname.vett; contact@yourname.com)';
 
 // In-memory cache — cleared on app restart, which is fine for barcodes
 const productCache = new Map();

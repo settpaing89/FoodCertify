@@ -1,21 +1,30 @@
 // src/screens/LanguageScreen.js
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius } from '../theme';
 import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
+const LANG_KEY = '@foodsafe:language';
 const LANGUAGES = [
   { value: 'en', label: 'English',  subtitle: 'en-US' },
-  { value: 'es', label: 'Español',  subtitle: 'es-ES' },
   { value: 'fr', label: 'Français', subtitle: 'fr-FR' },
-  { value: 'de', label: 'Deutsch',  subtitle: 'de-DE' },
 ];
 
 export default function LanguageScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState('en');
+
+  useEffect(() => {
+    AsyncStorage.getItem(LANG_KEY).then(val => { if (val) setSelected(val); });
+  }, []);
+
+  const handleSelect = async (val) => {
+    setSelected(val);
+    await AsyncStorage.setItem(LANG_KEY, val);
+  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -40,7 +49,7 @@ export default function LanguageScreen({ navigation }) {
               <View key={lang.value}>
                 <TouchableOpacity
                   style={styles.row}
-                  onPress={() => setSelected(lang.value)}
+                  onPress={() => handleSelect(lang.value)}
                   activeOpacity={0.7}
                 >
                   <View style={styles.rowLeft}>

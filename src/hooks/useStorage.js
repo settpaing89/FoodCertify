@@ -10,7 +10,7 @@ const KEYS = {
 };
 
 const DEFAULT_DIETARY = {
-  enabled:      true,
+  enabled:      false,
   preset:       'custom',
   calories:     { enabled: false, max: 500,  min: null },
   carbs:        { enabled: false, max: 30,   min: null },
@@ -99,12 +99,15 @@ export function useHistory() {
 
 // ─── Dietary Preferences ──────────────────────────────────────────────────────
 export function useDietaryPrefs() {
-  const [prefs, setPrefsState] = useState(null);
+  const [prefs, setPrefsState] = useState(DEFAULT_DIETARY);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem(KEYS.DIETARY).then(raw => {
-      setPrefsState(raw ? { ...DEFAULT_DIETARY, ...JSON.parse(raw) } : DEFAULT_DIETARY);
-    });
+    AsyncStorage.getItem(KEYS.DIETARY)
+      .then(raw => {
+        setPrefsState(raw ? { ...DEFAULT_DIETARY, ...JSON.parse(raw) } : DEFAULT_DIETARY);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const savePrefs = useCallback(async (next) => {
@@ -112,7 +115,7 @@ export function useDietaryPrefs() {
     await AsyncStorage.setItem(KEYS.DIETARY, JSON.stringify(next));
   }, []);
 
-  return { prefs, savePrefs };
+  return { prefs, savePrefs, isLoading };
 }
 
 // ─── Onboarding ───────────────────────────────────────────────────────────────

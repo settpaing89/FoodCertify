@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const RC_API_KEY_IOS     = 'YOUR_REVENUECAT_IOS_API_KEY';
 const RC_API_KEY_ANDROID = 'YOUR_REVENUECAT_ANDROID_API_KEY';
 const ENTITLEMENT_ID     = 'premium';
-const PRODUCT_ID         = 'foodsafe_premium_monthly';
+const PRODUCT_ID         = 'vett_premium_monthly';
 const FREE_SCAN_LIMIT    = 20;
 
 const DEBUG_FORCE_PREMIUM = true; // ⚠️ TESTING ONLY — set to false before shipping

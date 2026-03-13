@@ -1,6 +1,6 @@
 // src/engine/analyzer.js
 // ─────────────────────────────────────────────────────────────────────────────
-// FoodSafe Nutrition Safety Analysis Engine
+// Vett Nutrition Safety Analysis Engine
 // Analyzes ingredient lists against user health conditions.
 // ─────────────────────────────────────────────────────────────────────────────
 import {

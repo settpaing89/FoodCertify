@@ -92,7 +92,7 @@ export default function OnboardingScreen({ completeOnboarding }) {
           <TouchableOpacity style={styles.topBarBtn} onPress={skip}>
             <Feather name="x" size={22} color={Colors.onSurface} />
           </TouchableOpacity>
-          <Text style={styles.topBarTitle}>FoodSafe</Text>
+          <Text style={styles.topBarTitle}>Vett</Text>
           <TouchableOpacity style={styles.topBarSkip} onPress={skip}>
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
@@ -151,7 +151,7 @@ export default function OnboardingScreen({ completeOnboarding }) {
           <TouchableOpacity style={styles.topBarBtn} onPress={goBack}>
             <Feather name="chevron-left" size={22} color={Colors.onSurface} />
           </TouchableOpacity>
-          <Text style={styles.topBarTitle}>FoodSafe</Text>
+          <Text style={styles.topBarTitle}>Vett</Text>
           <TouchableOpacity style={styles.topBarSkip} onPress={skip}>
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
@@ -238,7 +238,7 @@ export default function OnboardingScreen({ completeOnboarding }) {
         <ProgressBar step={3} />
         <ProgressTrack step={3} />
 
-        <Text style={styles.slideTitle}>Join FoodSafe</Text>
+        <Text style={styles.slideTitle}>Join Vett</Text>
         <Text style={styles.slideSubtitle}>
           Enter your details to start your food safety journey.
         </Text>

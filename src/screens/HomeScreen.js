@@ -1,6 +1,5 @@
 // src/screens/HomeScreen.js
-import { useRef, useEffect, useState, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useRef, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, Animated, Easing,
   TouchableOpacity, Image,
@@ -148,13 +147,6 @@ export default function HomeScreen({ navigation }) {
 
   // ── State ────────────────────────────────────────────────────────────────────
   const [userName, setUserName] = useState('Hey there');
-  const [showContent, setShowContent] = useState(true);
-
-  useFocusEffect(useCallback(() => {
-    setShowContent(true);
-    return () => setShowContent(false);
-  }, []));
-
   // ── Animation refs ────────────────────────────────────────────────────────────
   const greetFade    = useRef(new Animated.Value(0)).current;
   const arcAnim      = useRef(new Animated.Value(0)).current;
@@ -209,7 +201,7 @@ export default function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {showContent && <View style={styles.content}>
+      <View style={styles.content}>
         {/* ── Greeting ── */}
         <Animated.View style={{ opacity: greetFade }}>
           <Text style={styles.greetingText}>{greeting}, {userName} 👋</Text>
@@ -343,7 +335,7 @@ export default function HomeScreen({ navigation }) {
           </View>
         )}
         </View></AnimatedCard>
-      </View>}
+      </View>
     </ScrollView>
   );
 }

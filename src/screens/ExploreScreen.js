@@ -1,8 +1,7 @@
 // src/screens/ExploreScreen.js
-import { useState, Fragment, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useState, Fragment } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Switch,
+  View, Text, ScrollView, StyleSheet, Switch, Dimensions,
   TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -14,77 +13,51 @@ import { useDietLists } from '../hooks/useDietLists';
 import { usePremiumContext } from '../context/PremiumContext';
 import { UpgradeModal } from '../components/UpgradeModal';
 import { AnimatedCard } from '../components/AnimatedCard';
+import { GOAL_PRESETS } from '../utils/scoringConstants';
+
+// ─── Layout ───────────────────────────────────────────────────────────────────
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const CARD_WIDTH   = (SCREEN_WIDTH - Spacing.md * 2 - Spacing.sm) / 2;
 
 // ─── Static config ────────────────────────────────────────────────────────────
 
-const PRESETS = [
-  {
-    key: 'keto',
-    label: 'Keto',
-    icon: 'leaf',
-    desc: 'Low carb, high fat',
-    color: '#2D6A4F',
-    apply: p => ({
-      ...p, preset: 'keto',
-      carbs:   { enabled: true, max: 30,   min: null },
-      sugar:   { enabled: true, max: 10,   min: null },
-      fat:     { enabled: true, max: null, min: 15   },
-    }),
-  },
-  {
-    key: 'cutting',
-    label: 'Cutting',
-    icon: 'zap',
-    desc: 'Low calorie',
-    color: '#D97706',
-    apply: p => ({
-      ...p, preset: 'cutting',
-      calories: { enabled: true, max: 400, min: null },
-    }),
-  },
-  {
-    key: 'bulking',
-    label: 'Bulking',
-    icon: 'trending-up',
-    desc: 'High protein',
-    color: '#1C1C1E',
-    apply: p => ({
-      ...p, preset: 'bulking',
-      protein:  { enabled: true, max: null, min: 25  },
-      calories: { enabled: true, max: null, min: 400 },
-    }),
-  },
-  {
-    key: 'low_sodium',
-    label: 'Low Sodium',
-    icon: 'heart',
-    desc: 'Heart health',
-    color: '#DC2626',
-    apply: p => ({
-      ...p, preset: 'low_sodium',
-      sodium: { enabled: true, max: 500, min: null },
-    }),
-  },
-  {
-    key: 'clean',
-    label: 'Clean Eating',
-    icon: 'sun',
-    desc: 'Minimal sugar',
-    color: '#6B6B70',
-    apply: p => ({
-      ...p, preset: 'clean',
-      sugar: { enabled: true, max: 5, min: null },
-    }),
-  },
-  {
-    key: 'custom',
-    label: 'Custom',
-    icon: 'sliders',
-    desc: 'Set manually',
-    color: '#6B6B70',
-    apply: p => ({ ...p, preset: 'custom' }),
-  },
-];
+const PRESET_APPLY = {
+  heart_healthy: p => ({ ...p, preset: 'heart_healthy',
+    sodium:       { enabled: true, max: 400,  min: null },
+    saturatedFat: { enabled: true, max: 2,    min: null },
+    sugar:        { enabled: true, max: 5,    min: null },
+  }),
+  keto: p => ({ ...p, preset: 'keto',
+    carbs:        { enabled: true, max: 5,    min: null },
+    sugar:        { enabled: true, max: 2,    min: null },
+    protein:      { enabled: true, max: 20,   min: null },
+  }),
+  cutting: p => ({ ...p, preset: 'cutting',
+    calories:     { enabled: true, max: 350,  min: null },
+    sugar:        { enabled: true, max: 6,    min: null },
+    saturatedFat: { enabled: true, max: 3,    min: null },
+    sodium:       { enabled: true, max: 500,  min: null },
+    protein:      { enabled: true, max: null, min: 20   },
+  }),
+  bulking: p => ({ ...p, preset: 'bulking',
+    calories:     { enabled: true, max: null, min: 400  },
+    protein:      { enabled: true, max: null, min: 25   },
+    carbs:        { enabled: true, max: null, min: 30   },
+    saturatedFat: { enabled: true, max: 5,    min: null },
+    sodium:       { enabled: true, max: 600,  min: null },
+  }),
+  mediterranean: p => ({ ...p, preset: 'mediterranean',
+    saturatedFat: { enabled: true, max: 3,    min: null },
+    sodium:       { enabled: true, max: 400,  min: null },
+    sugar:        { enabled: true, max: 6,    min: null },
+  }),
+  high_protein: p => ({ ...p, preset: 'high_protein',
+    protein:      { enabled: true, max: null, min: 20   },
+    calories:     { enabled: true, max: 400,  min: null },
+    sugar:        { enabled: true, max: 8,    min: null },
+    saturatedFat: { enabled: true, max: 4,    min: null },
+  }),
+};
 
 const NUTRIENTS = [
   { key: 'calories',     label: 'Calories',       unit: 'kcal', icon: 'zap',          hasMin: true,  hasMax: true  },
@@ -104,14 +77,14 @@ function formatListDate(dateStr) {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function PresetCard({ preset, isActive, onPress, locked, masterOff }) {
+function PresetCard({ preset, isActive, onPress, onInfo, locked, cardWidth }) {
   return (
     <TouchableOpacity
       style={[
         styles.presetCard,
+        cardWidth && { width: cardWidth },
         isActive && { backgroundColor: Colors.hero, borderColor: Colors.hero },
         locked && styles.lockedCard,
-        masterOff && { opacity: 0.4 },
       ]}
       onPress={onPress}
       activeOpacity={0.8}
@@ -127,11 +100,18 @@ function PresetCard({ preset, isActive, onPress, locked, masterOff }) {
         </View>
       )}
       <Text style={[styles.presetLabel, isActive && { color: Colors.heroText }, locked && styles.lockedText]}>
-        {preset.label}
+        {preset.name}
       </Text>
       <Text style={[styles.presetDesc, isActive && { color: Colors.heroSubtext }, locked && styles.lockedText]}>
-        {preset.desc}
+        {preset.description}
       </Text>
+      <TouchableOpacity
+        style={styles.presetInfo}
+        onPress={onInfo}
+        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+      >
+        <Feather name="info" size={13} color={isActive ? Colors.heroSubtext : Colors.onSurfaceMuted} />
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 }
@@ -155,7 +135,7 @@ function NutrientRow({ nutrient, value, onChange, locked, masterOff, onLockedPre
     (nutrient.hasMin && value.min !== null ? `Min ${value.min} ${nutrient.unit}` : '');
 
   return (
-    <View style={[locked && styles.lockedRow, masterOff && { opacity: 0.4 }]}>
+    <View style={locked && styles.lockedRow}>
       <TouchableOpacity
         style={styles.nutrientRow}
         onPress={locked ? onLockedPress : masterOff ? undefined : () => value.enabled && setExpanded(e => !e)}
@@ -176,6 +156,7 @@ function NutrientRow({ nutrient, value, onChange, locked, masterOff, onLockedPre
           <Switch
             value={masterOff ? false : value.enabled}
             onValueChange={toggle}
+            disabled={masterOff}
             trackColor={{ false: Colors.border, true: Colors.accentLight }}
             thumbColor={(!masterOff && value.enabled) ? Colors.accent : Colors.surface}
           />
@@ -223,7 +204,7 @@ function NutrientRow({ nutrient, value, onChange, locked, masterOff, onLockedPre
 
 export default function ExploreScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { prefs, savePrefs } = useDietaryPrefs();
+  const { prefs, savePrefs, isLoading } = useDietaryPrefs();
   const { isPremium } = usePremiumContext();
   const { lists, addList, deleteList } = useDietLists();
   const [activeTab, setActiveTab] = useState('dietary');
@@ -231,17 +212,9 @@ export default function ExploreScreen({ navigation }) {
   const [newListInput, setNewListInput] = useState('');
   const [showNewListInput, setShowNewListInput] = useState(false);
   const [upgradeVisible, setUpgradeVisible] = useState(false);
-  const [showContent, setShowContent] = useState(true);
-
-  useFocusEffect(useCallback(() => {
-    setShowContent(true);
-    return () => setShowContent(false);
-  }, []));
-
-  if (!prefs) return null;
 
   const dietaryLocked = !isPremium;
-  const masterOff     = !dietaryLocked && !prefs.enabled;
+  const masterOff     = !isLoading && !dietaryLocked && !prefs.enabled;
   const listLocked    = !isPremium;
   const showUpgrade   = () => setUpgradeVisible(true);
 
@@ -263,10 +236,10 @@ export default function ExploreScreen({ navigation }) {
   const updatePrefs    = partial  => savePrefs({ ...prefs, ...partial });
   const updateNutrient = (key, v) => savePrefs({ ...prefs, [key]: v });
   const applyPreset = preset => {
-    if (prefs.preset === preset.key) {
+    if (prefs.preset === preset.id) {
       savePrefs({ ...prefs, preset: null });
     } else {
-      savePrefs(preset.apply({ ...prefs }));
+      savePrefs(PRESET_APPLY[preset.id]({ ...prefs }));
     }
   };
 
@@ -293,7 +266,7 @@ export default function ExploreScreen({ navigation }) {
         keyboardShouldPersistTaps="handled"
       >
         {/* ── Page Content ── */}
-        {showContent && <>
+        <>
         <AnimatedCard delay={0}>
         <View style={[styles.pageHeader, { paddingTop: insets.top + 16 }]}>
           <Text style={styles.pageTitle}>Explore</Text>
@@ -373,22 +346,19 @@ export default function ExploreScreen({ navigation }) {
 
             {/* Presets */}
             <Text style={styles.sectionLabel}>GOAL PRESETS</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.presetsRow}
-            >
-              {PRESETS.map(p => (
+            <View style={styles.presetsGrid}>
+              {GOAL_PRESETS.map(p => (
                 <PresetCard
-                  key={p.key}
+                  key={p.id}
                   preset={p}
-                  isActive={!dietaryLocked && !masterOff && prefs.preset === p.key}
+                  isActive={!dietaryLocked && !masterOff && prefs.preset === p.id}
                   locked={dietaryLocked}
-                  masterOff={masterOff}
-                  onPress={dietaryLocked ? showUpgrade : masterOff ? undefined : () => applyPreset(p)}
+                  onPress={dietaryLocked ? showUpgrade : () => applyPreset(p)}
+                  onInfo={() => navigation.navigate('NutritionReferences', { presetId: p.id })}
+                  cardWidth={CARD_WIDTH}
                 />
               ))}
-            </ScrollView>
+            </View>
 
             {/* Nutrient Limits */}
             <View style={styles.sectionLabelRow}>
@@ -566,7 +536,7 @@ export default function ExploreScreen({ navigation }) {
             )}
           </View></AnimatedCard>
         )}
-        </>}
+        </>
       </ScrollView>
 
       <UpgradeModal
@@ -691,20 +661,22 @@ const styles = StyleSheet.create({
   },
 
   // ── Presets ──────────────────────────────────────────────────────────────────
-  presetsRow: {
-    gap: 10,
-    paddingRight: Spacing.md,
+  presetsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
   },
   presetCard: {
-    width: 120,
     backgroundColor: Colors.surface,
     borderRadius: Radius.lg,
     padding: 16,
+    paddingBottom: 32,
     gap: 4,
     borderWidth: 1.5,
     borderColor: Colors.border,
     ...SHADOW.sm,
     position: 'relative',
+    minHeight: 88,
   },
   presetCheck: {
     position: 'absolute',
@@ -727,6 +699,11 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.body,
     color: Colors.textSecondary,
     lineHeight: 16,
+  },
+  presetInfo: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
   },
 
   // ── Card container ───────────────────────────────────────────────────────────

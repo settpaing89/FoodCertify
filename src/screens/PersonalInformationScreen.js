@@ -1,14 +1,16 @@
 // src/screens/PersonalInformationScreen.js
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
-  TouchableOpacity, TextInput, Alert,
+  TouchableOpacity, TextInput,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, Radius, Typography } from '../theme';
 import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 
+const INFO_KEY = '@foodsafe:personalInfo';
 const GENDER_OPTIONS = ['Prefer not to say', 'Male', 'Female', 'Non-binary'];
 
 export default function PersonalInformationScreen({ navigation }) {
@@ -20,9 +22,24 @@ export default function PersonalInformationScreen({ navigation }) {
   const [dob,     setDob]     = useState('');
   const [gender,  setGender]  = useState('Prefer not to say');
   const [genderOpen, setGenderOpen] = useState(false);
+  const [showSaved, setShowSaved] = useState(false);
 
-  const handleSave = () => {
-    Alert.alert('Saved', 'Your personal information has been updated.');
+  useEffect(() => {
+    AsyncStorage.getItem(INFO_KEY).then(raw => {
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.name)   setName(d.name);
+      if (d.email)  setEmail(d.email);
+      if (d.phone)  setPhone(d.phone);
+      if (d.dob)    setDob(d.dob);
+      if (d.gender) setGender(d.gender);
+    });
+  }, []);
+
+  const handleSave = async () => {
+    await AsyncStorage.setItem(INFO_KEY, JSON.stringify({ name, email, phone, dob, gender }));
+    setShowSaved(true);
+    setTimeout(() => setShowSaved(false), 2000);
   };
 
   return (
@@ -38,6 +55,13 @@ export default function PersonalInformationScreen({ navigation }) {
           <Text style={styles.saveBtn}>Save</Text>
         </TouchableOpacity>
       </View>
+
+      {showSaved && (
+        <View style={styles.savedBanner}>
+          <Feather name="check-circle" size={15} color={Colors.accent} />
+          <Text style={styles.savedBannerText}>Changes saved</Text>
+        </View>
+      )}
 
       <ScrollView
         contentContainerStyle={{ padding: Spacing.md, paddingBottom: insets.bottom + 40, gap: Spacing.md }}
@@ -224,6 +248,12 @@ const styles = StyleSheet.create({
   },
   genderOptionText: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodyMedium, color: Colors.onSurfaceVariant },
   genderOptionActive: { color: Colors.primary, fontFamily: FONTS.bodySemibold },
+
+  savedBanner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: Colors.accentLight, paddingVertical: 10,
+  },
+  savedBannerText: { fontSize: FONT_SIZE.sm, fontFamily: FONTS.bodySemibold, color: Colors.accent },
 
   saveCard: {
     backgroundColor: Colors.primary, borderRadius: Radius.lg,

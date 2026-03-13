@@ -1,6 +1,5 @@
 // src/screens/HistoryScreen.js
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   View, Text, SectionList, StyleSheet, TouchableOpacity,
   Image, Alert, TextInput, Animated, Easing,
@@ -91,13 +90,6 @@ export default function HistoryScreen({ navigation }) {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [dietListUpgradeVisible, setDietListUpgradeVisible] = useState(false);
-  const [showContent, setShowContent] = useState(true);
-
-  useFocusEffect(useCallback(() => {
-    setShowContent(true);
-    return () => setShowContent(false);
-  }, []));
-
   // Free users: cap at 15 items
   const cappedHistory = isPremium ? history : history.slice(0, FREE_HISTORY_LIMIT);
   const hasMore = !isPremium && history.length > FREE_HISTORY_LIMIT;
@@ -193,7 +185,7 @@ export default function HistoryScreen({ navigation }) {
       </View>
 
       {/* ── List ── */}
-      {showContent && <SectionList
+      <SectionList
         sections={sections}
         keyExtractor={(item, i) => item.id || String(i)}
         contentContainerStyle={{
@@ -298,7 +290,8 @@ export default function HistoryScreen({ navigation }) {
             )}
           </View>
         }
-      />}
+      />
+
 
       {/* ── Free tier history gate ── */}
       {hasMore && (
