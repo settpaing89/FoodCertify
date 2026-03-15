@@ -1,7 +1,7 @@
 // src/screens/ExploreScreen.js
 import { useState, Fragment } from 'react';
 import {
-  View, Text, ScrollView, StyleSheet, Switch, Dimensions,
+  View, Text, ScrollView, StyleSheet, Switch,
   TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
@@ -13,52 +13,6 @@ import { useDietLists } from '../hooks/useDietLists';
 import { usePremiumContext } from '../context/PremiumContext';
 import { UpgradeModal } from '../components/UpgradeModal';
 import { AnimatedCard } from '../components/AnimatedCard';
-import { GOAL_PRESETS } from '../utils/scoringConstants';
-
-// ─── Layout ───────────────────────────────────────────────────────────────────
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_WIDTH   = (SCREEN_WIDTH - Spacing.md * 2 - Spacing.sm) / 2;
-
-// ─── Static config ────────────────────────────────────────────────────────────
-
-const PRESET_APPLY = {
-  heart_healthy: p => ({ ...p, preset: 'heart_healthy',
-    sodium:       { enabled: true, max: 400,  min: null },
-    saturatedFat: { enabled: true, max: 2,    min: null },
-    sugar:        { enabled: true, max: 5,    min: null },
-  }),
-  keto: p => ({ ...p, preset: 'keto',
-    carbs:        { enabled: true, max: 5,    min: null },
-    sugar:        { enabled: true, max: 2,    min: null },
-    protein:      { enabled: true, max: 20,   min: null },
-  }),
-  cutting: p => ({ ...p, preset: 'cutting',
-    calories:     { enabled: true, max: 350,  min: null },
-    sugar:        { enabled: true, max: 6,    min: null },
-    saturatedFat: { enabled: true, max: 3,    min: null },
-    sodium:       { enabled: true, max: 500,  min: null },
-    protein:      { enabled: true, max: null, min: 20   },
-  }),
-  bulking: p => ({ ...p, preset: 'bulking',
-    calories:     { enabled: true, max: null, min: 400  },
-    protein:      { enabled: true, max: null, min: 25   },
-    carbs:        { enabled: true, max: null, min: 30   },
-    saturatedFat: { enabled: true, max: 5,    min: null },
-    sodium:       { enabled: true, max: 600,  min: null },
-  }),
-  mediterranean: p => ({ ...p, preset: 'mediterranean',
-    saturatedFat: { enabled: true, max: 3,    min: null },
-    sodium:       { enabled: true, max: 400,  min: null },
-    sugar:        { enabled: true, max: 6,    min: null },
-  }),
-  high_protein: p => ({ ...p, preset: 'high_protein',
-    protein:      { enabled: true, max: null, min: 20   },
-    calories:     { enabled: true, max: 400,  min: null },
-    sugar:        { enabled: true, max: 8,    min: null },
-    saturatedFat: { enabled: true, max: 4,    min: null },
-  }),
-};
-
 const NUTRIENTS = [
   { key: 'calories',     label: 'Calories',       unit: 'kcal', icon: 'zap',          hasMin: true,  hasMax: true  },
   { key: 'carbs',        label: 'Carbohydrates',   unit: 'g',    icon: 'layers',       hasMin: false, hasMax: true  },
@@ -76,45 +30,6 @@ function formatListDate(dateStr) {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-
-function PresetCard({ preset, isActive, onPress, onInfo, locked, cardWidth }) {
-  return (
-    <TouchableOpacity
-      style={[
-        styles.presetCard,
-        cardWidth && { width: cardWidth },
-        isActive && { backgroundColor: Colors.hero, borderColor: Colors.hero },
-        locked && styles.lockedCard,
-      ]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      {isActive && (
-        <View style={styles.presetCheck}>
-          <Feather name="check" size={11} color={Colors.textInverse} />
-        </View>
-      )}
-      {locked && (
-        <View style={styles.lockBadge}>
-          <Feather name="lock" size={11} color={Colors.onSurfaceMuted} />
-        </View>
-      )}
-      <Text style={[styles.presetLabel, isActive && { color: Colors.heroText }, locked && styles.lockedText]}>
-        {preset.name}
-      </Text>
-      <Text style={[styles.presetDesc, isActive && { color: Colors.heroSubtext }, locked && styles.lockedText]}>
-        {preset.description}
-      </Text>
-      <TouchableOpacity
-        style={styles.presetInfo}
-        onPress={onInfo}
-        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-      >
-        <Feather name="info" size={13} color={isActive ? Colors.heroSubtext : Colors.onSurfaceMuted} />
-      </TouchableOpacity>
-    </TouchableOpacity>
-  );
-}
 
 function NutrientRow({ nutrient, value, onChange, locked, masterOff, onLockedPress }) {
   const [expanded, setExpanded] = useState(false);
@@ -235,13 +150,6 @@ export default function ExploreScreen({ navigation }) {
 
   const updatePrefs    = partial  => savePrefs({ ...prefs, ...partial });
   const updateNutrient = (key, v) => savePrefs({ ...prefs, [key]: v });
-  const applyPreset = preset => {
-    if (prefs.preset === preset.id) {
-      savePrefs({ ...prefs, preset: null });
-    } else {
-      savePrefs(PRESET_APPLY[preset.id]({ ...prefs }));
-    }
-  };
 
   const addBlacklist = () => {
     if (dietaryLocked) { showUpgrade(); return; }
@@ -270,7 +178,7 @@ export default function ExploreScreen({ navigation }) {
         <AnimatedCard delay={0}>
         <View style={[styles.pageHeader, { paddingTop: insets.top + 16 }]}>
           <Text style={styles.pageTitle}>Explore</Text>
-          <Text style={styles.pageSub}>Dietary goals & nutrition guides</Text>
+          <Text style={styles.pageSub}>Nutrient control & diet lists</Text>
         </View>
         </AnimatedCard>
 
@@ -326,10 +234,10 @@ export default function ExploreScreen({ navigation }) {
             >
               <View style={{ flex: 1, gap: 4 }}>
                 <Text style={[styles.masterTitle, dietaryLocked && styles.lockedText]}>
-                  Dietary Filtering
+                  Nutrient Control
                 </Text>
                 <Text style={styles.masterSub}>
-                  Flag products during scanning that don't match your goals
+                  Flag products that exceed your per-serving nutrient limits
                 </Text>
               </View>
               {dietaryLocked ? (
@@ -343,22 +251,6 @@ export default function ExploreScreen({ navigation }) {
                 />
               )}
             </TouchableOpacity>
-
-            {/* Presets */}
-            <Text style={styles.sectionLabel}>GOAL PRESETS</Text>
-            <View style={styles.presetsGrid}>
-              {GOAL_PRESETS.map(p => (
-                <PresetCard
-                  key={p.id}
-                  preset={p}
-                  isActive={!dietaryLocked && !masterOff && prefs.preset === p.id}
-                  locked={dietaryLocked}
-                  onPress={dietaryLocked ? showUpgrade : () => applyPreset(p)}
-                  onInfo={() => navigation.navigate('NutritionReferences', { presetId: p.id })}
-                  cardWidth={CARD_WIDTH}
-                />
-              ))}
-            </View>
 
             {/* Nutrient Limits */}
             <View style={styles.sectionLabelRow}>
@@ -660,52 +552,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // ── Presets ──────────────────────────────────────────────────────────────────
-  presetsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.sm,
-  },
-  presetCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: Radius.lg,
-    padding: 16,
-    paddingBottom: 32,
-    gap: 4,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    ...SHADOW.sm,
-    position: 'relative',
-    minHeight: 88,
-  },
-  presetCheck: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  presetLabel: {
-    fontSize: FONT_SIZE.lg,
-    fontFamily: FONTS.displayBold,
-    color: Colors.textPrimary,
-  },
-  presetDesc: {
-    fontSize: FONT_SIZE.sm,
-    fontFamily: FONTS.body,
-    color: Colors.textSecondary,
-    lineHeight: 16,
-  },
-  presetInfo: {
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-  },
-
   // ── Card container ───────────────────────────────────────────────────────────
   card: {
     backgroundColor: Colors.surface,
@@ -874,18 +720,6 @@ const styles = StyleSheet.create({
   lockedText: {
     color: Colors.onSurfaceMuted,
   },
-  lockBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: Colors.accentLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   // ── Diet List tab ─────────────────────────────────────────────────────────────
   newListInputRow: {
     flexDirection: 'row',

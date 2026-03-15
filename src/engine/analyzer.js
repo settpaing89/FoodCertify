@@ -441,6 +441,13 @@ const INGREDIENT_DB = {
   },
 };
 
+// ─── Ingredient lookup by condition ──────────────────────────────────────────
+export function getIngredientsForCondition(conditionId) {
+  return Object.entries(INGREDIENT_DB)
+    .filter(([, data]) => data.conditions.includes(conditionId))
+    .map(([name, data]) => ({ name, severity: data.severity, category: data.category }));
+}
+
 // ─── Main Analysis Function ───────────────────────────────────────────────────
 export function analyzeIngredients(ingredientText, selectedConditions, dietaryPrefs = null, nutriments = null) {
   if (!ingredientText?.trim() || !selectedConditions?.length) {
@@ -458,6 +465,7 @@ export function analyzeIngredients(ingredientText, selectedConditions, dietaryPr
   for (const ingredient of sortedKeys) {
     if (seen.has(ingredient)) continue;
     if (!lower.includes(ingredient)) continue;
+    if (dietaryPrefs?.mutedIngredients?.includes(ingredient)) continue;
 
     const data = INGREDIENT_DB[ingredient];
     const relevantConditions = data.conditions.filter(c => selectedConditions.includes(c));

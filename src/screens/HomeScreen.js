@@ -1,5 +1,6 @@
 // src/screens/HomeScreen.js
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View, Text, ScrollView, StyleSheet, Animated, Easing,
   TouchableOpacity, Image,
@@ -12,6 +13,7 @@ import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { RatingBadge } from '../components';
 import { AnimatedCard } from '../components/AnimatedCard';
 import { useConditions } from '../hooks/useStorage';
+import { CONDITIONS } from '../engine/analyzer';
 import { useHistoryContext } from '../context/HistoryContext';
 import { usePremiumContext } from '../context/PremiumContext';
 
@@ -117,7 +119,9 @@ function formatRelativeTime(dateStr) {
 
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const { conditions } = useConditions();
+  const { conditions, refresh: refreshConditions } = useConditions();
+
+  useFocusEffect(useCallback(() => { refreshConditions(); }, [refreshConditions]));
   const { history } = useHistoryContext();
   const { isPremium, remaining } = usePremiumContext();
 
@@ -264,8 +268,37 @@ export default function HomeScreen({ navigation }) {
           </View>
         </View></AnimatedCard>
 
+        {/* ── Dietary Filters Card ── */}
+        <AnimatedCard delay={320}>
+          <TouchableOpacity
+            style={styles.dietaryCard}
+            onPress={() => navigation.navigate('DietaryFiltersDetail')}
+            activeOpacity={0.85}
+          >
+            <View style={styles.dietaryLeft}>
+              <Text style={styles.dietaryTitle}>Dietary Filters</Text>
+              {conditions.length > 0 ? (
+                <>
+                  <Text style={styles.dietaryCount}>{conditions.length} active</Text>
+                  <Text style={styles.dietaryPreview} numberOfLines={1}>
+                    {CONDITIONS
+                      .filter(c => conditions.includes(c.id))
+                      .slice(0, 3)
+                      .map(c => c.label)
+                      .join(' · ')}
+                    {conditions.length > 3 ? ` +${conditions.length - 3} more` : ''}
+                  </Text>
+                </>
+              ) : (
+                <Text style={styles.dietaryNone}>None active</Text>
+              )}
+            </View>
+            <Feather name="chevron-right" size={18} color={Colors.onSurfaceMuted} />
+          </TouchableOpacity>
+        </AnimatedCard>
+
         {/* ── Recent History ── */}
-        <AnimatedCard delay={320}><View style={styles.recentSection}>
+        <AnimatedCard delay={400}><View style={styles.recentSection}>
         <View style={styles.sectionRow}>
           <Text style={styles.sectionTitle}>Recent History</Text>
           <TouchableOpacity onPress={() => navigation.navigate('History')}>
@@ -508,6 +541,39 @@ const styles = StyleSheet.create({
     fontFamily: FONTS.displaySemibold,
     color: Colors.textPrimary,
     letterSpacing: -0.5,
+  },
+
+  // ── Dietary Filters Card ──────────────────────────────────────────────────────
+  dietaryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    gap: Spacing.md,
+    ...SHADOW.sm,
+  },
+  dietaryLeft: { flex: 1, gap: 3 },
+  dietaryTitle: {
+    fontSize: FONT_SIZE.sm,
+    fontFamily: FONTS.bodySemibold,
+    color: Colors.textSecondary,
+  },
+  dietaryCount: {
+    fontSize: FONT_SIZE.xl,
+    fontFamily: FONTS.displaySemibold,
+    color: Colors.accent,
+    letterSpacing: -0.5,
+  },
+  dietaryPreview: {
+    fontSize: FONT_SIZE.sm,
+    fontFamily: FONTS.bodyMedium,
+    color: Colors.textSecondary,
+  },
+  dietaryNone: {
+    fontSize: FONT_SIZE.md,
+    fontFamily: FONTS.bodyMedium,
+    color: Colors.textSecondary,
   },
 
   // ── Recent Section wrapper (tighter internal gap) ─────────────────────────────

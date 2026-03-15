@@ -19,7 +19,8 @@ const DEFAULT_DIETARY = {
   fat:          { enabled: false, max: 15,   min: null },
   saturatedFat: { enabled: false, max: 5,    min: null },
   sodium:       { enabled: false, max: 600,  min: null },
-  blacklist:    [],
+  blacklist:         [],
+  mutedIngredients:  [],
 };
 
 const MAX_HISTORY = 50;
@@ -52,7 +53,12 @@ export function useConditions() {
     });
   }, []);
 
-  return { conditions, setConditions, toggleCondition, loading };
+  const refresh = useCallback(async () => {
+    const stored = await AsyncStorage.getItem(KEYS.CONDITIONS);
+    if (stored) setConditionsState(JSON.parse(stored));
+  }, []);
+
+  return { conditions, setConditions, toggleCondition, loading, refresh };
 }
 
 // ─── Scan History ─────────────────────────────────────────────────────────────

@@ -36,7 +36,8 @@ import PaywallScreen               from '../screens/PaywallScreen';
 import DietListDetailScreen        from '../screens/DietListDetailScreen';
 import ScoringExplainerScreen      from '../screens/ScoringExplainerScreen';
 import NutritionReferencesScreen   from '../screens/NutritionReferencesScreen';
-import NutritionGuideScreen        from '../screens/NutritionGuideScreen';
+import NutritionGuideScreen           from '../screens/NutritionGuideScreen';
+import DietaryFiltersDetailScreen     from '../screens/DietaryFiltersDetailScreen';
 
 const Tab   = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -295,6 +296,11 @@ export default function RootNavigator() {
             <Stack.Screen
               name="NutritionGuide"
               component={NutritionGuideScreen}
+              options={{ presentation: 'card' }}
+            />
+            <Stack.Screen
+              name="DietaryFiltersDetail"
+              component={DietaryFiltersDetailScreen}
               options={{ presentation: 'card' }}
             />
           </>
