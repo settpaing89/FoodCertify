@@ -12,6 +12,7 @@ import { Colors, Spacing, Radius } from '../theme';
 import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { useConditions } from '../hooks/useStorage';
 import { CONDITIONS } from '../engine/analyzer';
+import { useAuth } from '../context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 const TOTAL_STEPS = 3;
@@ -48,14 +49,21 @@ export default function OnboardingScreen({ completeOnboarding }) {
   const insets = useSafeAreaInsets();
   const { setConditions } = useConditions();
 
+  const { signUp, signIn } = useAuth();
+
   const [step, setStep] = useState(0);
   const [selectedConditions, setSelectedConditions] = useState([]);
 
   // Name, email, password for sign-up slide
-  const [name,       setName]       = useState('');
-  const [email,      setEmail]      = useState('');
-  const [password,   setPassword]   = useState('');
-  const [showPass,   setShowPass]   = useState(false);
+  const [name,        setName]        = useState('');
+  const [email,       setEmail]       = useState('');
+  const [password,    setPassword]    = useState('');
+  const [showPass,    setShowPass]    = useState(false);
+
+  // Auth state
+  const [authLoading,  setAuthLoading]  = useState(false);
+  const [authError,    setAuthError]    = useState('');
+  const [isSignInMode, setIsSignInMode] = useState(false);
 
   const skip = async () => {
     if (selectedConditions.length > 0) await setConditions(selectedConditions);
@@ -72,9 +80,52 @@ export default function OnboardingScreen({ completeOnboarding }) {
 
   const goBack = () => setStep(s => s - 1);
 
+  // Guest mode — skip auth entirely
   const finish = async () => {
     if (selectedConditions.length > 0) await setConditions(selectedConditions);
     await completeOnboarding();
+  };
+
+  // Create account with Supabase
+  const handleSignUp = async () => {
+    if (!email.trim() || !password.trim()) {
+      setAuthError('Please enter your email and password.');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+    const { data, error } = await signUp(email.trim(), password, name.trim());
+    if (error) {
+      setAuthError(error.message);
+      setAuthLoading(false);
+      return;
+    }
+    // If email confirmation is required, data.session will be null
+    if (!data.session) {
+      setAuthError('Please check your email to confirm your account, then sign in.');
+      setAuthLoading(false);
+      return;
+    }
+    await finish();
+    setAuthLoading(false);
+  };
+
+  // Sign in with Supabase
+  const handleSignIn = async () => {
+    if (!email.trim() || !password.trim()) {
+      setAuthError('Please enter your email and password.');
+      return;
+    }
+    setAuthLoading(true);
+    setAuthError('');
+    const { error } = await signIn(email.trim(), password);
+    if (error) {
+      setAuthError(error.message);
+      setAuthLoading(false);
+      return;
+    }
+    await completeOnboarding();
+    setAuthLoading(false);
   };
 
   const toggleCondition = (id) => {
@@ -133,7 +184,10 @@ export default function OnboardingScreen({ completeOnboarding }) {
             <Text style={styles.primaryBtnText}>Get Started</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.signInRow} onPress={skip}>
+          <TouchableOpacity
+            style={styles.signInRow}
+            onPress={() => { setIsSignInMode(true); setStep(2); }}
+          >
             <Text style={styles.signInLabel}>Already have an account? </Text>
             <Text style={styles.signInLink}>Sign In</Text>
           </TouchableOpacity>
@@ -238,25 +292,31 @@ export default function OnboardingScreen({ completeOnboarding }) {
         <ProgressBar step={3} />
         <ProgressTrack step={3} />
 
-        <Text style={styles.slideTitle}>Join Vett</Text>
+        <Text style={styles.slideTitle}>{isSignInMode ? 'Welcome Back' : 'Join Vett'}</Text>
         <Text style={styles.slideSubtitle}>
-          Enter your details to start your food safety journey.
+          {isSignInMode
+            ? 'Sign in to your account to continue.'
+            : 'Enter your details to start your food safety journey.'}
         </Text>
 
         {/* Form */}
         <View style={styles.formBlock}>
-          <Text style={styles.fieldLabel}>Full Name</Text>
-          <View style={styles.inputWrapper}>
-            <Feather name="user" size={16} color={Colors.accent} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your full name"
-              placeholderTextColor={Colors.onSurfaceMuted}
-              value={name}
-              onChangeText={setName}
-              autoCapitalize="words"
-            />
-          </View>
+          {!isSignInMode && (
+            <>
+              <Text style={styles.fieldLabel}>Full Name</Text>
+              <View style={styles.inputWrapper}>
+                <Feather name="user" size={16} color={Colors.accent} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your full name"
+                  placeholderTextColor={Colors.onSurfaceMuted}
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                />
+              </View>
+            </>
+          )}
 
           <Text style={styles.fieldLabel}>Email Address</Text>
           <View style={styles.inputWrapper}>
@@ -290,36 +350,46 @@ export default function OnboardingScreen({ completeOnboarding }) {
           </View>
         </View>
 
-        {/* Divider */}
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>OR SIGN UP WITH</Text>
-          <View style={styles.dividerLine} />
-        </View>
+        {/* Error message */}
+        {authError ? <Text style={styles.authError}>{authError}</Text> : null}
 
-        {/* Social */}
-        <TouchableOpacity style={styles.socialBtnGoogle} onPress={finish} activeOpacity={0.85}>
-          <Feather name="globe" size={18} color={Colors.textPrimary} />
-          <Text style={styles.socialBtnTextDark}>Continue with Google</Text>
+        {/* Primary action */}
+        <TouchableOpacity
+          style={[styles.primaryBtn, authLoading && { opacity: 0.7 }]}
+          onPress={isSignInMode ? handleSignIn : handleSignUp}
+          activeOpacity={0.88}
+          disabled={authLoading}
+        >
+          <Text style={styles.primaryBtnText}>
+            {authLoading ? '...' : isSignInMode ? 'Sign In' : 'Create Account'}
+          </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.socialBtnApple} onPress={finish} activeOpacity={0.85}>
-          <Feather name="smartphone" size={18} color={Colors.textInverse} />
-          <Text style={styles.socialBtnTextLight}>Continue with Apple</Text>
+        {/* Guest / skip */}
+        <TouchableOpacity style={styles.guestBtn} onPress={finish} activeOpacity={0.7}>
+          <Text style={styles.guestBtnText}>Continue as Guest</Text>
         </TouchableOpacity>
 
-        {/* Create Account */}
-        <TouchableOpacity style={styles.primaryBtn} onPress={finish} activeOpacity={0.88}>
-          <Text style={styles.primaryBtnText}>Create Account</Text>
+        {/* Toggle sign-in / sign-up */}
+        <TouchableOpacity
+          style={styles.signInRow}
+          onPress={() => { setIsSignInMode(m => !m); setAuthError(''); }}
+        >
+          <Text style={styles.signInLabel}>
+            {isSignInMode ? "Don't have an account? " : 'Already have an account? '}
+          </Text>
+          <Text style={styles.signInLink}>{isSignInMode ? 'Sign Up' : 'Sign In'}</Text>
         </TouchableOpacity>
 
         {/* Terms */}
-        <Text style={styles.termsText}>
-          By signing up, you agree to our{' '}
-          <Text style={styles.termsLink}>Terms of Service</Text>
-          {' '}and{' '}
-          <Text style={styles.termsLink}>Privacy Policy</Text>.
-        </Text>
+        {!isSignInMode && (
+          <Text style={styles.termsText}>
+            By signing up, you agree to our{' '}
+            <Text style={styles.termsLink}>Terms of Service</Text>
+            {' '}and{' '}
+            <Text style={styles.termsLink}>Privacy Policy</Text>.
+          </Text>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -520,4 +590,19 @@ const styles = StyleSheet.create({
   },
   signInLabel: { fontSize: FONT_SIZE.md, color: Colors.textSecondary },
   signInLink: { fontSize: FONT_SIZE.md, fontFamily: FONTS.bodySemibold, color: Colors.accent },
+
+  authError: {
+    fontSize: FONT_SIZE.sm, color: Colors.avoid,
+    fontFamily: FONTS.bodyMedium, textAlign: 'center',
+    backgroundColor: Colors.avoidBackground,
+    borderRadius: Radius.md, padding: Spacing.sm,
+  },
+  guestBtn: {
+    alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 12,
+  },
+  guestBtnText: {
+    fontSize: FONT_SIZE.md, color: Colors.textSecondary,
+    fontFamily: FONTS.bodyMedium,
+  },
 });

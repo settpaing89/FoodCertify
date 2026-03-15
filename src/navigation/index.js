@@ -10,6 +10,7 @@ import { Feather } from '@expo/vector-icons';
 import { Colors, Spacing } from '../theme';
 import { FONT_SIZE, FONTS, SHADOW } from '../utils/tokens';
 import { useOnboarding } from '../hooks/useStorage';
+import { useAuth }       from '../context/AuthContext';
 
 export const AppContext = createContext({});
 export const useAppContext = () => useContext(AppContext);
@@ -193,6 +194,14 @@ function MainTabs() {
 // ─── Root Stack Navigator ─────────────────────────────────────────────────────
 export default function RootNavigator() {
   const { hasOnboarded, completeOnboarding, resetOnboarding } = useOnboarding();
+  const { session } = useAuth();
+
+  // If user signed in on a new device, skip re-onboarding
+  useEffect(() => {
+    if (session && hasOnboarded === false) {
+      completeOnboarding();
+    }
+  }, [session, hasOnboarded, completeOnboarding]);
 
   if (hasOnboarded === null) return null;
 

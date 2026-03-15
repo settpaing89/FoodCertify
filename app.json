@@ -20,7 +20,8 @@
       "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "Vett uses your camera to scan product barcodes and analyze ingredient safety.",
-        "NSPhotoLibraryUsageDescription": "Vett can scan barcodes from photos in your library."
+        "NSPhotoLibraryUsageDescription": "Vett can scan barcodes from photos in your library.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

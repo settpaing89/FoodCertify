@@ -9,6 +9,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { PremiumProvider } from './src/context/PremiumContext';
 import { HistoryProvider } from './src/context/HistoryContext';
+import { AuthProvider }    from './src/context/AuthContext';
 import RootNavigator from './src/navigation';
 
 import {
@@ -47,12 +48,14 @@ function App() {
     <View onLayout={onLayoutRootView} style={{ flex: 1 }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
+          <AuthProvider>
           <PremiumProvider>
             <HistoryProvider>
               <StatusBar style="light" />
               <RootNavigator />
             </HistoryProvider>
           </PremiumProvider>
+          </AuthProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </View>
